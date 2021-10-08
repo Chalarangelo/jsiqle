@@ -1,0 +1,19 @@
+{
+  "name": "jedql",
+  "version": "0.0.1",
+  "description": "JSON-based database and query language.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Chalarangelo/jedql.git"
+  },
+  "author": "Angelos Chalaris",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Chalarangelo/jedql/issues"
+  },
+  "homepage": "https://github.com/Chalarangelo/jedql#readme"
+}

@@ -1,0 +1,14 @@
+{
+  "moduleFileExtensions": ["js"],
+  "moduleDirectories": [
+    "node_modules",
+    "src"
+  ],
+  "coveragePathIgnorePatterns": [
+    "/node_modules/",
+    "/test/"
+  ],
+  "testMatch": [
+    "**/?(*.)+(test).[jt]s?(x)"
+  ]
+}

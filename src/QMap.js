@@ -59,6 +59,22 @@ class QMap extends Map {
     }, new QMap());
   }
 
+  get first() {
+    return [...this.entries()].shift()[1];
+  }
+
+  get firstKey() {
+    return [...this.entries()].shift()[0];
+  }
+
+  get last() {
+    return [...this.entries()].pop()[1];
+  }
+
+  get lastKey() {
+    return [...this.entries()].pop()[0];
+  }
+
   /* istanbul ignore next */
   get [Symbol.toStringTag]() {
     return 'Map';

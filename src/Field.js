@@ -1,5 +1,5 @@
-import validators from './utils/typeValidation.js';
-import isValidName from './utils/nameValidation.js';
+import validators from 'src/utils/typeValidation';
+import isValidName from 'src/utils/nameValidation';
 
 class Field {
   constructor(

@@ -1,5 +1,5 @@
 import EventEmitter from 'events';
-import Model from './Model.js';
+import Model from 'src/Model';
 
 class Schema extends EventEmitter {
   constructor(name) {

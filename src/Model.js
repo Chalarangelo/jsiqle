@@ -1,10 +1,11 @@
-import QMap from './QMap.js';
-import Field from './Field.js';
-import { symbolize } from './utils/symbols.js';
-import { deepClone } from './utils/deepClone.js';
-import isValidName from './utils/nameValidation.js';
-import validators from './utils/typeValidation.js';
-import { RecordHandler, Record } from './recordHelper.js';
+import RecordSet from 'src/records/RecordSet';
+import Field from 'src/Field';
+import { symbolize } from 'src/utils/symbols';
+import { deepClone } from 'src/utils/deepClone';
+import isValidName from 'src/utils/nameValidation';
+import validators from 'src/utils/typeValidation';
+import { Record } from 'src/records/Record';
+import { RecordHandler } from 'src/records/RecordHandler';
 
 const $fields = symbolize('fields');
 const $key = symbolize('key');
@@ -31,7 +32,7 @@ class Model {
 
     // Create the record storage and handler
     // This needs to be initialized before fields to allow for retrofilling
-    this[$records] = new QMap();
+    this[$records] = new RecordSet();
     this[$recordHandler] = new RecordHandler(this);
 
     // Add fields, checking for duplicates and invalids
@@ -160,6 +161,38 @@ class Model {
   clear() {
     this[$records].clear();
   }
+
+  get first() {
+    return this[$records].first;
+  }
+
+  get last() {
+    return this[$records].last;
+  }
+
+  get count() {
+    return this[$records].size;
+  }
+
+  where(callbackFn) {
+    const records = this.records;
+    return records.reduce((recordSet, record, key) => {
+      if (callbackFn(record, key, records)) recordSet.set(key, record);
+      return recordSet;
+    }, new RecordSet());
+  }
+
+  find(key) {
+    return this.get(key);
+  }
+
+  findBy(callbackFn) {
+    const records = this.records;
+    return records.find(callbackFn);
+  }
+
+  // Iterator
+  // Batch iterator (configurable batch size)
 }
 
 export default Model;

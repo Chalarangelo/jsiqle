@@ -5,6 +5,19 @@ const $fields = symbolize('fields');
 const $methods = symbolize('methods');
 const $recordValue = symbolize('recordValue');
 const $recordHandler = symbolize('recordHandler');
+const $key = symbolize('key');
+
+const recordToObject = (record, model) => {
+  const recordValue = record[$recordValue];
+  const fields = model[$fields];
+  const object = {};
+  fields.forEach(field => {
+    const value = recordValue[field.name];
+    if (value !== undefined) object[field.name] = recordValue[field.name];
+  });
+  // TODO: Add support for relations
+  return () => object;
+};
 
 export class RecordHandler {
   constructor(model) {
@@ -12,19 +25,23 @@ export class RecordHandler {
   }
 
   get(record, property) {
-    if (this.model[$fields].has(property)) return record[property];
+    const recordValue = record[$recordValue];
+    if (this.model[$fields].has(property)) return recordValue[property];
     if (this.model[$methods].has(property))
-      return this.model[$methods].get(property)(record);
+      return this.model[$methods].get(property)(recordValue);
+    if (property === 'toObject') return recordToObject(record, this.model);
   }
 
   set(record, property, value) {
+    const recordValue = record[$recordValue];
     if (this.model[$fields].has(property)) {
       const field = this.model[$fields].get(property);
-      const isFieldNil = validators.isNil(record[property]);
+      const isFieldNil = validators.nil(recordValue[property]);
       // Set the default value if the field is null or undefined
-      if (field.required && isFieldNil) record[field.name] = field.defaultValue;
+      if (field.required && isFieldNil)
+        recordValue[field.name] = field.defaultValue;
       // Throw an error if the field value is invalid
-      if (!field.validate(record[field.name])) {
+      if (!field.validate(recordValue[field.name])) {
         throw new Error(
           `${this.name} record has invalid value for field ${field.name}.`
         );
@@ -32,28 +49,31 @@ export class RecordHandler {
     } else {
       console.warn(`${this.name} record has extra field: ${property}.`);
     }
-    record[property] = value;
+    recordValue[property] = value;
   }
 }
 
-export class Record extends Proxy {
+export class Record {
+  #recordValue;
+  #recordHandler;
+
   constructor(value, handler) {
-    super(value, handler);
-    this[$recordValue] = value;
-    this[$recordHandler] = handler;
+    this.#recordValue = value;
+    this.#recordHandler = handler;
+    return new Proxy(this, this.#recordHandler);
   }
 
-  toObject() {
+  get [$recordHandler]() {
+    return this.#recordHandler;
+  }
+
+  get [$recordValue]() {
+    return this.#recordValue;
+  }
+
+  get [Symbol.toStringTag]() {
     const model = this[$recordHandler].model;
-    const object = {};
-    model[$fields].forEach(field => {
-      object[field.name] = this[$recordValue][field.name];
-    });
-    // TODO: Evalute if methods should actually be included in the object
-    model[$methods].forEach(method => {
-      object[method.name] = this[method.name];
-    });
-    // TODO: Add support for relations
-    return object;
+    const key = model[$key];
+    return `${model.name}#${this[$recordValue][key]}`;
   }
 }

@@ -1,8 +1,8 @@
-import QMap from '../src/QMap.js';
+import RecordSet from 'src/records/RecordSet';
 
-describe('QMap', () => {
+describe('RecordSet', () => {
   test('map', () => {
-    const map = new QMap();
+    const map = new RecordSet();
     map.set('a', 1);
     map.set('b', 2);
     map.set('c', 3);
@@ -16,7 +16,7 @@ describe('QMap', () => {
   });
 
   test('reduce', () => {
-    const map = new QMap();
+    const map = new RecordSet();
     map.set('a', 1);
     map.set('b', 2);
     map.set('c', 3);
@@ -25,7 +25,7 @@ describe('QMap', () => {
   });
 
   test('filter', () => {
-    const map = new QMap();
+    const map = new RecordSet();
     map.set('a', 1);
     map.set('b', 2);
     map.set('c', 3);

@@ -1,8 +1,13 @@
+import { symbolize } from 'src/utils/symbols';
+import { allEqualBy } from 'src/utils/helpers';
+
+const $recordModel = symbolize('recordModel');
+
 /**
  * An extension of the native Map object. Provides the same API, along with
  * additional methods similar to the Array prototype.
  */
-class QMap extends Map {
+class RecordSet extends Map {
   /**
    * Creates a new map populated with the results of calling a provided function
    * on every element in the calling map.
@@ -11,14 +16,14 @@ class QMap extends Map {
    * - `value`: The value of the current element.
    * - `key`: The key of the current element.
    * - `map`: The map itself.
-   * @returns {QMap} A new map with each element being the result of the
+   * @returns {RecordSet} A new map with each element being the result of the
    * callback function.
    */
   map(callbackFn) {
     return [...this.entries()].reduce((newMap, [key, value]) => {
       newMap.set(key, callbackFn(value, key, this));
       return newMap;
-    }, new QMap());
+    }, new RecordSet());
   }
 
   /**
@@ -50,13 +55,21 @@ class QMap extends Map {
    * - `value`: The value of the current element.
    * - `key`: The key of the current element.
    * - `map`: The map itself.
-   * @returns {QMap} A new map with all elements that pass the test.
+   * @returns {RecordSet} A new map with all elements that pass the test.
    */
   filter(callbackFn) {
     return [...this.entries()].reduce((newMap, [key, value]) => {
       if (callbackFn(value, key, this)) newMap.set(key, value);
       return newMap;
-    }, new QMap());
+    }, new RecordSet());
+  }
+
+  find(callbackFn) {
+    const match = [...this.entries()].find(([key, value]) =>
+      callbackFn(value, key, this)
+    );
+    if (match) return match[1];
+    return undefined;
   }
 
   get first() {
@@ -77,7 +90,15 @@ class QMap extends Map {
 
   /* istanbul ignore next */
   get [Symbol.toStringTag]() {
-    return 'Map';
+    const records = [...this.values()];
+    try {
+      const firstModel = records[0][$recordModel].name;
+      if (allEqualBy(records, value => value[$recordModel].name === firstModel))
+        return firstModel;
+    } catch (e) {
+      return '';
+    }
+    return '';
   }
 
   /* istanbul ignore next */
@@ -86,4 +107,4 @@ class QMap extends Map {
   }
 }
 
-export default QMap;
+export default RecordSet;

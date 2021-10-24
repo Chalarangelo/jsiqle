@@ -1,13 +1,12 @@
-import { symbolize } from './utils/symbols.js';
-import validators from './utils/typeValidation.js';
+import { symbolize } from 'src/utils/symbols';
+import validators from 'src/utils/typeValidation';
 
 const $fields = symbolize('fields');
 const $methods = symbolize('methods');
 const $recordValue = symbolize('recordValue');
-const $recordHandler = symbolize('recordHandler');
-const $key = symbolize('key');
+const $recordModel = symbolize('recordModel');
 
-const recordToObject = (record, model) => {
+export const recordToObject = (record, model) => {
   const recordValue = record[$recordValue];
   const fields = model[$fields];
   const object = {};
@@ -30,6 +29,7 @@ export class RecordHandler {
     if (this.model[$methods].has(property))
       return this.model[$methods].get(property)(recordValue);
     if (property === 'toObject') return recordToObject(record, this.model);
+    if (property === $recordModel) return record[$recordModel];
   }
 
   set(record, property, value) {
@@ -50,30 +50,5 @@ export class RecordHandler {
       console.warn(`${this.name} record has extra field: ${property}.`);
     }
     recordValue[property] = value;
-  }
-}
-
-export class Record {
-  #recordValue;
-  #recordHandler;
-
-  constructor(value, handler) {
-    this.#recordValue = value;
-    this.#recordHandler = handler;
-    return new Proxy(this, this.#recordHandler);
-  }
-
-  get [$recordHandler]() {
-    return this.#recordHandler;
-  }
-
-  get [$recordValue]() {
-    return this.#recordValue;
-  }
-
-  get [Symbol.toStringTag]() {
-    const model = this[$recordHandler].model;
-    const key = model[$key];
-    return `${model.name}#${this[$recordValue][key]}`;
   }
 }

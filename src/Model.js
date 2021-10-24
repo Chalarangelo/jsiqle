@@ -2,7 +2,7 @@ import QMap from './QMap.js';
 import Field from './Field.js';
 import { symbolize } from './utils/symbols.js';
 import { deepClone } from './utils/deepClone.js';
-import isValidName from './utils/validateName.js';
+import isValidName from './utils/nameValidation.js';
 import validators from './utils/typeValidation.js';
 import { RecordHandler, Record } from './recordHelper.js';
 
@@ -13,22 +13,17 @@ const $records = symbolize('records');
 const $recordHandler = symbolize('recordHandler');
 
 class Model {
-  constructor(
-    {
-      name,
-      fields,
-      key,
-      methods,
-      // scopes,
-      // relations,
-      // hooks,
-      // validations,
-      // indexes,
-    } = {
-      fields: [],
-      methods: [],
-    }
-  ) {
+  constructor({
+    name,
+    fields,
+    key,
+    methods = {},
+    // scopes,
+    // relations,
+    // hooks,
+    // validations,
+    // indexes,
+  } = {}) {
     // Verify name
     const [validName, error] = isValidName(name);
     if (!validName) throw `Model name ${error}.`;
@@ -41,7 +36,7 @@ class Model {
 
     // Add fields, checking for duplicates and invalids
     this[$fields] = new Map();
-    fields.forEach(this.addField);
+    fields.forEach(field => this.addField(field));
 
     // Check and create the key field
     if (!this[$fields].has(key))
@@ -52,7 +47,9 @@ class Model {
 
     // Add methods, checking for duplicates and invalids
     this[$methods] = new Map();
-    methods.forEach(this.addMethod);
+    Object.keys(methods).forEach(methodName => {
+      this.addMethod(methodName, methods[methodName]);
+    });
   }
 
   addField(field, retrofill) {
@@ -61,7 +58,7 @@ class Model {
     if (this[$fields].has(field.name))
       throw new Error(`Duplicate field name ${field.name}.`);
 
-    this[$fields].add(field.name, field);
+    this[$fields].set(field.name, field);
 
     // Retrofill records with new fields
     const isRetrofillFunction = typeof retrofill === 'function';
@@ -117,9 +114,9 @@ class Model {
       );
 
     const newRecord = deepClone(record);
-    const newRecordFields = new Set(...Object.keys(newRecord));
+    const newRecordFields = new Set(Object.keys(newRecord));
     this[$fields].forEach(field => {
-      const isFieldNil = validators.isNil(newRecord[field.name]);
+      const isFieldNil = validators.nil(newRecord[field.name]);
       // Set the default value if the field is null or undefined
       if (field.required && isFieldNil)
         newRecord[field.name] = field.defaultValue;

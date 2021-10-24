@@ -1,5 +1,5 @@
 import validators from './utils/typeValidation.js';
-import isValidName from './utils/validateName.js';
+import isValidName from './utils/nameValidation.js';
 
 class Field {
   constructor(
@@ -30,7 +30,7 @@ class Field {
   }
 
   validate(value) {
-    return this.typeValidator(value);
+    return this.type(value);
   }
 }
 

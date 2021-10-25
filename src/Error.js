@@ -4,3 +4,10 @@ export class NameError extends Error {
     this.name = 'NameError';
   }
 }
+
+export class ValidationError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'ValidationError';
+  }
+}

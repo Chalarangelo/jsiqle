@@ -1,9 +1,9 @@
 import validators from 'src/utils/typeValidation';
 import isValidName from 'src/utils/nameValidation';
 import { symbolize } from 'src/utils/symbols';
-import { NameError } from 'src/Error';
+import { NameError, ValidationError } from 'src/Error';
 
-const $defaultValue = Symbol('defaultValue');
+const $defaultValue = symbolize('defaultValue');
 const $isValidKey = symbolize('isValidKey');
 
 class Field {
@@ -33,9 +33,9 @@ class Field {
 
     // Ensure default value is of correct type and not null or undefined if required
     if (this.#required && validators.nil(defaultValue))
-      throw new TypeError('Default value cannot be null or undefined.');
+      throw new ValidationError('Default value cannot be null or undefined.');
     if (!this.validate(defaultValue))
-      throw new TypeError('Default value must be valid.');
+      throw new ValidationError('Default value must be valid.');
     this.#defaultValue = defaultValue;
   }
 

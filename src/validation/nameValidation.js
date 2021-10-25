@@ -35,7 +35,7 @@ const isValidName = name => {
 const validateName = (objectType, name) => {
   const [isValid, message] = isValidName(name);
   if (!isValid) throw new NameError(`${objectType} name ${message}.`);
-  return isValid;
+  return name;
 };
 
 export default validateName;

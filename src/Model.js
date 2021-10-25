@@ -27,7 +27,7 @@ class Model {
     // validations,
     // indexes,
   } = {}) {
-    if (validateName('Model', name)) this.name = name;
+    this.name = validateName('Model', name);
 
     // Create the record storage and handler
     // This needs to be initialized before fields to allow for retrofilling

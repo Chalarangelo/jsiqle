@@ -12,6 +12,7 @@ const $key = symbolize('key');
 const $methods = symbolize('methods');
 const $records = symbolize('records');
 const $recordHandler = symbolize('recordHandler');
+const $isValidKey = symbolize('isValidKey');
 
 class Model {
   constructor({
@@ -26,8 +27,8 @@ class Model {
     // indexes,
   } = {}) {
     // Verify name
-    const [validName, error] = isValidName(name);
-    if (!validName) throw `Model name ${error}.`;
+    const [validName, nameError] = isValidName(name);
+    if (!validName) throw `Model name ${nameError}.`;
     this.name = name;
 
     // Create the record storage and handler
@@ -42,8 +43,9 @@ class Model {
     // Check and create the key field
     if (!this[$fields].has(key))
       throw new Error(`Model ${this.name} has no key field ${key}.`);
-    if (!this[$fields].get(key).required)
-      throw new Error(`Model ${this.name} key field ${key} is not required.`);
+    const [validKey, keyError] = this[$fields].get(key)[$isValidKey];
+    if (!validKey)
+      throw new Error(`Model ${this.name} key field ${key} ${keyError}.`);
     this[$key] = key;
 
     // Add methods, checking for duplicates and invalids

@@ -1,5 +1,8 @@
 import validators from 'src/utils/typeValidation';
 import isValidName from 'src/utils/nameValidation';
+import { symbolize } from 'src/utils/symbols';
+
+const $isValidKey = symbolize('isValidKey');
 
 class Field {
   constructor(
@@ -31,6 +34,13 @@ class Field {
 
   validate(value) {
     return this.type(value);
+  }
+
+  get [$isValidKey]() {
+    if (!this.required) return [false, 'is not required'];
+    if ([validators.number, validators.string].includes(this.type))
+      return [true, null];
+    return [false, 'type must be a number or string'];
   }
 }
 

@@ -10,6 +10,7 @@ import { RecordHandler } from 'src/records/RecordHandler';
 const $fields = symbolize('fields');
 const $key = symbolize('key');
 const $methods = symbolize('methods');
+const $scopes = symbolize('scopes');
 const $records = symbolize('records');
 const $recordHandler = symbolize('recordHandler');
 const $isValidKey = symbolize('isValidKey');
@@ -21,7 +22,7 @@ class Model {
     fields,
     key,
     methods = {},
-    // scopes,
+    scopes = {},
     // relations,
     // hooks,
     // validations,
@@ -50,6 +51,12 @@ class Model {
     this[$methods] = new Map();
     Object.keys(methods).forEach(methodName => {
       this.addMethod(methodName, methods[methodName]);
+    });
+
+    // Add scopes, checking for duplicates and invalids
+    this[$scopes] = new Set();
+    Object.keys(scopes).forEach(scopeName => {
+      this.addScope(scopeName, scopes[scopeName]);
     });
   }
 
@@ -101,6 +108,28 @@ class Model {
       throw new Error(`Method ${name} does not exist.`);
 
     this[$methods].delete(name);
+  }
+
+  addScope(name, scope) {
+    if (typeof scope !== 'function')
+      throw new Error(`Scope ${name} is not a function.`);
+    if (this[$scopes].has(name))
+      throw new Error(`Scope ${name} already exists.`);
+
+    this[$scopes].add(name);
+    Object.defineProperty(this, name, {
+      get: () => {
+        return this.where(scope);
+      },
+    });
+  }
+
+  removeScope(name) {
+    if (!this[$scopes].has(name))
+      throw new Error(`Scope ${name} does not exist.`);
+
+    this[$scopes].delete(name);
+    delete this[name];
   }
 
   add(record) {

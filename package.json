@@ -4,7 +4,8 @@
   "description": "JSON-based database and query language.",
   "main": "./dist/main.js",
   "scripts": {
-    "build": "webpack",
+    "build": "webpack --mode=production",
+    "repl": "webpack --mode=development && node ./repl/index.js",
     "test": "jest --coverage",
     "lint": "eslint src"
   },

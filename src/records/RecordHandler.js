@@ -5,7 +5,7 @@ const $fields = symbolize('fields');
 const $methods = symbolize('methods');
 const $recordValue = symbolize('recordValue');
 const $recordModel = symbolize('recordModel');
-const $defaultValue = Symbol('defaultValue');
+const $defaultValue = symbolize('defaultValue');
 
 export const recordToObject = (record, model) => {
   const recordValue = record[$recordValue];

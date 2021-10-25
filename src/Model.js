@@ -13,6 +13,7 @@ const $methods = symbolize('methods');
 const $records = symbolize('records');
 const $recordHandler = symbolize('recordHandler');
 const $isValidKey = symbolize('isValidKey');
+const $defaultValue = Symbol('defaultValue');
 
 class Model {
   constructor({
@@ -122,7 +123,7 @@ class Model {
       const isFieldNil = validators.nil(newRecord[field.name]);
       // Set the default value if the field is null or undefined
       if (field.required && isFieldNil)
-        newRecord[field.name] = field.defaultValue;
+        newRecord[field.name] = field[$defaultValue];
       // Throw an error if the field value is invalid
       if (!field.validate(newRecord[field.name])) {
         throw new Error(

@@ -5,6 +5,7 @@ const $fields = symbolize('fields');
 const $methods = symbolize('methods');
 const $recordValue = symbolize('recordValue');
 const $recordModel = symbolize('recordModel');
+const $defaultValue = Symbol('defaultValue');
 
 export const recordToObject = (record, model) => {
   const recordValue = record[$recordValue];
@@ -39,7 +40,7 @@ export class RecordHandler {
       const isFieldNil = validators.nil(recordValue[property]);
       // Set the default value if the field is null or undefined
       if (field.required && isFieldNil)
-        recordValue[field.name] = field.defaultValue;
+        recordValue[field.name] = field[$defaultValue];
       // Throw an error if the field value is invalid
       if (!field.validate(recordValue[field.name])) {
         throw new Error(

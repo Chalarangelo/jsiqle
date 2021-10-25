@@ -1,7 +1,7 @@
 import validators from 'src/utils/typeValidation';
-import isValidName from 'src/utils/nameValidation';
+import validateName from 'src/validation/nameValidation';
 import { symbolize } from 'src/utils/symbols';
-import { NameError, ValidationError } from 'src/Error';
+import { ValidationError } from 'src/Error';
 
 const $defaultValue = symbolize('defaultValue');
 const $isValidKey = symbolize('isValidKey');
@@ -18,10 +18,7 @@ class Field {
       defaultValue: null,
     }
   ) {
-    // Verify name
-    const [validName, error] = isValidName(name);
-    if (!validName) throw new NameError(`Field name ${error}.`);
-    this.#name = name;
+    if (validateName('Field', name)) this.#name = name;
 
     // Set required
     this.#required = Boolean(required);

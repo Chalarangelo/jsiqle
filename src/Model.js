@@ -2,7 +2,7 @@ import RecordSet from 'src/records/RecordSet';
 import Field from 'src/Field';
 import { symbolize } from 'src/utils/symbols';
 import { deepClone } from 'src/utils/deepClone';
-import isValidName from 'src/utils/nameValidation';
+import validateName from 'src/validation/nameValidation';
 import validators from 'src/utils/typeValidation';
 import { Record } from 'src/records/Record';
 import { RecordHandler } from 'src/records/RecordHandler';
@@ -13,7 +13,7 @@ const $methods = symbolize('methods');
 const $records = symbolize('records');
 const $recordHandler = symbolize('recordHandler');
 const $isValidKey = symbolize('isValidKey');
-const $defaultValue = Symbol('defaultValue');
+const $defaultValue = symbolize('defaultValue');
 
 class Model {
   constructor({
@@ -27,10 +27,7 @@ class Model {
     // validations,
     // indexes,
   } = {}) {
-    // Verify name
-    const [validName, nameError] = isValidName(name);
-    if (!validName) throw `Model name ${nameError}.`;
-    this.name = name;
+    if (validateName('Model', name)) this.name = name;
 
     // Create the record storage and handler
     // This needs to be initialized before fields to allow for retrofilling

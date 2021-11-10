@@ -4,7 +4,6 @@ import { symbolize } from 'src/utils/symbols';
 import { ValidationError } from 'src/Error';
 
 const $defaultValue = symbolize('defaultValue');
-const $isValidKey = symbolize('isValidKey');
 
 // Ensure type is a function, wrap in optional if not required
 const validateType = (type, required) => {
@@ -67,13 +66,6 @@ class Field {
 
   validate(value) {
     return this.#type(value);
-  }
-
-  get [$isValidKey]() {
-    if (!this.#required) return [false, 'is not required'];
-    if ([validators.number, validators.string].includes(this.#type))
-      return [true, null];
-    return [false, 'type must be a number or string'];
   }
 }
 

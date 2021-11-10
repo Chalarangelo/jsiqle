@@ -1,5 +1,6 @@
 import RecordSet from 'src/records/RecordSet';
 import Field from 'src/Field';
+import Key from 'src/Key';
 import { symbolize } from 'src/utils/symbols';
 import { deepClone } from 'src/utils/deepClone';
 import validateName from 'src/validation/nameValidation';
@@ -13,8 +14,29 @@ const $methods = symbolize('methods');
 const $scopes = symbolize('scopes');
 const $records = symbolize('records');
 const $recordHandler = symbolize('recordHandler');
-const $isValidKey = symbolize('isValidKey');
 const $defaultValue = symbolize('defaultValue');
+
+// Validate key's existence and type
+const validateKey = (modelName, key, fields) => {
+  if (!(key instanceof Key)) throw new Error(`Key ${key} is not a Key.`);
+  if (fields.has(key))
+    throw new Error(`Model ${modelName} already has a field named ${key}.`);
+  return key;
+};
+
+const validateCallback = (callbackType, callbackName, callback, callbacks) => {
+  if (typeof callback !== 'function')
+    throw new Error(`${callbackType} ${callbackName} is not a function.`);
+  if (callbacks.has(callbackName))
+    throw new Error(`${callbackType} ${callbackName} already exists.`);
+  return callback;
+};
+
+const validateExistence = (objectType, objectName, objects) => {
+  if (!objects.has(objectName))
+    throw new Error(`${objectType} ${objectName} does not exist.`);
+  return objectName;
+};
 
 class Model {
   constructor({
@@ -40,12 +62,7 @@ class Model {
     fields.forEach(field => this.addField(field));
 
     // Check and create the key field
-    if (!this[$fields].has(key))
-      throw new Error(`Model ${this.name} has no key field ${key}.`);
-    const [validKey, keyError] = this[$fields].get(key)[$isValidKey];
-    if (!validKey)
-      throw new Error(`Model ${this.name} key field ${key} ${keyError}.`);
-    this[$key] = key;
+    this[$key] = validateKey(this.name, key, this[$fields]);
 
     // Add methods, checking for duplicates and invalids
     this[$methods] = new Map();
@@ -81,40 +98,32 @@ class Model {
   }
 
   removeField(name) {
-    if (!this[$fields].has(name))
-      throw new Error(`Field ${name} does not exist.`);
-
-    this[$fields].delete(name);
+    this[$fields].delete(validateExistence('Field', name, this[$fields]));
   }
 
   updateField(name, field) {
     if (!(field instanceof Field))
       throw new Error(`Field ${field} is not a Field.`);
+    if (field.name !== name)
+      throw new Error(`Field name ${field.name} does not match ${name}.`);
     this.removeField(name);
     this.addField(field);
   }
 
   addMethod(name, method) {
-    if (typeof method !== 'function')
-      throw new Error(`Method ${name} is not a function.`);
-    if (this[$methods].has(name))
-      throw new Error(`Method ${name} already exists.`);
-
-    this[$methods].set(name, method);
+    this[$methods].set(
+      name,
+      validateCallback('Method', name, method, this[$methods])
+    );
   }
 
   removeMethod(name) {
-    if (!this[$methods].has(name))
-      throw new Error(`Method ${name} does not exist.`);
-
-    this[$methods].delete(name);
+    this[$methods].delete(validateExistence('Method', name, this[$methods]));
   }
 
   addScope(name, scope) {
-    if (typeof scope !== 'function')
-      throw new Error(`Scope ${name} is not a function.`);
-    if (this[$scopes].has(name))
-      throw new Error(`Scope ${name} already exists.`);
+    validateCallback('Scope', name, scope, this[$scopes]);
+    if (this[name]) throw new Error(`Scope name ${name} is already in use.`);
 
     this[$scopes].add(name);
     Object.defineProperty(this, name, {
@@ -125,17 +134,14 @@ class Model {
   }
 
   removeScope(name) {
-    if (!this[$scopes].has(name))
-      throw new Error(`Scope ${name} does not exist.`);
-
-    this[$scopes].delete(name);
+    this[$scopes].delete(validateExistence('Scope', name, this[$scopes]));
     delete this[name];
   }
 
   add(record) {
     if (!record) throw new Error('Record is required');
 
-    const newRecordKey = record[this[$key]];
+    const newRecordKey = record[this[$key].name];
     if (newRecordKey === undefined)
       throw new Error(`${this.name} record has no key.`);
     if (this[$records].has(newRecordKey))
@@ -211,6 +217,14 @@ class Model {
     }, new RecordSet());
   }
 
+  whereNot(callbackFn) {
+    const records = this.records;
+    return records.reduce((recordSet, record, key) => {
+      if (!callbackFn(record, key, records)) recordSet.set(key, record);
+      return recordSet;
+    }, new RecordSet());
+  }
+
   find(key) {
     return this.get(key);
   }
@@ -222,6 +236,8 @@ class Model {
 
   // Iterator
   // Batch iterator (configurable batch size)
+  // Limit
+  // Offset
 }
 
 export default Model;

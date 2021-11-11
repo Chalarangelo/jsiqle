@@ -72,6 +72,26 @@ class RecordSet extends Map {
     return undefined;
   }
 
+  sort(comparatorFn) {
+    const sorted = [...this.entries()].sort(([key1, value1], [key2, value2]) =>
+      comparatorFn(value1, value2, key1, key2)
+    );
+    return new RecordSet(sorted);
+  }
+
+  select(...keys) {
+    // TODO: These objects are not Records, but they should be.
+    return new RecordSet(
+      [...this.entries()].map(([key, value]) => {
+        const obj = {};
+        keys.forEach(key => (obj[key] = value[key]));
+        return [key, obj];
+      })
+    );
+  }
+
+  // groupBy(key)
+
   get first() {
     return [...this.entries()].shift()[1];
   }

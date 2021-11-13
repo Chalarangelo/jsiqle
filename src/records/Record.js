@@ -29,7 +29,7 @@ export class Record {
 
   get [Symbol.toStringTag]() {
     const model = this[$recordModel];
-    const key = model[$key];
+    const key = model[$key].name;
     return `${model.name}#${this[$recordValue][key]}`;
   }
 }

@@ -1,7 +1,7 @@
 import EventEmitter from 'events';
-import Model from 'src/Model';
+import { Model } from 'src/model';
 
-class Schema extends EventEmitter {
+export class Schema extends EventEmitter {
   constructor(name) {
     super();
     this.name = name;

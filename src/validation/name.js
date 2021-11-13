@@ -1,4 +1,4 @@
-import { NameError } from 'src/Error';
+import { NameError } from 'src/errors';
 
 /**
  * Validates the name of a field or model.

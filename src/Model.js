@@ -1,46 +1,28 @@
-import RecordSet from 'src/records/RecordSet';
-import Field from 'src/Field';
-import Key from 'src/Key';
-import Relationship, { RelationshipField } from 'src/Relationship';
-import { symbolize } from 'src/utils/symbols';
-import { deepClone } from 'src/utils/deepClone';
-import validateName from 'src/validation/nameValidation';
-import validators from 'src/utils/typeValidation';
-import { Record } from 'src/records/Record';
-import { RecordHandler } from 'src/records/RecordHandler';
+import { Field, RelationshipField } from 'src/field';
+import { Relationship } from 'src/relationship';
+import { Record, RecordSet, RecordHandler } from 'src/record';
+import types from 'src/types';
+import symbols from 'src/symbols';
+import { deepClone } from 'src/utils';
+import {
+  validateName,
+  validateModelKey,
+  validateModelMethod,
+  validateModelContains,
+} from 'src/validation';
 
-const $fields = symbolize('fields');
-const $key = symbolize('key');
-const $methods = symbolize('methods');
-const $scopes = symbolize('scopes');
-const $relationships = symbolize('relationships');
-const $records = symbolize('records');
-const $recordHandler = symbolize('recordHandler');
-const $defaultValue = symbolize('defaultValue');
+const {
+  $fields,
+  $key,
+  $methods,
+  $scopes,
+  $relationships,
+  $records,
+  $recordHandler,
+  $defaultValue,
+} = symbols;
 
-// Validate key's existence and type
-const validateKey = (modelName, key, fields) => {
-  if (!(key instanceof Key)) throw new Error(`Key ${key} is not a Key.`);
-  if (fields.has(key))
-    throw new Error(`Model ${modelName} already has a field named ${key}.`);
-  return key;
-};
-
-const validateCallback = (callbackType, callbackName, callback, callbacks) => {
-  if (typeof callback !== 'function')
-    throw new Error(`${callbackType} ${callbackName} is not a function.`);
-  if (callbacks.has(callbackName))
-    throw new Error(`${callbackType} ${callbackName} already exists.`);
-  return callback;
-};
-
-const validateExistence = (objectType, objectName, objects) => {
-  if (!objects.has(objectName))
-    throw new Error(`${objectType} ${objectName} does not exist.`);
-  return objectName;
-};
-
-class Model {
+export class Model {
   constructor({
     name,
     fields,
@@ -64,7 +46,7 @@ class Model {
     fields.forEach(field => this.addField(field));
 
     // Check and create the key field
-    this[$key] = validateKey(this.name, key, this[$fields]);
+    this[$key] = validateModelKey(this.name, key, this[$fields]);
 
     // Add methods, checking for duplicates and invalids
     this[$methods] = new Map();
@@ -105,7 +87,7 @@ class Model {
   }
 
   removeField(name) {
-    this[$fields].delete(validateExistence('Field', name, this[$fields]));
+    this[$fields].delete(validateModelContains('Field', name, this[$fields]));
   }
 
   updateField(name, field) {
@@ -120,16 +102,18 @@ class Model {
   addMethod(name, method) {
     this[$methods].set(
       name,
-      validateCallback('Method', name, method, this[$methods])
+      validateModelMethod('Method', name, method, this[$methods])
     );
   }
 
   removeMethod(name) {
-    this[$methods].delete(validateExistence('Method', name, this[$methods]));
+    this[$methods].delete(
+      validateModelContains('Method', name, this[$methods])
+    );
   }
 
   addScope(name, scope) {
-    validateCallback('Scope', name, scope, this[$scopes]);
+    validateModelMethod('Scope', name, scope, this[$scopes]);
     if (this[name]) throw new Error(`Scope name ${name} is already in use.`);
 
     this[$scopes].add(name);
@@ -141,7 +125,7 @@ class Model {
   }
 
   removeScope(name) {
-    this[$scopes].delete(validateExistence('Scope', name, this[$scopes]));
+    this[$scopes].delete(validateModelContains('Scope', name, this[$scopes]));
     delete this[name];
   }
 
@@ -169,7 +153,7 @@ class Model {
     const newRecord = deepClone(record);
     const newRecordFields = new Set(Object.keys(newRecord));
     this[$fields].forEach(field => {
-      const isFieldNil = validators.nil(newRecord[field.name]);
+      const isFieldNil = types.nil(newRecord[field.name]);
       // Set the default value if the field is null or undefined
       if (field.required && isFieldNil)
         newRecord[field.name] = field[$defaultValue];

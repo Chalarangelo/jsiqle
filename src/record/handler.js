@@ -1,14 +1,16 @@
-import { symbolize } from 'src/utils/symbols';
-import validators from 'src/utils/typeValidation';
-import { RelationshipField } from 'src/Relationship';
+import types from 'src/types';
+import symbols from 'src/symbols';
+import { RelationshipField } from 'src/field';
 
-const $fields = symbolize('fields');
-const $key = symbolize('key');
-const $methods = symbolize('methods');
-const $relationships = symbolize('relationships');
-const $recordValue = symbolize('recordValue');
-const $recordModel = symbolize('recordModel');
-const $defaultValue = symbolize('defaultValue');
+const {
+  $fields,
+  $key,
+  $methods,
+  $relationships,
+  $recordValue,
+  $recordModel,
+  $defaultValue,
+} = symbols;
 
 export const recordToObject = (record, model, handler) => {
   const recordValue = record[$recordValue];
@@ -52,7 +54,7 @@ export const recordToObject = (record, model, handler) => {
   return toObject;
 };
 
-export class RecordHandler {
+class RecordHandler {
   constructor(model) {
     this.model = model;
   }
@@ -78,7 +80,7 @@ export class RecordHandler {
     const recordValue = record[$recordValue];
     if (this.model[$fields].has(property)) {
       const field = this.model[$fields].get(property);
-      const isFieldNil = validators.nil(recordValue[property]);
+      const isFieldNil = types.nil(recordValue[property]);
       // Set the default value if the field is null or undefined
       if (field.required && isFieldNil)
         recordValue[field.name] = field[$defaultValue];
@@ -94,3 +96,5 @@ export class RecordHandler {
     recordValue[property] = value;
   }
 }
+
+export default RecordHandler;

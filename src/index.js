@@ -1,17 +1,17 @@
-import Schema from 'src/Schema';
-import Model from 'src/Model';
-import Field from 'src/Field';
-import Key from 'src/Key';
-import Relationship from 'src/Relationship';
-import validators from 'src/utils/typeValidation';
+import { Schema } from 'src/schema';
+import { Model } from 'src/model';
+import { Field, Key } from 'src/field';
+import { Relationship } from 'src/relationship';
+import types from 'src/types';
 
+// TODO: Records, Models, Schema
 const jedql = {
   Schema,
   Model,
   Field,
   Key,
   Relationship,
-  FieldTypes: validators,
+  FieldTypes: types,
 };
 
 export default jedql;

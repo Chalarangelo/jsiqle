@@ -1,8 +1,3 @@
-/**
- * Creates a deep clone of an object.
- * @param {Object} obj - The object to clone.
- * @returns {Object} The cloned object.
- */
 export const deepClone = obj => {
   if (obj === null) return null;
   let clone = Object.assign({}, obj);
@@ -16,4 +11,9 @@ export const deepClone = obj => {
     return Array.from(clone);
   }
   return clone;
+};
+
+export const allEqualBy = (arr, fn) => {
+  const eql = fn(arr[0]);
+  return arr.every(val => fn(val) === eql);
 };

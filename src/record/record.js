@@ -1,11 +1,8 @@
-import { symbolize } from 'src/utils/symbols';
+import symbols from 'src/symbols';
 
-const $recordValue = symbolize('recordValue');
-const $recordHandler = symbolize('recordHandler');
-const $recordModel = symbolize('recordModel');
-const $key = symbolize('key');
+const { $recordValue, $recordHandler, $recordModel, $key } = symbols;
 
-export class Record {
+class Record {
   #recordValue;
   #recordHandler;
 
@@ -33,3 +30,5 @@ export class Record {
     return `${model.name}#${this[$recordValue][key]}`;
   }
 }
+
+export default Record;

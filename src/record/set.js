@@ -1,7 +1,7 @@
-import { symbolize } from 'src/utils/symbols';
-import { allEqualBy } from 'src/utils/helpers';
+import symbols from 'src/symbols';
+import { allEqualBy } from 'src/utils';
 
-const $recordModel = symbolize('recordModel');
+const { $recordModel } = symbols;
 
 /**
  * An extension of the native Map object. Provides the same API, along with

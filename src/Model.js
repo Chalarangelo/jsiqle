@@ -1,6 +1,7 @@
 import RecordSet from 'src/records/RecordSet';
 import Field from 'src/Field';
 import Key from 'src/Key';
+import Relationship, { RelationshipField } from 'src/Relationship';
 import { symbolize } from 'src/utils/symbols';
 import { deepClone } from 'src/utils/deepClone';
 import validateName from 'src/validation/nameValidation';
@@ -12,6 +13,7 @@ const $fields = symbolize('fields');
 const $key = symbolize('key');
 const $methods = symbolize('methods');
 const $scopes = symbolize('scopes');
+const $relationships = symbolize('relationships');
 const $records = symbolize('records');
 const $recordHandler = symbolize('recordHandler');
 const $defaultValue = symbolize('defaultValue');
@@ -45,7 +47,7 @@ class Model {
     key,
     methods = {},
     scopes = {},
-    // relations,
+    relationships = {},
     // hooks,
     // validations,
     // indexes,
@@ -74,6 +76,11 @@ class Model {
     this[$scopes] = new Set();
     Object.keys(scopes).forEach(scopeName => {
       this.addScope(scopeName, scopes[scopeName]);
+    });
+
+    this[$relationships] = new Map();
+    Object.keys(relationships).forEach(relationName => {
+      this.addRelationship(relationName, relationships[relationName]);
     });
   }
 
@@ -138,6 +145,16 @@ class Model {
     delete this[name];
   }
 
+  addRelationship(relationship) {
+    if (!(relationship instanceof Relationship))
+      throw new Error(`Relation ${relationship} is not a Relation.`);
+    const { name } = relationship;
+    if (this[$fields].has(name))
+      throw new Error(`Field ${name} already exists.`);
+    this[$fields].set(name, new RelationshipField(relationship));
+    this[$relationships].set(name, relationship);
+  }
+
   add(record) {
     if (!record) throw new Error('Record is required');
 
@@ -164,6 +181,7 @@ class Model {
       }
       newRecordFields.delete(field.name);
     });
+    newRecordFields.delete(this[$key].name);
 
     if (newRecordFields.size > 0)
       console.warn(
@@ -232,6 +250,15 @@ class Model {
   findBy(callbackFn) {
     const records = this.records;
     return records.find(callbackFn);
+  }
+
+  getField(name) {
+    if (name === this[$key].name) return this[$key];
+    return this[$fields].get(name);
+  }
+
+  hasField(name) {
+    return this[$key].name === name || this[$fields].has(name);
   }
 
   // Iterator

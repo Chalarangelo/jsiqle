@@ -1,22 +1,55 @@
 import { symbolize } from 'src/utils/symbols';
 import validators from 'src/utils/typeValidation';
+import { RelationshipField } from 'src/Relationship';
 
 const $fields = symbolize('fields');
+const $key = symbolize('key');
 const $methods = symbolize('methods');
+const $relationships = symbolize('relationships');
 const $recordValue = symbolize('recordValue');
 const $recordModel = symbolize('recordModel');
 const $defaultValue = symbolize('defaultValue');
 
-export const recordToObject = (record, model) => {
+export const recordToObject = (record, model, handler) => {
   const recordValue = record[$recordValue];
   const fields = model[$fields];
-  const object = {};
+  const key = model[$key].name;
+  const object = {
+    [key]: recordValue[key],
+  };
+
   fields.forEach(field => {
     const value = recordValue[field.name];
     if (value !== undefined) object[field.name] = recordValue[field.name];
   });
-  // TODO: Add support for relations
-  return () => object;
+
+  const toObject = ({ include = [] } = {}) => {
+    let result = object;
+
+    // e.g. include: ['category', 'siblings.category']
+    const included = include.map(name => {
+      const [field, ...props] = name.split('.');
+      return [field, props.join('.')];
+    });
+
+    included.forEach(([includedField, props]) => {
+      if (object[includedField]) {
+        if (Array.isArray(object[includedField])) {
+          const records = handler.get(record, includedField);
+          object[includedField] = records.map(record =>
+            record.toObject({ include: [props] })
+          );
+        } else {
+          object[includedField] = handler
+            .get(record, includedField)
+            .toObject({ include: [props] });
+        }
+      }
+    });
+    return result;
+  };
+
+  return toObject;
 };
 
 export class RecordHandler {
@@ -26,10 +59,18 @@ export class RecordHandler {
 
   get(record, property) {
     const recordValue = record[$recordValue];
-    if (this.model[$fields].has(property)) return recordValue[property];
+    if (this.model[$key].name === property) return recordValue[property];
+    if (
+      this.model[$fields].has(property) &&
+      !(this.model[$fields].get(property) instanceof RelationshipField)
+    )
+      return recordValue[property];
     if (this.model[$methods].has(property))
       return this.model[$methods].get(property)(recordValue);
-    if (property === 'toObject') return recordToObject(record, this.model);
+    if (this.model[$relationships].has(property))
+      return this.model[$relationships].get(property).get(recordValue);
+    if (property === 'toObject')
+      return recordToObject(record, this.model, this);
     if (property === $recordModel) return record[$recordModel];
   }
 

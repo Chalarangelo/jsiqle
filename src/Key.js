@@ -9,8 +9,6 @@ const keyValidator = value =>
   validators.string(value) && value.trim().length !== 0;
 
 class Key extends Field {
-  #type;
-
   constructor(name = 'id') {
     super({
       name,
@@ -18,10 +16,6 @@ class Key extends Field {
       required: true,
       defaultValue: '__emptyKey__',
     });
-  }
-
-  validate(value) {
-    return this.#type(value);
   }
 
   get [$defaultValue]() {

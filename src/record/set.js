@@ -8,6 +8,42 @@ const { $recordModel } = symbols;
  * additional methods similar to the Array prototype.
  */
 class RecordSet extends Map {
+  #frozen;
+
+  constructor(iterable) {
+    super(iterable);
+    this.#frozen = false;
+  }
+
+  freeze() {
+    this.#frozen = true;
+    return this;
+  }
+
+  set(key, value) {
+    if (this.#frozen) {
+      throw new Error('Cannot modify a frozen RecordSet');
+    }
+    super.set(key, value);
+    return this;
+  }
+
+  delete(key) {
+    if (this.#frozen) {
+      throw new Error('Cannot modify a frozen RecordSet');
+    }
+    super.delete(key);
+    return this;
+  }
+
+  clear() {
+    if (this.#frozen) {
+      throw new Error('Cannot modify a frozen RecordSet');
+    }
+    super.clear();
+    return this;
+  }
+
   /**
    * Creates a new map populated with the results of calling a provided function
    * on every element in the calling map.
@@ -20,10 +56,12 @@ class RecordSet extends Map {
    * callback function.
    */
   map(callbackFn) {
-    return [...this.entries()].reduce((newMap, [key, value]) => {
-      newMap.set(key, callbackFn(value, key, this));
-      return newMap;
-    }, new RecordSet());
+    return [...this.entries()]
+      .reduce((newMap, [key, value]) => {
+        newMap.set(key, callbackFn(value, key, this));
+        return newMap;
+      }, new RecordSet())
+      .freeze();
   }
 
   /**
@@ -58,10 +96,12 @@ class RecordSet extends Map {
    * @returns {RecordSet} A new map with all elements that pass the test.
    */
   filter(callbackFn) {
-    return [...this.entries()].reduce((newMap, [key, value]) => {
-      if (callbackFn(value, key, this)) newMap.set(key, value);
-      return newMap;
-    }, new RecordSet());
+    return [...this.entries()]
+      .reduce((newMap, [key, value]) => {
+        if (callbackFn(value, key, this)) newMap.set(key, value);
+        return newMap;
+      }, new RecordSet())
+      .freeze();
   }
 
   find(callbackFn) {
@@ -76,7 +116,7 @@ class RecordSet extends Map {
     const sorted = [...this.entries()].sort(([key1, value1], [key2, value2]) =>
       comparatorFn(value1, value2, key1, key2)
     );
-    return new RecordSet(sorted);
+    return new RecordSet(sorted).freeze();
   }
 
   select(...keys) {
@@ -87,7 +127,7 @@ class RecordSet extends Map {
         keys.forEach(key => (obj[key] = value[key]));
         return [key, obj];
       })
-    );
+    ).freeze();
   }
 
   // groupBy(key)
@@ -96,16 +136,8 @@ class RecordSet extends Map {
     return [...this.entries()].shift()[1];
   }
 
-  get firstKey() {
-    return [...this.entries()].shift()[0];
-  }
-
   get last() {
     return [...this.entries()].pop()[1];
-  }
-
-  get lastKey() {
-    return [...this.entries()].pop()[0];
   }
 
   get count() {

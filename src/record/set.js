@@ -10,8 +10,9 @@ const { $recordModel } = symbols;
 class RecordSet extends Map {
   #frozen;
 
-  constructor(iterable) {
-    super(iterable);
+  constructor(iterable = []) {
+    super();
+    for (const [key, value] of iterable) this.set(key, value);
     this.#frozen = false;
   }
 

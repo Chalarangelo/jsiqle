@@ -178,62 +178,10 @@ export class Model {
     return new Record(newRecord, this[$recordHandler]);
   }
 
-  get(key) {
-    return new Record(this[$records].get(key), this[$recordHandler]);
-  }
-
-  delete(key) {
-    if (!this[$records].has(key))
-      throw new Error(`${this.name} record with key ${key} does not exist.`);
-
-    this[$records].delete(key);
-  }
-
   get records() {
     return this[$records].map(
       object => new Record(object, this[$recordHandler])
     );
-  }
-
-  clear() {
-    this[$records].clear();
-  }
-
-  get first() {
-    return this[$records].first;
-  }
-
-  get last() {
-    return this[$records].last;
-  }
-
-  get count() {
-    return this[$records].size;
-  }
-
-  where(callbackFn) {
-    const records = this.records;
-    return records.reduce((recordSet, record, key) => {
-      if (callbackFn(record, key, records)) recordSet.set(key, record);
-      return recordSet;
-    }, new RecordSet());
-  }
-
-  whereNot(callbackFn) {
-    const records = this.records;
-    return records.reduce((recordSet, record, key) => {
-      if (!callbackFn(record, key, records)) recordSet.set(key, record);
-      return recordSet;
-    }, new RecordSet());
-  }
-
-  find(key) {
-    return this.get(key);
-  }
-
-  findBy(callbackFn) {
-    const records = this.records;
-    return records.find(callbackFn);
   }
 
   getField(name) {

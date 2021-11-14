@@ -27,12 +27,12 @@ export class Relationship {
       this.#relationType === relationshipTypes.oneToOne ||
       this.#relationType === relationshipTypes.manyToOne
     ) {
-      return this.#model.get(record[this.#name]);
+      return this.#model.records.get(record[this.#name]);
     } else if (
       this.#relationType === relationshipTypes.oneToMany ||
       this.#relationType === relationshipTypes.manyToMany
     ) {
-      return this.#model.where(associatedRecord =>
+      return this.#model.records.where(associatedRecord =>
         record[this.#name].includes(associatedRecord[this.#foreignKey])
       );
     }

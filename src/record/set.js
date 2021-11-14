@@ -108,6 +108,18 @@ class RecordSet extends Map {
     return [...this.entries()].pop()[0];
   }
 
+  get count() {
+    return this.size;
+  }
+
+  where(callbackFn) {
+    return this.filter(callbackFn);
+  }
+
+  whereNot(callbackFn) {
+    return this.filter((value, key, map) => !callbackFn(value, key, map));
+  }
+
   /* istanbul ignore next */
   get [Symbol.toStringTag]() {
     const records = [...this.values()];

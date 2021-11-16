@@ -2,8 +2,15 @@ import symbols from 'src/symbols';
 import { RelationshipField } from 'src/field';
 import { setRecordField, recordToObject } from './utils';
 
-const { $fields, $key, $methods, $relationships, $recordValue, $recordModel } =
-  symbols;
+const {
+  $fields,
+  $key,
+  $methods,
+  $relationships,
+  $recordValue,
+  $recordModel,
+  $recordTag,
+} = symbols;
 
 class RecordHandler {
   constructor(model) {
@@ -25,6 +32,7 @@ class RecordHandler {
     if (property === 'toObject')
       return recordToObject(record, this.model, this);
     if (property === $recordModel) return record[$recordModel];
+    if (property === $recordTag) return record[$recordTag];
   }
 
   set(record, property, value) {

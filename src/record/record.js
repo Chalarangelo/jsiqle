@@ -1,6 +1,7 @@
 import symbols from 'src/symbols';
 
-const { $recordValue, $recordHandler, $recordModel, $key } = symbols;
+const { $recordValue, $recordHandler, $recordModel, $recordTag, $key } =
+  symbols;
 
 class Record {
   #recordValue;
@@ -24,10 +25,14 @@ class Record {
     return this.#recordHandler.model;
   }
 
-  get [Symbol.toStringTag]() {
+  get [$recordTag]() {
     const model = this[$recordModel];
     const key = model[$key].name;
     return `${model.name}#${this[$recordValue][key]}`;
+  }
+
+  get [Symbol.toStringTag]() {
+    return this[$recordTag];
   }
 }
 

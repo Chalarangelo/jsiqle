@@ -15,11 +15,12 @@ const {
   $fields,
   $key,
   $methods,
-  $scopes,
   $relationships,
   $records,
   $recordHandler,
   $defaultValue,
+  $addScope,
+  $removeScope,
 } = symbols;
 
 export class Model {
@@ -55,7 +56,6 @@ export class Model {
     });
 
     // Add scopes, checking for duplicates and invalids
-    this[$scopes] = new Set();
     Object.keys(scopes).forEach(scopeName => {
       this.addScope(scopeName, scopes[scopeName]);
     });
@@ -113,20 +113,11 @@ export class Model {
   }
 
   addScope(name, scope) {
-    validateModelMethod('Scope', name, scope, this[$scopes]);
-    if (this[name]) throw new Error(`Scope name ${name} is already in use.`);
-
-    this[$scopes].add(name);
-    Object.defineProperty(this, name, {
-      get: () => {
-        return this.where(scope);
-      },
-    });
+    this[$records][$addScope](name, scope);
   }
 
   removeScope(name) {
-    this[$scopes].delete(validateModelContains('Scope', name, this[$scopes]));
-    delete this[name];
+    this[$records][$removeScope](name);
   }
 
   addRelationship(relationship) {

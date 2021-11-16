@@ -20,5 +20,8 @@ export default symbolizeAll(
   'recordHandler',
   'records',
   'defaultValue',
-  'foreignField'
+  'foreignField',
+  'addScope',
+  'removeScope',
+  'copyScopes'
 );

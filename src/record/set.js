@@ -1,7 +1,11 @@
 import symbols from 'src/symbols';
 import { allEqualBy } from 'src/utils';
+import {
+  validateRecordSetMethod,
+  validateRecordSetContains,
+} from 'src/validation';
 
-const { $recordModel } = symbols;
+const { $recordModel, $scopes, $addScope, $removeScope, $copyScopes } = symbols;
 
 /**
  * An extension of the native Map object. Provides the same API, along with
@@ -9,10 +13,16 @@ const { $recordModel } = symbols;
  */
 class RecordSet extends Map {
   #frozen;
+  #scopes;
 
-  constructor(iterable = []) {
+  constructor({ iterable = [], copyScopesFrom = null } = {}) {
     super();
     for (const [key, value] of iterable) this.set(key, value);
+
+    this.#scopes = new Map();
+    if (copyScopesFrom) {
+      this[$copyScopes](copyScopesFrom);
+    }
     this.#frozen = false;
   }
 
@@ -61,7 +71,7 @@ class RecordSet extends Map {
       .reduce((newMap, [key, value]) => {
         newMap.set(key, callbackFn(value, key, this));
         return newMap;
-      }, new RecordSet())
+      }, new RecordSet({ copyScopesFrom: this }))
       .freeze();
   }
 
@@ -101,7 +111,7 @@ class RecordSet extends Map {
       .reduce((newMap, [key, value]) => {
         if (callbackFn(value, key, this)) newMap.set(key, value);
         return newMap;
-      }, new RecordSet())
+      }, new RecordSet({ copyScopesFrom: this }))
       .freeze();
   }
 
@@ -117,18 +127,19 @@ class RecordSet extends Map {
     const sorted = [...this.entries()].sort(([key1, value1], [key2, value2]) =>
       comparatorFn(value1, value2, key1, key2)
     );
-    return new RecordSet(sorted).freeze();
+    return new RecordSet({ iterable: sorted, copyScopesFrom: this }).freeze();
   }
 
   select(...keys) {
     // TODO: These objects are not Records, but they should be.
-    return new RecordSet(
-      [...this.entries()].map(([key, value]) => {
+    return new RecordSet({
+      iterable: [...this.entries()].map(([key, value]) => {
         const obj = {};
         keys.forEach(key => (obj[key] = value[key]));
         return [key, obj];
-      })
-    ).freeze();
+      }),
+      copyScopesFrom: this,
+    }).freeze();
   }
 
   // groupBy(key)
@@ -169,6 +180,33 @@ class RecordSet extends Map {
   /* istanbul ignore next */
   static get [Symbol.species]() {
     return Map;
+  }
+
+  [$addScope](name, scope) {
+    validateRecordSetMethod('Scope', name, scope, this.#scopes);
+    if (this[name]) throw new Error(`Scope name ${name} is already in use.`);
+
+    this.#scopes.set(name, scope);
+    Object.defineProperty(this, name, {
+      get: () => {
+        return this.where(this.#scopes.get(name));
+      },
+    });
+  }
+
+  [$removeScope](name) {
+    this.#scopes.delete(validateRecordSetContains('Scope', name, this.#scopes));
+    delete this[name];
+  }
+
+  [$copyScopes](otherRecordSet) {
+    otherRecordSet[$scopes].forEach((scope, name) => {
+      this[$addScope](name, scope);
+    });
+  }
+
+  get [$scopes]() {
+    return this.#scopes;
   }
 }
 

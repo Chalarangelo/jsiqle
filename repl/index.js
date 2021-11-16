@@ -69,6 +69,7 @@ const snippetB = snippet.add({
   description: 'description of snippetB',
   code: 'console.log("Hello World!");',
   tags: ['cool'],
+  papaya: 'banana',
 });
 
 const categoryA = category.add({

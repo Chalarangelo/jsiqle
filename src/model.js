@@ -1,7 +1,6 @@
 import { Field, RelationshipField } from 'src/field';
 import { Relationship } from 'src/relationship';
 import { Record, RecordSet, RecordHandler } from 'src/record';
-import types from 'src/types';
 import symbols from 'src/symbols';
 import { deepClone } from 'src/utils';
 import {
@@ -18,7 +17,6 @@ const {
   $relationships,
   $records,
   $recordHandler,
-  $defaultValue,
   $addScope,
   $removeScope,
 } = symbols;
@@ -33,7 +31,6 @@ export class Model {
     relationships = {},
     // hooks,
     // validations,
-    // indexes,
   } = {}) {
     this.name = validateName('Model', name);
 
@@ -141,33 +138,33 @@ export class Model {
         `${this.name} record with key ${newRecordKey} already exists.`
       );
 
-    const newRecord = deepClone(record);
-    const newRecordFields = new Set(Object.keys(newRecord));
-    this[$fields].forEach(field => {
-      const isFieldNil = types.nil(newRecord[field.name]);
-      // Set the default value if the field is null or undefined
-      if (field.required && isFieldNil)
-        newRecord[field.name] = field[$defaultValue];
-      // Throw an error if the field value is invalid
-      if (!field.validate(newRecord[field.name])) {
-        throw new Error(
-          `${this.name} record has invalid value for field ${field.name}.`
-        );
-      }
-      newRecordFields.delete(field.name);
-    });
-    newRecordFields.delete(this[$key].name);
+    const clonedRecord = deepClone(record);
+    const extraFields = Object.keys(clonedRecord).filter(
+      key => !this[$fields].has(key) && key !== this[$key].name
+    );
 
-    if (newRecordFields.size > 0)
+    if (extraFields.length > 0) {
       console.warn(
-        `${this.name} record has extra fields: ${[...newRecordFields].join(
-          ', '
-        )}.`
+        `${this.name} record has extra fields: ${extraFields.join(', ')}.`
       );
+    }
 
-    const recordObject = new Record(newRecord, this[$recordHandler]);
-    this[$records].set(newRecordKey, recordObject);
-    return recordObject;
+    const newRecord = new Record(
+      {
+        [this[$key].name]: newRecordKey,
+        ...extraFields.reduce(
+          (obj, key) => ({ ...obj, [key]: clonedRecord[key] }),
+          {}
+        ),
+      },
+      this[$recordHandler]
+    );
+    this[$fields].forEach(field => {
+      newRecord[field.name] = clonedRecord[field.name];
+    });
+
+    this[$records].set(newRecordKey, newRecord);
+    return newRecord;
   }
 
   get records() {

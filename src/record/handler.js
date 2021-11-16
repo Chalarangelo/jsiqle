@@ -1,58 +1,9 @@
-import types from 'src/types';
 import symbols from 'src/symbols';
 import { RelationshipField } from 'src/field';
+import { setRecordField, recordToObject } from './utils';
 
-const {
-  $fields,
-  $key,
-  $methods,
-  $relationships,
-  $recordValue,
-  $recordModel,
-  $defaultValue,
-} = symbols;
-
-export const recordToObject = (record, model, handler) => {
-  const recordValue = record[$recordValue];
-  const fields = model[$fields];
-  const key = model[$key].name;
-  const object = {
-    [key]: recordValue[key],
-  };
-
-  fields.forEach(field => {
-    const value = recordValue[field.name];
-    if (value !== undefined) object[field.name] = recordValue[field.name];
-  });
-
-  const toObject = ({ include = [] } = {}) => {
-    let result = object;
-
-    // e.g. include: ['category', 'siblings.category']
-    const included = include.map(name => {
-      const [field, ...props] = name.split('.');
-      return [field, props.join('.')];
-    });
-
-    included.forEach(([includedField, props]) => {
-      if (object[includedField]) {
-        if (Array.isArray(object[includedField])) {
-          const records = handler.get(record, includedField);
-          object[includedField] = records.map(record =>
-            record.toObject({ include: [props] })
-          );
-        } else {
-          object[includedField] = handler
-            .get(record, includedField)
-            .toObject({ include: [props] });
-        }
-      }
-    });
-    return result;
-  };
-
-  return toObject;
-};
+const { $fields, $key, $methods, $relationships, $recordValue, $recordModel } =
+  symbols;
 
 class RecordHandler {
   constructor(model) {
@@ -79,21 +30,16 @@ class RecordHandler {
   set(record, property, value) {
     const recordValue = record[$recordValue];
     if (this.model[$fields].has(property)) {
-      const field = this.model[$fields].get(property);
-      const isFieldNil = types.nil(recordValue[property]);
-      // Set the default value if the field is null or undefined
-      if (field.required && isFieldNil)
-        recordValue[field.name] = field[$defaultValue];
-      // Throw an error if the field value is invalid
-      if (!field.validate(recordValue[field.name])) {
-        throw new Error(
-          `${this.name} record has invalid value for field ${field.name}.`
-        );
-      }
+      setRecordField(
+        this.model.name,
+        recordValue,
+        this.model[$fields].get(property),
+        value
+      );
     } else {
       console.warn(`${this.name} record has extra field: ${property}.`);
+      recordValue[property] = value;
     }
-    recordValue[property] = value;
     return true;
   }
 }

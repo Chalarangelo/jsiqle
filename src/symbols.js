@@ -18,7 +18,6 @@ export default symbolizeAll(
   'recordModel',
   'recordValue',
   'recordHandler',
-  'records',
   'defaultValue',
   'foreignField',
   'addScope',

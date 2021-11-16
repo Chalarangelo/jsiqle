@@ -174,14 +174,13 @@ export class Model {
         )}.`
       );
 
-    this[$records].set(newRecordKey, newRecord);
-    return new Record(newRecord, this[$recordHandler]);
+    const recordObject = new Record(newRecord, this[$recordHandler]);
+    this[$records].set(newRecordKey, recordObject);
+    return recordObject;
   }
 
   get records() {
-    return this[$records].map(
-      object => new Record(object, this[$recordHandler])
-    );
+    return this[$records];
   }
 
   getField(name) {

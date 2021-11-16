@@ -1,0 +1,29 @@
+import symbols from 'src/symbols';
+
+const { $recordTag } = symbols;
+
+export default class PartialRecord {
+  #tag;
+
+  constructor(value, tag) {
+    Object.keys(value).forEach(key => {
+      this[key] = value[key];
+    });
+    this.#tag = tag;
+  }
+
+  get [$recordTag]() {
+    return this.#tag;
+  }
+
+  get [Symbol.toStringTag]() {
+    return this[$recordTag];
+  }
+
+  toObject() {
+    return Object.keys(this).reduce((obj, key) => {
+      obj[key] = this[key];
+      return obj;
+    }, {});
+  }
+}

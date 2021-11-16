@@ -4,8 +4,16 @@ import {
   validateRecordSetMethod,
   validateRecordSetContains,
 } from 'src/validation';
+import PartialRecord from './partial';
 
-const { $recordModel, $scopes, $addScope, $removeScope, $copyScopes } = symbols;
+const {
+  $recordModel,
+  $recordTag,
+  $scopes,
+  $addScope,
+  $removeScope,
+  $copyScopes,
+} = symbols;
 
 /**
  * An extension of the native Map object. Provides the same API, along with
@@ -131,16 +139,17 @@ class RecordSet extends Map {
   }
 
   select(...keys) {
-    // TODO: These objects are not Records, but they should be.
     return new RecordSet({
       iterable: [...this.entries()].map(([key, value]) => {
         const obj = {};
         keys.forEach(key => (obj[key] = value[key]));
-        return [key, obj];
+        return [key, new PartialRecord(obj, value[$recordTag])];
       }),
       copyScopesFrom: this,
     }).freeze();
   }
+
+  // pluck(...keys)
 
   // groupBy(key)
 

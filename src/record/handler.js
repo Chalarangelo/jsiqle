@@ -94,6 +94,7 @@ class RecordHandler {
       console.warn(`${this.name} record has extra field: ${property}.`);
     }
     recordValue[property] = value;
+    return true;
   }
 }
 

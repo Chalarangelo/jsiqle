@@ -21,9 +21,7 @@ export default class PartialRecord {
   }
 
   toObject() {
-    return Object.keys(this).reduce((obj, key) => {
-      obj[key] = this[key];
-      return obj;
-    }, {});
+    return { ...this };
+  }
   }
 }

@@ -170,7 +170,8 @@ class RecordSet extends Map {
   // groupBy(key)
 
   get first() {
-    return [...this.entries()].shift()[1];
+    for (const [, value] of this) return value;
+    return undefined;
   }
 
   get last() {

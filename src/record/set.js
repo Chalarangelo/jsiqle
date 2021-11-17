@@ -138,6 +138,22 @@ class RecordSet extends Map {
     return new RecordSet({ iterable: sorted, copyScopesFrom: this }).freeze();
   }
 
+  every(callbackFn) {
+    return [...this.entries()].every(([key, value]) =>
+      callbackFn(value, key, this)
+    );
+  }
+
+  some(callbackFn) {
+    return [...this.entries()].some(([key, value]) =>
+      callbackFn(value, key, this)
+    );
+  }
+
+  includes(value) {
+    return this.has(value);
+  }
+
   select(...keys) {
     return new RecordSet({
       iterable: [...this.entries()].map(([key, value]) => {

@@ -27,6 +27,7 @@ export class Model {
   #key;
   #methods;
   #relationships;
+  #validators;
 
   constructor({
     name,
@@ -35,8 +36,8 @@ export class Model {
     methods = {},
     scopes = {},
     relationships = {},
+    validators = {},
     // hooks,
-    // validations,
   } = {}) {
     this.name = validateName('Model', name);
 
@@ -66,6 +67,11 @@ export class Model {
     this.#relationships = new Map();
     Object.keys(relationships).forEach(relationName => {
       this.addRelationship(relationName, relationships[relationName]);
+    });
+
+    this.#validators = new Map();
+    Object.keys(validators).forEach(validatorName => {
+      this.addValidator(validatorName, validators[validatorName]);
     });
   }
 
@@ -167,8 +173,28 @@ export class Model {
       newRecord[field.name] = clonedRecord[field.name];
     });
 
+    this.#validators.forEach((validator, validatorName) => {
+      if (!validator(newRecord, this.#records))
+        throw new Error(
+          `${this.name} record with key ${newRecordKey} failed validation for ${validatorName}.`
+        );
+    });
+
     this.#records.set(newRecordKey, newRecord);
     return newRecord;
+  }
+
+  addValidator(name, validator) {
+    this.#validators.set(
+      name,
+      validateModelMethod('Validator', name, validator, this.#validators)
+    );
+  }
+
+  removeValidator(name) {
+    this.#validators.delete(
+      validateModelContains('Validator', name, this.#validators)
+    );
   }
 
   get records() {

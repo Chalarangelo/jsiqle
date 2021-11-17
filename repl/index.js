@@ -41,6 +41,11 @@ const snippet = new Model({
       defaultValue: [],
     }),
   ],
+  validators: {
+    uniqueDescription: (snippet, snippets) => {
+      return !snippets.some(s => s.description === snippet.description);
+    },
+  },
 });
 
 const category = new Model({

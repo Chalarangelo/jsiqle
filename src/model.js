@@ -229,11 +229,6 @@ export class Model {
   get [$relationships]() {
     return this.#relationships;
   }
-
-  // Iterator
-  // Batch iterator (configurable batch size)
-  // Limit
-  // Offset
 }
 
 export default Model;

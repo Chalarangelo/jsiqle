@@ -234,6 +234,43 @@ class RecordSet extends Map {
   get [$scopes]() {
     return this.#scopes;
   }
+
+  *batchIterator(batchSize) {
+    let batch = [];
+    for (const [key, value] of this) {
+      batch.push([key, value]);
+      if (batch.length === batchSize) {
+        yield batch;
+        batch = [];
+      }
+    }
+    if (batch.length) yield batch;
+  }
+
+  limit(n) {
+    let records = [];
+    for (const [key, value] of this) {
+      records.push([key, value]);
+      if (records.length === n) break;
+    }
+    return new RecordSet({
+      iterable: records,
+      copyScopesFrom: this,
+    }).freeze();
+  }
+
+  offset(n) {
+    let counter = 0;
+    let records = [];
+    for (const [key, value] of this) {
+      if (counter < n) counter++;
+      else records.push([key, value]);
+    }
+    return new RecordSet({
+      iterable: records,
+      copyScopesFrom: this,
+    }).freeze();
+  }
 }
 
 export default RecordSet;

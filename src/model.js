@@ -32,7 +32,7 @@ export class Model {
   constructor({
     name,
     fields,
-    key,
+    key = 'id',
     methods = {},
     scopes = {},
     relationships = {},

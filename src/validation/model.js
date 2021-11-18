@@ -2,12 +2,14 @@ import { DuplicationError } from 'src/errors';
 import { Key } from 'src/field';
 
 export const validateModelKey = (modelName, key, fields) => {
-  if (!(key instanceof Key)) throw new TypeError(`Key ${key} is not a Key.`);
-  if (fields.has(key))
+  const _key = typeof key === 'string' ? new Key(key) : key;
+  if (!(_key instanceof Key))
+    throw new TypeError(`Key ${_key} is not a Key or string.`);
+  if (fields.has(_key))
     throw new DuplicationError(
-      `Model ${modelName} already has a field named ${key}.`
+      `Model ${modelName} already has a field named ${_key.name}.`
     );
-  return key;
+  return _key;
 };
 
 export const validateModelMethod = (

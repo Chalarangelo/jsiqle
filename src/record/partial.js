@@ -23,5 +23,8 @@ export default class PartialRecord {
   toObject() {
     return { ...this };
   }
+
+  toJSON() {
+    return this.toObject();
   }
 }

@@ -29,7 +29,7 @@ class RecordHandler {
       return this.model[$methods].get(property)(recordValue);
     if (this.model[$relationships].has(property))
       return this.model[$relationships].get(property).get(recordValue);
-    if (property === 'toObject')
+    if (property === 'toObject' || property === 'toJSON')
       return recordToObject(record, this.model, this);
     if (property === $recordModel) return record[$recordModel];
     if (property === $recordTag) return record[$recordTag];

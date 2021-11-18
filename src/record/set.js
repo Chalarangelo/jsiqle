@@ -271,6 +271,13 @@ class RecordSet extends Map {
       copyScopesFrom: this,
     }).freeze();
   }
+
+  toJSON() {
+    return [...this.entries()].reduce((obj, [key, value]) => {
+      obj[key] = value;
+      return obj;
+    }, {});
+  }
 }
 
 export default RecordSet;

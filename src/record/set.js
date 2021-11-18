@@ -6,6 +6,7 @@ import {
 } from 'src/validation';
 import PartialRecord from './partial';
 import RecordFragment from './fragment';
+import RecordGroup from './group';
 
 const {
   $recordModel,
@@ -14,6 +15,8 @@ const {
   $addScope,
   $removeScope,
   $copyScopes,
+  $isRecord,
+  $key,
 } = symbols;
 
 /**
@@ -177,6 +180,32 @@ class RecordSet extends Map {
   }
 
   // groupBy(key)
+  groupBy(key) {
+    const res = new RecordSet({ copyScopesFrom: this, iterable: [] });
+    for (const [recordKey, value] of this.entries()) {
+      let keyValue = value[key];
+      if (keyValue !== undefined && keyValue !== null && keyValue[$isRecord]) {
+        keyValue = value[key][$key];
+      }
+      if (!res.has(keyValue)) {
+        res.set(
+          keyValue,
+          new RecordGroup({
+            copyScopesFrom: this,
+            iterable: [],
+            groupName: keyValue,
+          })
+        );
+      }
+      res.get(keyValue).set(recordKey, value);
+    }
+
+    for (const value of res.values()) {
+      value.freeze();
+    }
+
+    return res.freeze();
+  }
 
   get first() {
     for (const [, value] of this) return value;

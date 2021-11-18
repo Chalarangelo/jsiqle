@@ -25,4 +25,5 @@ export default symbolizeAll(
   'removeScope',
   'copyScopes',
   'isRecord',
+  'groupTag'
 );

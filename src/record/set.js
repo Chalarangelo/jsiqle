@@ -5,6 +5,7 @@ import {
   validateRecordSetContains,
 } from 'src/validation';
 import PartialRecord from './partial';
+import RecordFragment from './fragment';
 
 const {
   $recordModel,
@@ -165,7 +166,15 @@ class RecordSet extends Map {
     }).freeze();
   }
 
-  // pluck(...keys)
+  pluck(...keys) {
+    return new RecordSet({
+      iterable: [...this.entries()].map(([key, value]) => {
+        const values = keys.map(key => value[key]);
+        return [key, new RecordFragment(values, value[$recordTag])];
+      }),
+      copyScopesFrom: this,
+    }).freeze();
+  }
 
   // groupBy(key)
 

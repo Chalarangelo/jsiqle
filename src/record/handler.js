@@ -10,6 +10,7 @@ const {
   $recordValue,
   $recordModel,
   $recordTag,
+  $isRecord,
 } = symbols;
 
 class RecordHandler {
@@ -33,6 +34,11 @@ class RecordHandler {
       return recordToObject(record, this.model, this);
     if (property === $recordModel) return record[$recordModel];
     if (property === $recordTag) return record[$recordTag];
+    if (property === $isRecord) return true;
+    if (property === $key) return recordValue[this.model[$key].name];
+    if (property === 'toString')
+      return () => recordValue[this.model[$key].name];
+    return undefined;
   }
 
   set(record, property, value) {

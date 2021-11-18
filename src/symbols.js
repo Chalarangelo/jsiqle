@@ -23,5 +23,6 @@ export default symbolizeAll(
   'foreignField',
   'addScope',
   'removeScope',
-  'copyScopes'
+  'copyScopes',
+  'isRecord',
 );

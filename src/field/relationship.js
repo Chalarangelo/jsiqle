@@ -12,8 +12,8 @@ export class RelationshipField extends Field {
       relationType === 'oneToMany' || relationType === 'manyToMany';
     const foreignField = relationship[$foreignField];
     const type = isMultiple
-      ? types.arrayOf(value => foreignField.validate(value))
-      : value => foreignField.validate(value);
+      ? types.arrayOf(value => foreignField.typeCheck(value))
+      : value => foreignField.typeCheck(value);
 
     super({
       name,

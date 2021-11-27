@@ -36,9 +36,7 @@ class Field {
   get [$defaultValue]() {
     return this.#defaultValue;
   }
-
-  // TODO: Name this something different, such as 'typeCheck'
-  validate(value) {
+  typeCheck(value) {
     return this.#type(value);
   }
 }

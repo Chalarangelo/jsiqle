@@ -87,7 +87,7 @@ export class Model {
     const isRetrofillFunction = typeof retrofill === 'function';
     this.#records.forEach(record => {
       record[field.name] = isRetrofillFunction ? retrofill(record) : retrofill;
-      if (!field.validate(record[field.name])) {
+      if (!field.typeCheck(record[field.name])) {
         throw new Error(
           `${this.name} record has invalid value for field ${field.name}.`
         );

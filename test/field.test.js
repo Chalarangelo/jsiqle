@@ -42,13 +42,13 @@ describe('Field', () => {
     });
 
     it('correctly checks values based on the given type', () => {
-      expect(field.validate('test')).toBe(true);
-      expect(field.validate('test2')).toBe(false);
+      expect(field.typeCheck('test')).toBe(true);
+      expect(field.typeCheck('test2')).toBe(false);
     });
 
     it('correctly checks empty values', () => {
-      expect(field.validate(null)).toBe(true);
-      expect(field.validate(undefined)).toBe(true);
+      expect(field.typeCheck(null)).toBe(true);
+      expect(field.typeCheck(undefined)).toBe(true);
     });
 
     describe('when the field is required', () => {
@@ -86,13 +86,13 @@ describe('Field', () => {
       });
 
       it('correctly checks values based on the given type', () => {
-        expect(field.validate('test')).toBe(true);
-        expect(field.validate('test2')).toBe(false);
+        expect(field.typeCheck('test')).toBe(true);
+        expect(field.typeCheck('test2')).toBe(false);
       });
 
       it('correctly checks empty values', () => {
-        expect(field.validate(null)).toBe(false);
-        expect(field.validate(undefined)).toBe(false);
+        expect(field.typeCheck(null)).toBe(false);
+        expect(field.typeCheck(undefined)).toBe(false);
       });
     });
   });
@@ -111,7 +111,7 @@ describe('Field', () => {
         expect(field).toBeInstanceOf(Field);
         expect(field.name).toBe('myField');
         expect(field.required).toBe(false);
-        expect(field.validate(standardType.defaultValue)).toBe(true);
+        expect(field.typeCheck(standardType.defaultValue)).toBe(true);
       }
     );
 
@@ -125,7 +125,7 @@ describe('Field', () => {
         expect(field).toBeInstanceOf(Field);
         expect(field.name).toBe('myField');
         expect(field[$defaultValue]).toBe(standardType.defaultValue);
-        expect(field.validate(standardType.defaultValue)).toBe(true);
+        expect(field.typeCheck(standardType.defaultValue)).toBe(true);
       }
     );
 
@@ -141,7 +141,7 @@ describe('Field', () => {
         expect(field.name).toBe('myField');
         expect(field.required).toBe(true);
         expect(field[$defaultValue]).toBe(standardType.defaultValue);
-        expect(field.validate(standardType.defaultValue)).toBe(true);
+        expect(field.typeCheck(standardType.defaultValue)).toBe(true);
       }
     );
 
@@ -156,7 +156,7 @@ describe('Field', () => {
         expect(field.name).toBe('myField');
         expect(field.required).toBe(true);
         expect(field[$defaultValue]).toBe(standardType.defaultValue);
-        expect(field.validate(standardType.defaultValue)).toBe(true);
+        expect(field.typeCheck(standardType.defaultValue)).toBe(true);
       }
     );
   });
@@ -175,8 +175,8 @@ describe('Field', () => {
       expect(field).toBeInstanceOf(Field);
       expect(field.name).toBe('myField');
       expect(field.required).toBe(false);
-      expect(field.validate('a')).toBe(true);
-      expect(field.validate('c')).toBe(false);
+      expect(field.typeCheck('a')).toBe(true);
+      expect(field.typeCheck('c')).toBe(false);
     });
 
     it('enumRequired accepts a valid object and returns a Field of the appropriate type', () => {
@@ -189,8 +189,8 @@ describe('Field', () => {
       expect(field.name).toBe('myField');
       expect(field.required).toBe(true);
       expect(field[$defaultValue]).toBe('b');
-      expect(field.validate('a')).toBe(true);
-      expect(field.validate('c')).toBe(false);
+      expect(field.typeCheck('a')).toBe(true);
+      expect(field.typeCheck('c')).toBe(false);
     });
 
     it('enumRequired accepts a valid object without defaultValue and returns a Field of the appropriate type', () => {
@@ -202,8 +202,8 @@ describe('Field', () => {
       expect(field.name).toBe('myField');
       expect(field.required).toBe(true);
       expect(field[$defaultValue]).toBe('a');
-      expect(field.validate('a')).toBe(true);
-      expect(field.validate('c')).toBe(false);
+      expect(field.typeCheck('a')).toBe(true);
+      expect(field.typeCheck('c')).toBe(false);
     });
 
     it('auto accepts a string as a name and returns a Field of the appropriate type', () => {

@@ -7,7 +7,7 @@ export const setRecordField = (modelName, record, field, value) => {
   // Set the default value if the field is null or undefined
   const recordValue =
     field.required && types.nil(value) ? field[$defaultValue] : value;
-  if (!field.validate(recordValue))
+  if (!field.typeCheck(recordValue))
     // Throw an error if the field value is invalid
     throw new Error(
       `${modelName} record has invalid value for field ${field.name}.`

@@ -14,12 +14,7 @@ class Field {
   #required;
   #type;
 
-  constructor(
-    { name, type, required = false, defaultValue = null } = {
-      required: false,
-      defaultValue: null,
-    }
-  ) {
+  constructor({ name, type, required = false, defaultValue = null }) {
     this.#name = validateName('Field', name);
     this.#required = validateFieldRequired(required);
     this.#type = validateFieldType(type, required);

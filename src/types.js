@@ -77,6 +77,21 @@ export default {
   nil: isNil,
 };
 
+export const standardTypes = {
+  boolean: { type: isBoolean, defaultValue: false },
+  number: { type: isNumber, defaultValue: 0 },
+  positiveNumber: { type: and(isNumber, isPositive), defaultValue: 0 },
+  string: { type: isString, defaultValue: '' },
+  date: { type: isDate, defaultValue: new Date() },
+  stringOrNumber: { type: or(isString, isNumber), defaultValue: '' },
+  numberOrString: { type: or(isString, isNumber), defaultValue: 0 },
+  booleanArray: { type: isArrayOf(isBoolean), defaultValue: [] },
+  numberArray: { type: isArrayOf(isNumber), defaultValue: [] },
+  stringArray: { type: isArrayOf(isString), defaultValue: [] },
+  dateArray: { type: isArrayOf(isDate), defaultValue: [] },
+  object: { type: isObject({}), defaultValue: {} },
+};
+
 // Internal types
 const isNonEmptyString = val => val.trim().length !== 0;
 export const key = and(isString, isNonEmptyString);

@@ -65,6 +65,4 @@ Field.auto = options => {
 };
 
 export { Field };
-
-export { createKey } from './key';
 export { default as RelationshipField } from './relationship';

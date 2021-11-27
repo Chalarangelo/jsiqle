@@ -13,6 +13,8 @@ import {
 const {
   $fields,
   $key,
+  $keyType,
+  $defaultValue,
   $methods,
   $relationships,
   $recordHandler,
@@ -140,9 +142,12 @@ export class Model {
   add(record) {
     if (!record) throw new Error('Record is required');
 
-    const newRecordKey = record[this.#key.name];
-    if (newRecordKey === undefined)
-      throw new Error(`${this.name} record has no key.`);
+    let newRecordKey = record[this.#key.name];
+    if (this.#key[$keyType] === 'string' && !this.#key.typeCheck(newRecordKey))
+      throw new Error(
+        `${this.name} record has invalid value for key ${this.#key.name}.`
+      );
+    if (this.#key[$keyType] === 'auto') newRecordKey = this.#key[$defaultValue];
     if (this.#records.has(newRecordKey))
       throw new Error(
         `${this.name} record with key ${newRecordKey} already exists.`

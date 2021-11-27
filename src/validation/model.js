@@ -1,11 +1,18 @@
 import { DuplicationError } from 'src/errors';
-import { Key } from 'src/field';
+import { createKey } from 'src/field';
 
 export const validateModelKey = (modelName, key, fields) => {
-  const _key = typeof key === 'string' ? new Key(key) : key;
-  if (!(_key instanceof Key))
-    throw new TypeError(`Key ${_key} is not a Key or string.`);
-  if (fields.has(_key))
+  if (typeof key !== 'string' && typeof key !== 'object')
+    throw new TypeError(`Key ${key} is not a string or object.`);
+
+  if (typeof key === 'object' && !key.name)
+    throw new TypeError(`Key ${key} is missing a name.`);
+
+  if (typeof key === 'object' && !['auto', 'string'].includes(key.type))
+    throw new TypeError(`Key ${key} type must be either "string" or "auto".`);
+
+  const _key = createKey(key);
+  if (fields.has(_key.name))
     throw new DuplicationError(
       `Model ${modelName} already has a field named ${_key.name}.`
     );

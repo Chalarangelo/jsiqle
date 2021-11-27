@@ -1,10 +1,10 @@
 import symbols from 'src/symbols';
 import {
-  validateName,
   validateFieldType,
   validateFieldRequired,
   validateFieldDefaultValue,
-} from 'src/validation';
+} from 'src/utils';
+import { validateName } from 'src/validation';
 
 const { $defaultValue } = symbols;
 
@@ -36,6 +36,7 @@ class Field {
   get [$defaultValue]() {
     return this.#defaultValue;
   }
+
   typeCheck(value) {
     return this.#type(value);
   }

@@ -2,13 +2,16 @@ import { Field, RelationshipField } from 'src/field';
 import { Relationship } from 'src/relationship';
 import { Record, RecordSet, RecordHandler } from 'src/record';
 import symbols from 'src/symbols';
-import { deepClone } from 'src/utils';
 import {
-  validateName,
-  validateModelKey,
+  deepClone,
+  parseModelKey,
+  parseModelField,
   validateModelMethod,
   validateModelContains,
-} from 'src/validation';
+  applyModelFieldRetrofill,
+} from 'src/utils';
+
+import { validateName } from 'src/validation';
 
 const {
   $fields,
@@ -53,7 +56,7 @@ export class Model {
     fields.forEach(field => this.addField(field));
 
     // Check and create the key field
-    this.#key = validateModelKey(this.name, key, this.#fields);
+    this.#key = parseModelKey(this.name, key, this.#fields);
 
     // Add methods, checking for duplicates and invalids
     this.#methods = new Map();
@@ -77,24 +80,17 @@ export class Model {
     });
   }
 
-  addField(field, retrofill) {
-    if (!(field instanceof Field))
-      throw new Error(`Field ${field} is not a Field.`);
-    if (this.#fields.has(field.name))
-      throw new Error(`Duplicate field name ${field.name}.`);
-
-    this.#fields.set(field.name, field);
+  addField(fieldOptions, retrofill) {
+    const field = parseModelField(
+      this.name,
+      fieldOptions,
+      this.#fields,
+      this.#key
+    );
+    this.#fields.set(fieldOptions.name, field);
 
     // Retrofill records with new fields
-    const isRetrofillFunction = typeof retrofill === 'function';
-    this.#records.forEach(record => {
-      record[field.name] = isRetrofillFunction ? retrofill(record) : retrofill;
-      if (!field.typeCheck(record[field.name])) {
-        throw new Error(
-          `${this.name} record has invalid value for field ${field.name}.`
-        );
-      }
-    });
+    applyModelFieldRetrofill(this.name, field, this.#records, retrofill);
   }
 
   removeField(name) {
@@ -102,8 +98,6 @@ export class Model {
   }
 
   updateField(name, field) {
-    if (!(field instanceof Field))
-      throw new Error(`Field ${field} is not a Field.`);
     if (field.name !== name)
       throw new Error(`Field name ${field.name} does not match ${name}.`);
     this.removeField(name);

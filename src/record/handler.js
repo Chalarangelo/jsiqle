@@ -1,6 +1,6 @@
 import symbols from 'src/symbols';
 import { RelationshipField } from 'src/field';
-import { setRecordField, recordToObject } from './utils';
+import { setRecordField, recordToObject } from 'src/utils';
 
 const {
   $fields,

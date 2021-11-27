@@ -4,4 +4,3 @@ export { default as RecordFragment } from './fragment';
 export { default as RecordGroup } from './group';
 export { default as RecordHandler } from './handler';
 export { default as RecordSet } from './set';
-export * from './utils';

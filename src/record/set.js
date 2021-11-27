@@ -1,9 +1,9 @@
 import symbols from 'src/symbols';
-import { allEqualBy } from 'src/utils';
 import {
+  allEqualBy,
   validateRecordSetMethod,
   validateRecordSetContains,
-} from 'src/validation';
+} from 'src/utils';
 import PartialRecord from './partial';
 import RecordFragment from './fragment';
 import RecordGroup from './group';

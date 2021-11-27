@@ -1,5 +1,5 @@
 import { Field } from 'src/field';
-import { standardTypes } from 'src/types';
+import types, { standardTypes } from 'src/types';
 import symbols from 'src/symbols';
 
 const { $defaultValue } = symbols;
@@ -95,6 +95,36 @@ describe('Field', () => {
         expect(field.typeCheck(undefined)).toBe(false);
       });
     });
+
+    // Indirectly cover any leftover types
+    describe('with "objectOf" type', () => {
+      beforeEach(() => {
+        field = new Field({
+          name: 'myField',
+          type: types.objectOf(types.number),
+        });
+      });
+
+      it('correctly checks values based on the given type', () => {
+        expect(field.typeCheck({ a: 1, b: 2 })).toBe(true);
+        expect(field.typeCheck({ a: '1', b: 2 })).toBe(false);
+      });
+    });
+
+    describe('with "object" type', () => {
+      beforeEach(() => {
+        field = new Field({
+          name: 'myField',
+          type: types.object({ name: types.string }),
+        });
+      });
+
+      it('correctly checks values based on the given type', () => {
+        expect(field.typeCheck({ name: 'a' })).toBe(true);
+        expect(field.typeCheck({ name: 1 })).toBe(false);
+        expect(field.typeCheck({ name: 'a', b: 1 })).toBe(false);
+      });
+    });
   });
 
   describe('standard types', () => {
@@ -142,6 +172,7 @@ describe('Field', () => {
         expect(field.required).toBe(true);
         expect(field[$defaultValue]).toBe(standardType.defaultValue);
         expect(field.typeCheck(standardType.defaultValue)).toBe(true);
+        expect(field.typeCheck(null)).toBe(false);
       }
     );
 
@@ -157,6 +188,7 @@ describe('Field', () => {
         expect(field.required).toBe(true);
         expect(field[$defaultValue]).toBe(standardType.defaultValue);
         expect(field.typeCheck(standardType.defaultValue)).toBe(true);
+        expect(field.typeCheck(null)).toBe(false);
       }
     );
   });

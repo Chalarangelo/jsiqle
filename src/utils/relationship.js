@@ -1,18 +1,29 @@
 import { Field } from 'src/field';
 import { DefaultValueError } from 'src/errors';
-import relationshipTypes, { toMany } from 'src/relationship/types';
 import types from 'src/types';
 import symbols from 'src/symbols';
 import { Model } from 'src/model';
 
 const { $defaultValue, $relationshipType } = symbols;
 
+const relationshipEnum = {
+  oneToOne: 'oneToOne',
+  oneToMany: 'oneToMany',
+  manyToOne: 'manyToOne',
+  manyToMany: 'manyToMany',
+};
+
+export const isToOne = type =>
+  [relationshipEnum.oneToOne, relationshipEnum.manyToOne].includes(type);
+export const isToMany = type =>
+  [relationshipEnum.oneToMany, relationshipEnum.manyToMany].includes(type);
+
 export const createRelationshipField = (
   name,
   relationshipType,
   foreignField
 ) => {
-  const isMultiple = toMany.includes(relationshipType);
+  const isMultiple = isToMany(relationshipType);
   const type = isMultiple
     ? types.arrayOf(value => foreignField.typeCheck(value))
     : value => foreignField.typeCheck(value);
@@ -42,7 +53,7 @@ export const createRelationshipField = (
 };
 
 export const validateRelationshipType = relationshipType => {
-  if (!relationshipTypes.includes(relationshipType))
+  if (!Object.values(relationshipEnum).includes(relationshipType))
     throw new Error(`Invalid relationship type: ${relationshipType}`);
   return relationshipType;
 };

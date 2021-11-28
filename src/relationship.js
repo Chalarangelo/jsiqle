@@ -1,10 +1,11 @@
-import { toMany, toOne } from './types';
 import {
   validateName,
   validateRelationshipType,
   validateRelationshipModel,
   validateRelationshipForeignKey,
   createRelationshipField,
+  isToOne,
+  isToMany,
 } from 'src/utils';
 import symbols from 'src/symbols';
 
@@ -30,9 +31,9 @@ export class Relationship {
   }
 
   get(record) {
-    if (toOne.includes(this.#type)) {
+    if (isToOne(this.#type)) {
       return this.#model.records.get(record[this.#name]);
-    } else if (toMany.includes(this.#type)) {
+    } else if (isToMany(this.#type)) {
       return this.#model.records.where(associatedRecord =>
         record[this.#name].includes(associatedRecord[this.#foreignKey])
       );

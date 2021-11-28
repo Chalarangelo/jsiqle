@@ -1,5 +1,11 @@
 import { NameError } from 'src/errors';
 
+const restrictedNames = {
+  Field: ['toString', 'toObject', 'toJSON'],
+  Model: ['toString', 'toObject', 'toJSON'],
+  Relationship: ['toString', 'toObject', 'toJSON'],
+};
+
 /**
  * Validates the name of a field or model.
  * Restrictiorns:
@@ -8,12 +14,14 @@ import { NameError } from 'src/errors';
  * - Must not start with a number
  * - Must contain only alphanumeric characters, numbers or underscores
  * @param {string} name The name of the field or model to validate.
+ * @param {Array<string>} restrictedNames An array of restricted names.
  * @returns {boolean} Whether the name is valid.
  */
-const isValidName = name => {
+const isValidName = (name, restrictedNames) => {
   if (typeof name !== 'string') return [false, 'must be a string'];
   if (!name) return [false, 'is required'];
   if (/^\d/.test(name)) return [false, 'cannot start with a number'];
+  if (restrictedNames.includes(name)) return [false, 'is reserved'];
   return [
     /^\w+$/.test(name),
     'must contain only alphanumeric characters, numbers or underscores',
@@ -32,10 +40,8 @@ const isValidName = name => {
  * @throws {NameError} If the name is invalid.
  * @returns {boolean} Whether the name is valid.
  */
-const validateName = (objectType, name) => {
-  const [isValid, message] = isValidName(name);
+export const validateName = (objectType, name) => {
+  const [isValid, message] = isValidName(name, restrictedNames[objectType]);
   if (!isValid) throw new NameError(`${objectType} name ${message}.`);
   return name;
 };
-
-export default validateName;

@@ -1,6 +1,6 @@
 import { toMany, toOne } from './types';
-import { validateName } from 'src/validation';
 import {
+  validateName,
   validateRelationshipType,
   validateRelationshipModel,
   validateRelationshipForeignKey,

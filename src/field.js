@@ -1,10 +1,10 @@
 import symbols from 'src/symbols';
 import {
+  validateName,
   validateFieldType,
   validateFieldRequired,
   validateFieldDefaultValue,
 } from 'src/utils';
-import { validateName } from 'src/validation';
 import types, { standardTypes } from 'src/types';
 
 const { $defaultValue } = symbols;

@@ -5,12 +5,11 @@ import {
   parseModelKey,
   parseModelField,
   parseModelRelationship,
+  validateName,
   validateModelMethod,
   validateModelContains,
   applyModelFieldRetrofill,
 } from 'src/utils';
-
-import { validateName } from 'src/validation';
 
 const {
   $fields,

@@ -4,22 +4,29 @@ import {
   validateRelationshipType,
   validateRelationshipModel,
   validateRelationshipForeignKey,
+  createRelationshipField,
 } from 'src/utils';
 import symbols from 'src/symbols';
 
-const { $foreignField } = symbols;
+const { $relationshipField } = symbols;
 
 export class Relationship {
   #name;
   #type;
   #model;
   #foreignKey;
+  #relationshipField;
 
   constructor({ name, type, model, foreignKey } = {}) {
     this.#name = validateName('Relationship', name);
     this.#type = validateRelationshipType(type);
     this.#model = validateRelationshipModel(model);
     this.#foreignKey = validateRelationshipForeignKey(foreignKey, model);
+    this.#relationshipField = createRelationshipField(
+      this.#name,
+      this.#type,
+      this.#model.getField(this.#foreignKey)
+    );
   }
 
   get(record) {
@@ -40,8 +47,8 @@ export class Relationship {
     return this.#type;
   }
 
-  get [$foreignField]() {
-    return this.#model.getField(this.#foreignKey);
+  get [$relationshipField]() {
+    return this.#relationshipField;
   }
 }
 

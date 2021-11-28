@@ -1,11 +1,10 @@
 import { Field } from 'src/field';
 import { Relationship } from 'src/relationship';
 import { DuplicationError, DefaultValueError } from 'src/errors';
-import types, { standardTypes, key } from 'src/types';
+import { standardTypes, key } from 'src/types';
 import symbols from 'src/symbols';
-import { toMany } from 'src/relationship/types';
 
-const { $defaultValue, $keyType, $foreignField, $relationshipType } = symbols;
+const { $defaultValue, $keyType } = symbols;
 
 const allStandardTypes = [
   ...Object.keys(standardTypes),
@@ -49,38 +48,6 @@ const createKey = options => {
   });
 
   return keyField;
-};
-
-const createRelationshipField = relationship => {
-  const { name, type: relationshipType } = relationship;
-  const isMultiple = toMany.includes(relationshipType);
-  const foreignField = relationship[$foreignField];
-  const type = isMultiple
-    ? types.arrayOf(value => foreignField.typeCheck(value))
-    : value => foreignField.typeCheck(value);
-
-  const relationshipField = new Field({
-    name,
-    type,
-    required: false,
-    defaultValue: null,
-  });
-  // Override the default value to throw an error
-  Object.defineProperty(relationshipField, $defaultValue, {
-    get() {
-      throw new DefaultValueError(
-        'Relationship field does not have a default value.'
-      );
-    },
-  });
-  // Additional property to get the type from the record handler
-  Object.defineProperty(relationshipField, $relationshipType, {
-    get() {
-      return relationship.type;
-    },
-  });
-
-  return relationshipField;
 };
 
 export const parseModelKey = (modelName, key, fields) => {
@@ -138,10 +105,7 @@ export const parseModelRelationship = (
       `Model ${modelName} already has a field named ${relationship.name}.`
     );
 
-  const _relationship = new Relationship(relationship);
-  const relationshipField = createRelationshipField(_relationship);
-
-  return [_relationship, relationshipField];
+  return new Relationship(relationship);
 };
 
 export const validateModelMethod = (

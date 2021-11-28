@@ -1,5 +1,45 @@
-import relationshipTypes from 'src/relationship/types';
+import { Field } from 'src/field';
+import { DefaultValueError } from 'src/errors';
+import relationshipTypes, { toMany } from 'src/relationship/types';
+import types from 'src/types';
+import symbols from 'src/symbols';
 import { Model } from 'src/model';
+
+const { $defaultValue, $relationshipType } = symbols;
+
+export const createRelationshipField = (
+  name,
+  relationshipType,
+  foreignField
+) => {
+  const isMultiple = toMany.includes(relationshipType);
+  const type = isMultiple
+    ? types.arrayOf(value => foreignField.typeCheck(value))
+    : value => foreignField.typeCheck(value);
+
+  const relationshipField = new Field({
+    name,
+    type,
+    required: false,
+    defaultValue: null,
+  });
+  // Override the default value to throw an error
+  Object.defineProperty(relationshipField, $defaultValue, {
+    get() {
+      throw new DefaultValueError(
+        'Relationship field does not have a default value.'
+      );
+    },
+  });
+  // Additional property to get the type from the record handler
+  Object.defineProperty(relationshipField, $relationshipType, {
+    get() {
+      return relationshipType;
+    },
+  });
+
+  return relationshipField;
+};
 
 export const validateRelationshipType = relationshipType => {
   if (!relationshipTypes.includes(relationshipType))

@@ -18,6 +18,7 @@ const {
   $defaultValue,
   $methods,
   $relationships,
+  $relationshipField,
   $recordHandler,
   $addScope,
   $removeScope,
@@ -124,13 +125,13 @@ export class Model {
   }
 
   addRelationship(relationshipOptions) {
-    const [relationship, relationshipField] = parseModelRelationship(
+    const relationship = parseModelRelationship(
       this.name,
       relationshipOptions,
       this.#fields,
       this.#key
     );
-    this.#fields.set(relationship.name, relationshipField);
+    this.#fields.set(relationship.name, relationship[$relationshipField]);
     this.#relationships.set(relationship.name, relationship);
   }
 

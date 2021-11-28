@@ -1,10 +1,9 @@
 export const deepClone = obj => {
   if (obj === null) return null;
   let clone = Object.assign({}, obj);
-  Object.keys(clone).forEach(
-    key =>
-      (clone[key] =
-        typeof obj[key] === 'object' ? deepClone(obj[key]) : obj[key])
+  Object.entries(clone).forEach(
+    ([key, value]) =>
+      (clone[key] = typeof obj[key] === 'object' ? deepClone(value) : value)
   );
   if (Array.isArray(obj)) {
     clone.length = obj.length;

@@ -59,25 +59,27 @@ export class Model {
 
     // Add methods, checking for duplicates and invalids
     this.#methods = new Map();
-    Object.keys(methods).forEach(methodName => {
-      this.addMethod(methodName, methods[methodName]);
+    Object.entries(methods).forEach(([methodName, method]) => {
+      this.addMethod(methodName, method);
     });
 
     // Add scopes, checking for duplicates and invalids
-    Object.keys(scopes).forEach(scopeName => {
-      this.addScope(scopeName, scopes[scopeName]);
+    Object.entries(scopes).forEach(([scopeName, scope]) => {
+      this.addScope(scopeName, scope);
     });
 
     // Add relationships, checking for duplicates and invalids
     this.#relationships = new Map();
-    Object.keys(relationships).forEach(relationName => {
-      this.addRelationship(relationName, relationships[relationName]);
-    });
+    Object.entries(relationships).forEach(
+      ([relationshipName, relationship]) => {
+        this.addRelationship(relationshipName, relationship);
+      }
+    );
 
     // Add validators, checking for duplicates and invalids
     this.#validators = new Map();
-    Object.keys(validators).forEach(validatorName => {
-      this.addValidator(validatorName, validators[validatorName]);
+    Object.entries(validators).forEach(([validatorName, validator]) => {
+      this.addValidator(validatorName, validator);
     });
   }
 

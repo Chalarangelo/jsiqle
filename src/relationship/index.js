@@ -1,10 +1,10 @@
 import { toMany, toOne } from './types';
+import { validateName } from 'src/validation';
 import {
-  validateName,
   validateRelationshipType,
   validateRelationshipModel,
   validateRelationshipForeignKey,
-} from 'src/validation';
+} from 'src/utils';
 import symbols from 'src/symbols';
 
 const { $foreignField } = symbols;

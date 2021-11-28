@@ -1,8 +1,47 @@
-import Field from './field';
-import types, { standardTypes } from 'src/types';
 import symbols from 'src/symbols';
+import {
+  validateFieldType,
+  validateFieldRequired,
+  validateFieldDefaultValue,
+} from 'src/utils';
+import { validateName } from 'src/validation';
+import types, { standardTypes } from 'src/types';
 
 const { $defaultValue } = symbols;
+
+class Field {
+  #name;
+  #defaultValue;
+  #required;
+  #type;
+
+  constructor({ name, type, required = false, defaultValue = null }) {
+    this.#name = validateName('Field', name);
+    this.#required = validateFieldRequired(required);
+    this.#type = validateFieldType(type, required);
+    this.#defaultValue = validateFieldDefaultValue(
+      defaultValue,
+      this.#type,
+      this.#required
+    );
+  }
+
+  get name() {
+    return this.#name;
+  }
+
+  get required() {
+    return this.#required;
+  }
+
+  get [$defaultValue]() {
+    return this.#defaultValue;
+  }
+
+  typeCheck(value) {
+    return this.#type(value);
+  }
+}
 
 // Create convenience static methods on the Field class
 Object.entries(standardTypes).forEach(([typeName, standardType]) => {

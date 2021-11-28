@@ -12,34 +12,34 @@ Object.keys(jedql).forEach(key => {
 });
 
 // Demos
-const { Model, Field, FieldTypes, Key, Relationship } = jedql;
+const { Model, FieldTypes } = jedql;
 const snippet = new Model({
   name: 'snippet',
-  key: new Key('name'),
+  key: 'name',
   fields: [
-    new Field({
+    {
       name: 'description',
       type: FieldTypes.string,
       required: true,
       defaultValue: '',
-    }),
-    new Field({
+    },
+    {
       name: 'code',
       type: FieldTypes.string,
       required: true,
       defaultValue: '',
-    }),
-    new Field({
+    },
+    {
       name: 'language',
       type: FieldTypes.string,
       required: false,
-    }),
-    new Field({
+    },
+    {
       name: 'tags',
       type: FieldTypes.arrayOf(FieldTypes.string),
       required: false,
       defaultValue: [],
-    }),
+    },
   ],
   validators: {
     uniqueDescription: (snippet, snippets) => {
@@ -50,14 +50,14 @@ const snippet = new Model({
 
 const category = new Model({
   name: 'category',
-  key: new Key('name'),
+  key: 'name',
   fields: [
-    new Field({
+    {
       name: 'description',
       type: FieldTypes.string,
       required: true,
       defaultValue: '',
-    }),
+    },
   ],
 });
 
@@ -83,12 +83,12 @@ const categoryA = category.add({
 });
 
 snippet.addField(
-  new Field({
+  {
     name: 'special',
-    type: FieldTypes.string,
+    type: 'string',
     required: true,
     defaultValue: '',
-  }),
+  },
   record => {
     if (record.name === 'snippetA') {
       return 'special value for snippetA';
@@ -104,23 +104,19 @@ snippet.addScope('cool', record => {
   return record.isCool;
 });
 
-snippet.addRelationship(
-  new Relationship({
-    name: 'category',
-    relationType: 'oneToOne',
-    model: category,
-    foreignKey: 'name',
-  })
-);
+snippet.addRelationship({
+  name: 'category',
+  type: 'oneToOne',
+  model: category,
+  foreignKey: 'name',
+});
 
-snippet.addRelationship(
-  new Relationship({
-    name: 'siblings',
-    relationType: 'oneToMany',
-    model: snippet,
-    foreignKey: 'name',
-  })
-);
+snippet.addRelationship({
+  name: 'siblings',
+  type: 'oneToMany',
+  model: snippet,
+  foreignKey: 'name',
+});
 
 const snippetC = snippet.add({
   name: 'snippetC',

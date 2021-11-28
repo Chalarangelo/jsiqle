@@ -2,7 +2,7 @@ import relationshipTypes from 'src/relationship/types';
 import { Model } from 'src/model';
 
 export const validateRelationshipType = relationshipType => {
-  if (!Object.values(relationshipTypes).includes(relationshipType))
+  if (!relationshipTypes.includes(relationshipType))
     throw new Error(`Invalid relationship type: ${relationshipType}`);
   return relationshipType;
 };

@@ -1,5 +1,4 @@
 import symbols from 'src/symbols';
-import { RelationshipField } from 'src/field';
 import { setRecordField, recordToObject } from 'src/utils';
 
 const {
@@ -7,6 +6,7 @@ const {
   $key,
   $methods,
   $relationships,
+  $relationshipType,
   $recordValue,
   $recordModel,
   $recordTag,
@@ -23,7 +23,7 @@ class RecordHandler {
     if (this.model[$key].name === property) return recordValue[property];
     if (
       this.model[$fields].has(property) &&
-      !(this.model[$fields].get(property) instanceof RelationshipField)
+      !this.model[$fields].get(property)[$relationshipType]
     )
       return recordValue[property];
     if (this.model[$methods].has(property))

@@ -1,9 +1,11 @@
 import { Field } from 'src/field';
+import { Relationship } from 'src/relationship';
 import { DuplicationError, DefaultValueError } from 'src/errors';
-import { standardTypes, key } from 'src/types';
+import types, { standardTypes, key } from 'src/types';
 import symbols from 'src/symbols';
+import { toMany } from 'src/relationship/types';
 
-const { $defaultValue, $keyType } = symbols;
+const { $defaultValue, $keyType, $foreignField, $relationshipType } = symbols;
 
 const allStandardTypes = [
   ...Object.keys(standardTypes),
@@ -11,6 +13,8 @@ const allStandardTypes = [
 ];
 
 const fieldTypes = [...allStandardTypes, 'enum', 'enumRequired', 'auto'];
+
+// TODO: Refactor fields, key to one argument, make an internal API for them
 
 const createKey = options => {
   let name = 'id';
@@ -45,6 +49,38 @@ const createKey = options => {
   });
 
   return keyField;
+};
+
+const createRelationshipField = relationship => {
+  const { name, type: relationshipType } = relationship;
+  const isMultiple = toMany.includes(relationshipType);
+  const foreignField = relationship[$foreignField];
+  const type = isMultiple
+    ? types.arrayOf(value => foreignField.typeCheck(value))
+    : value => foreignField.typeCheck(value);
+
+  const relationshipField = new Field({
+    name,
+    type,
+    required: false,
+    defaultValue: null,
+  });
+  // Override the default value to throw an error
+  Object.defineProperty(relationshipField, $defaultValue, {
+    get() {
+      throw new DefaultValueError(
+        'Relationship field does not have a default value.'
+      );
+    },
+  });
+  // Additional property to get the type from the record handler
+  Object.defineProperty(relationshipField, $relationshipType, {
+    get() {
+      return relationship.type;
+    },
+  });
+
+  return relationshipField;
 };
 
 export const parseModelKey = (modelName, key, fields) => {
@@ -83,6 +119,29 @@ export const parseModelField = (modelName, field, fields, key) => {
 
   if (allStandardTypes.includes(field.type)) return Field[field.type](field);
   return new Field(field);
+};
+
+export const parseModelRelationship = (
+  modelName,
+  relationship,
+  fields,
+  key
+) => {
+  if (typeof relationship !== 'object')
+    throw new TypeError(`Relationship ${relationship} is not an object.`);
+
+  if (!relationship.name)
+    throw new TypeError(`Relationship ${relationship} is missing a name.`);
+
+  if (fields.has(relationship.name) || key === relationship.name)
+    throw new DuplicationError(
+      `Model ${modelName} already has a field named ${relationship.name}.`
+    );
+
+  const _relationship = new Relationship(relationship);
+  const relationshipField = createRelationshipField(_relationship);
+
+  return [_relationship, relationshipField];
 };
 
 export const validateModelMethod = (

@@ -1,11 +1,10 @@
-import { Field, RelationshipField } from 'src/field';
-import { Relationship } from 'src/relationship';
 import { Record, RecordSet, RecordHandler } from 'src/record';
 import symbols from 'src/symbols';
 import {
   deepClone,
   parseModelKey,
   parseModelField,
+  parseModelRelationship,
   validateModelMethod,
   validateModelContains,
   applyModelFieldRetrofill,
@@ -69,11 +68,13 @@ export class Model {
       this.addScope(scopeName, scopes[scopeName]);
     });
 
+    // Add relationships, checking for duplicates and invalids
     this.#relationships = new Map();
     Object.keys(relationships).forEach(relationName => {
       this.addRelationship(relationName, relationships[relationName]);
     });
 
+    // Add validators, checking for duplicates and invalids
     this.#validators = new Map();
     Object.keys(validators).forEach(validatorName => {
       this.addValidator(validatorName, validators[validatorName]);
@@ -123,14 +124,15 @@ export class Model {
     this.#records[$removeScope](name);
   }
 
-  addRelationship(relationship) {
-    if (!(relationship instanceof Relationship))
-      throw new Error(`Relation ${relationship} is not a Relation.`);
-    const { name } = relationship;
-    if (this.#fields.has(name))
-      throw new Error(`Field ${name} already exists.`);
-    this.#fields.set(name, new RelationshipField(relationship));
-    this.#relationships.set(name, relationship);
+  addRelationship(relationshipOptions) {
+    const [relationship, relationshipField] = parseModelRelationship(
+      this.name,
+      relationshipOptions,
+      this.#fields,
+      this.#key
+    );
+    this.#fields.set(relationship.name, relationshipField);
+    this.#relationships.set(relationship.name, relationship);
   }
 
   add(record) {

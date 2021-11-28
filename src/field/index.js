@@ -65,4 +65,3 @@ Field.auto = options => {
 };
 
 export { Field };
-export { default as RelationshipField } from './relationship';

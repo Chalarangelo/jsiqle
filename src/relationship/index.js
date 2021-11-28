@@ -1,4 +1,4 @@
-import relationshipTypes from './types';
+import { toMany, toOne } from './types';
 import {
   validateName,
   validateRelationshipType,
@@ -11,27 +11,21 @@ const { $foreignField } = symbols;
 
 export class Relationship {
   #name;
-  #relationType;
+  #type;
   #model;
   #foreignKey;
 
-  constructor({ name, relationType, model, foreignKey } = {}) {
+  constructor({ name, type, model, foreignKey } = {}) {
     this.#name = validateName('Relationship', name);
-    this.#relationType = validateRelationshipType(relationType);
+    this.#type = validateRelationshipType(type);
     this.#model = validateRelationshipModel(model);
     this.#foreignKey = validateRelationshipForeignKey(foreignKey, model);
   }
 
   get(record) {
-    if (
-      this.#relationType === relationshipTypes.oneToOne ||
-      this.#relationType === relationshipTypes.manyToOne
-    ) {
+    if (toOne.includes(this.#type)) {
       return this.#model.records.get(record[this.#name]);
-    } else if (
-      this.#relationType === relationshipTypes.oneToMany ||
-      this.#relationType === relationshipTypes.manyToMany
-    ) {
+    } else if (toMany.includes(this.#type)) {
       return this.#model.records.where(associatedRecord =>
         record[this.#name].includes(associatedRecord[this.#foreignKey])
       );
@@ -42,8 +36,8 @@ export class Relationship {
     return this.#name;
   }
 
-  get relationType() {
-    return this.#relationType;
+  get type() {
+    return this.#type;
   }
 
   get [$foreignField]() {

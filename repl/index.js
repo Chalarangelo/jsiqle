@@ -12,7 +12,7 @@ Object.keys(jedql).forEach(key => {
 });
 
 // Demos
-const { Schema, FieldTypes } = jedql;
+const { Schema, Validator } = jedql;
 
 const schema = new Schema({
   name: 'mySchema',
@@ -23,32 +23,23 @@ const schema = new Schema({
       fields: [
         {
           name: 'description',
-          type: FieldTypes.string,
-          required: true,
-          defaultValue: '',
+          type: 'stringRequired',
         },
         {
           name: 'code',
-          type: FieldTypes.string,
-          required: true,
-          defaultValue: '',
+          type: 'stringRequired',
         },
         {
           name: 'language',
-          type: FieldTypes.string,
-          required: false,
+          type: 'string',
         },
         {
           name: 'tags',
-          type: FieldTypes.arrayOf(FieldTypes.string),
-          required: false,
-          defaultValue: [],
+          type: 'stringArray',
         },
       ],
       validators: {
-        uniqueDescription: (snippet, snippets) => {
-          return !snippets.some(s => s.description === snippet.description);
-        },
+        uniqueDescription: Validator.unique('description'),
       },
     },
   ],
@@ -62,9 +53,7 @@ const category = schema.addModel({
   fields: [
     {
       name: 'description',
-      type: FieldTypes.string,
-      required: true,
-      defaultValue: '',
+      type: 'stringRequired',
     },
   ],
 });
@@ -93,9 +82,7 @@ const categoryA = category.add({
 snippet.addField(
   {
     name: 'special',
-    type: 'string',
-    required: true,
-    defaultValue: '',
+    type: 'stringRequired',
   },
   record => {
     if (record.name === 'snippetA') {
@@ -135,9 +122,6 @@ const snippetC = snippet.add({
   category: 'categoryA',
   siblings: ['snippetA', 'snippetB'],
 });
-
-// snippetA.category = 'categoryA';
-// snippetB.category = 'categoryA';
 
 replServer.context.schema = schema;
 

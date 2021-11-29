@@ -1,7 +1,6 @@
 export class Validator {
   static unique(field) {
-    return (value, data) =>
-      data.filter(item => item[field] === value[field]).length === 0;
+    return (value, data) => data.every(item => item[field] !== value[field]);
   }
 
   static length(field, min, max) {

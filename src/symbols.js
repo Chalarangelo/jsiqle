@@ -16,7 +16,6 @@ export default symbolizeAll(
   'methods',
   'scopes',
   'relationships',
-  'relationshipType',
   'relationshipField',
   'recordModel',
   'recordValue',

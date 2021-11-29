@@ -4,7 +4,7 @@ import types from 'src/types';
 import symbols from 'src/symbols';
 import { Model } from 'src/model';
 
-const { $defaultValue, $relationshipType } = symbols;
+const { $defaultValue } = symbols;
 
 const relationshipEnum = {
   oneToOne: 'oneToOne',
@@ -40,12 +40,6 @@ export const createRelationshipField = (
       throw new DefaultValueError(
         'Relationship field does not have a default value.'
       );
-    },
-  });
-  // Additional property to get the type from the record handler
-  Object.defineProperty(relationshipField, $relationshipType, {
-    get() {
-      return relationshipType;
     },
   });
 

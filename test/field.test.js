@@ -16,9 +16,9 @@ describe('Field', () => {
   });
 
   it('throws if "required" is invalid', () => {
-    expect(() => new Field({ required: null })).toThrow();
-    expect(() => new Field({ required: undefined })).toThrow();
-    expect(() => new Field({ required: 'a' })).toThrow();
+    expect(() => new Field({ name: 'a', required: null })).toThrow();
+    expect(() => new Field({ name: 'a', required: undefined })).toThrow();
+    expect(() => new Field({ name: 'a', required: 'a' })).toThrow();
   });
 
   it('throws if "type" is invalid', () => {

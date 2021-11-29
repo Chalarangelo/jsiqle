@@ -80,7 +80,13 @@ export const parseModelField = (modelName, field, fields, key) => {
       `Model ${modelName} already has a field named ${field.name}.`
     );
 
-  if (allStandardTypes.includes(field.type)) return Field[field.type](field);
+  const isStandardType = allStandardTypes.includes(field.type);
+
+  if (isStandardType) return Field[field.type](field);
+  else if (typeof field.type === 'function')
+    console.warn(
+      `The provided type for ${field.name} is not part of the standard types. Function types are experimental and may go away in a later release.`
+    );
   return new Field(field);
 };
 

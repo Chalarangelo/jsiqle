@@ -125,7 +125,7 @@ export const validateModelMethod = (
 
 export const validateModelContains = (objectType, objectName, objects) => {
   if (!objects.has(objectName))
-    throw new Error(`${objectType} ${objectName} does not exist.`);
+    throw new ReferenceError(`${objectType} ${objectName} does not exist.`);
   return objectName;
 };
 

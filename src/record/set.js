@@ -4,6 +4,7 @@ import {
   validateRecordSetMethod,
   validateRecordSetContains,
 } from 'src/utils';
+import { NameError } from 'src/errors';
 import PartialRecord from './partial';
 import RecordFragment from './fragment';
 import RecordGroup from './group';
@@ -45,7 +46,7 @@ class RecordSet extends Map {
 
   set(key, value) {
     if (this.#frozen) {
-      throw new Error('Cannot modify a frozen RecordSet');
+      throw new TypeError('Cannot modify a frozen RecordSet');
     }
     super.set(key, value);
     return this;
@@ -53,7 +54,7 @@ class RecordSet extends Map {
 
   delete(key) {
     if (this.#frozen) {
-      throw new Error('Cannot modify a frozen RecordSet');
+      throw new TypeError('Cannot modify a frozen RecordSet');
     }
     super.delete(key);
     return this;
@@ -61,7 +62,7 @@ class RecordSet extends Map {
 
   clear() {
     if (this.#frozen) {
-      throw new Error('Cannot modify a frozen RecordSet');
+      throw new TypeError('Cannot modify a frozen RecordSet');
     }
     super.clear();
     return this;
@@ -257,7 +258,8 @@ class RecordSet extends Map {
 
   [$addScope](name, scope) {
     validateRecordSetMethod('Scope', name, scope, this.#scopes);
-    if (this[name]) throw new Error(`Scope name ${name} is already in use.`);
+    if (this[name])
+      throw new NameError(`Scope name ${name} is already in use.`);
 
     this.#scopes.set(name, scope);
     Object.defineProperty(this, name, {

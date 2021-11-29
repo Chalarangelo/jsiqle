@@ -1,4 +1,5 @@
 import { RecordSet, RecordHandler } from 'src/record';
+import { NameError } from 'src/errors';
 import symbols from 'src/symbols';
 import {
   parseModelKey,
@@ -100,7 +101,7 @@ export class Model {
 
   updateField(name, field) {
     if (field.name !== name)
-      throw new Error(`Field name ${field.name} does not match ${name}.`);
+      throw new NameError(`Field name ${field.name} does not match ${name}.`);
     this.removeField(name);
     this.addField(field);
   }

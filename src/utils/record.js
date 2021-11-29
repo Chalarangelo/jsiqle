@@ -20,7 +20,7 @@ export const validateRecordSetMethod = (
 
 export const validateRecordSetContains = (objectType, objectName, objects) => {
   if (!objects.has(objectName))
-    throw new Error(`${objectType} ${objectName} does not exist.`);
+    throw new ReferenceError(`${objectType} ${objectName} does not exist.`);
   return objectName;
 };
 
@@ -30,7 +30,7 @@ export const setRecordField = (modelName, record, field, value) => {
     field.required && types.nil(value) ? field[$defaultValue] : value;
   if (!field.typeCheck(recordValue))
     // Throw an error if the field value is invalid
-    throw new Error(
+    throw new TypeError(
       `${modelName} record has invalid value for field ${field.name}.`
     );
   record[field.name] = recordValue;
@@ -86,12 +86,12 @@ export const validateNewRecordKey = (
 ) => {
   let newRecordKey = recordKey;
   if (modelKey[$keyType] === 'string' && !modelKey.typeCheck(newRecordKey))
-    throw new Error(
+    throw new TypeError(
       `${modelName} record has invalid value for key ${modelKey.name}.`
     );
   if (modelKey[$keyType] === 'auto') newRecordKey = modelKey[$defaultValue];
   if (records.has(newRecordKey))
-    throw new Error(
+    throw new DuplicationError(
       `${modelName} record with key ${newRecordKey} already exists.`
     );
   return newRecordKey;

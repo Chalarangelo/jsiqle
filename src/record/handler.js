@@ -62,7 +62,7 @@ class RecordHandler {
     // Validate record just once
     this.getValidators().forEach((validator, validatorName) => {
       if (!validator(newRecord, this.model.records))
-        throw new Error(
+        throw new RangeError(
           `${modelName} record with key ${newRecordKey} failed validation for ${validatorName}.`
         );
     });
@@ -189,7 +189,7 @@ class RecordHandler {
       const otherRecords = this.model.records.except(recordKey);
       this.getValidators().forEach((validator, validatorName) => {
         if (!validator(recordValue, otherRecords))
-          throw new Error(
+          throw new RangeError(
             `${this.getModelName()} record with key ${recordKey} failed validation for ${validatorName}.`
           );
       });

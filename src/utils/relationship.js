@@ -48,17 +48,17 @@ export const createRelationshipField = (
 
 export const validateRelationshipType = relationshipType => {
   if (!Object.values(relationshipEnum).includes(relationshipType))
-    throw new Error(`Invalid relationship type: ${relationshipType}`);
+    throw new TypeError(`Invalid relationship type: ${relationshipType}`);
   return relationshipType;
 };
 
 export const validateRelationshipModel = model => {
-  if (!(model instanceof Model)) throw new Error(`Invalid model: ${model}`);
+  if (!(model instanceof Model)) throw new TypeError(`Invalid model: ${model}`);
   return model;
 };
 
 export const validateRelationshipForeignKey = (foreignKey, model) => {
   if (!model.hasField(foreignKey))
-    throw new Error(`Invalid foreign key: ${foreignKey}`);
+    throw new TypeError(`Invalid foreign key: ${foreignKey}`);
   return foreignKey;
 };

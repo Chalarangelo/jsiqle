@@ -9,9 +9,10 @@ const { $defaultValue, $keyType } = symbols;
 const allStandardTypes = [
   ...Object.keys(standardTypes),
   ...Object.keys(standardTypes).map(type => `${type}Required`),
+  'enum',
+  'enumRequired',
+  'auto',
 ];
-
-const fieldTypes = [...allStandardTypes, 'enum', 'enumRequired', 'auto'];
 
 // TODO: Refactor fields, key to one argument, make an internal API for them
 
@@ -36,7 +37,9 @@ const createKey = options => {
     // Override the default value to throw an error
     Object.defineProperty(keyField, $defaultValue, {
       get() {
-        throw new DefaultValueError('Key field does not have a default value.');
+        throw new DefaultValueError(
+          `Key field ${name} does not have a default value.`
+        );
       },
     });
   } else if (type === 'auto') keyField = Field.auto(name);
@@ -72,13 +75,6 @@ export const parseModelField = (modelName, field, fields, key) => {
   if (typeof field !== 'object')
     throw new TypeError(`Field ${field} is not an object.`);
 
-  if (!field.name) throw new TypeError(`Field ${field} is missing a name.`);
-
-  if (!fieldTypes.includes(field.type) & (typeof field.type !== 'function'))
-    throw new TypeError(
-      `Field ${field.name} has an invalid type ${field.type}.`
-    );
-
   if (fields.has(field.name) || key === field.name)
     throw new DuplicationError(
       `Model ${modelName} already has a field named ${field.name}.`
@@ -96,9 +92,6 @@ export const parseModelRelationship = (
 ) => {
   if (typeof relationship !== 'object')
     throw new TypeError(`Relationship ${relationship} is not an object.`);
-
-  if (!relationship.name)
-    throw new TypeError(`Relationship ${relationship} is missing a name.`);
 
   if (fields.has(relationship.name) || key === relationship.name)
     throw new DuplicationError(

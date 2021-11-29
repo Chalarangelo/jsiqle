@@ -147,9 +147,5 @@ export const applyModelFieldRetrofill = (
 
   records.forEach(record => {
     record[field.name] = retrofillFunction(record);
-    if (!field.typeCheck(record[field.name]))
-      throw new Error(
-        `${modelName} record has invalid value for field ${field.name}.`
-      );
   });
 };

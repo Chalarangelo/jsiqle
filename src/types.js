@@ -33,8 +33,11 @@ const isObject = shape => {
   };
 };
 
-const isObjectOf = type => val =>
-  Object.keys(val).every(prop => type(val[prop]));
+const isObjectOf = type => val => {
+  if (val === null || val === undefined || typeof val !== 'object')
+    return false;
+  return Object.keys(val).every(prop => type(val[prop]));
+};
 
 const isEnum =
   (...values) =>
@@ -90,6 +93,11 @@ export const standardTypes = {
   stringArray: { type: isArrayOf(isString), defaultValue: [] },
   dateArray: { type: isArrayOf(isDate), defaultValue: [] },
   object: { type: isObject({}), defaultValue: {} },
+  booleanObject: { type: isObjectOf(isBoolean), defaultValue: { a: true } },
+  numberObject: { type: isObjectOf(isNumber), defaultValue: {} },
+  stringObject: { type: isObjectOf(isString), defaultValue: {} },
+  dateObject: { type: isObjectOf(isDate), defaultValue: {} },
+  objectArray: { type: isArrayOf(isObject({})), defaultValue: [] },
 };
 
 // Internal types

@@ -92,11 +92,12 @@ export class Model {
     this.#fields.set(fieldOptions.name, field);
 
     // Retrofill records with new fields
-    applyModelFieldRetrofill(this.name, field, this.#records, retrofill);
+    applyModelFieldRetrofill(field, this.#records, retrofill);
   }
 
   removeField(name) {
-    this.#fields.delete(validateModelContains('Field', name, this.#fields));
+    if (validateModelContains(this.name, 'Field', name, this.#fields))
+      this.#fields.delete(name);
   }
 
   updateField(name, field) {
@@ -114,7 +115,8 @@ export class Model {
   }
 
   removeMethod(name) {
-    this.#methods.delete(validateModelContains('Method', name, this.#methods));
+    if (validateModelContains(this.name, 'Method', name, this.#methods))
+      this.#methods.delete(name);
   }
 
   addScope(name, scope) {
@@ -150,9 +152,8 @@ export class Model {
   }
 
   removeValidator(name) {
-    this.#validators.delete(
-      validateModelContains('Validator', name, this.#validators)
-    );
+    if (validateModelContains(this.name, 'Validator', name, this.#validators))
+      this.#validators.delete(name);
   }
 
   get records() {

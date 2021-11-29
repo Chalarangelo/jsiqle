@@ -116,18 +116,22 @@ export const validateModelMethod = (
   return callback;
 };
 
-export const validateModelContains = (objectType, objectName, objects) => {
-  if (!objects.has(objectName))
-    throw new ReferenceError(`${objectType} ${objectName} does not exist.`);
-  return objectName;
+export const validateModelContains = (
+  modelName,
+  objectType,
+  objectName,
+  objects
+) => {
+  if (!objects.has(objectName)) {
+    console.warn(
+      `${modelName} does not contains a ${objectType} named ${objectName}.`
+    );
+    return false;
+  }
+  return true;
 };
 
-export const applyModelFieldRetrofill = (
-  modelName,
-  field,
-  records,
-  retrofill
-) => {
+export const applyModelFieldRetrofill = (field, records, retrofill) => {
   if (!field.required && retrofill === undefined) return;
 
   const retrofillFunction =

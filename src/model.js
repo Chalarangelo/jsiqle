@@ -1,5 +1,5 @@
 import { RecordSet, RecordHandler } from 'src/record';
-import { NameError } from 'src/errors';
+import { NameError, DuplicationError } from 'src/errors';
 import symbols from 'src/symbols';
 import {
   parseModelKey,
@@ -21,6 +21,7 @@ const {
   $recordHandler,
   $addScope,
   $removeScope,
+  $instances,
 } = symbols;
 
 export class Model {
@@ -31,6 +32,8 @@ export class Model {
   #methods;
   #relationships;
   #validators;
+
+  static #instances = new Map();
 
   constructor({
     name,
@@ -43,6 +46,9 @@ export class Model {
     // hooks,
   } = {}) {
     this.name = validateName('Model', name);
+
+    if (Model.#instances.has(name))
+      throw new DuplicationError(`A model named ${name} already exists.`);
 
     // Create the record storage and handler
     // This needs to be initialized before fields to allow for retrofilling
@@ -80,6 +86,9 @@ export class Model {
     Object.entries(validators).forEach(([validatorName, validator]) => {
       this.addValidator(validatorName, validator);
     });
+
+    // Add the model to the instances map
+    Model.#instances.set(this.name, this);
   }
 
   addField(fieldOptions, retrofill) {
@@ -191,6 +200,10 @@ export class Model {
 
   get [$validators]() {
     return this.#validators;
+  }
+
+  static get [$instances]() {
+    return Model.#instances;
   }
 }
 

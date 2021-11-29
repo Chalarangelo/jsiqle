@@ -148,7 +148,8 @@ class RecordHandler {
 
   get(record, property) {
     // Check relationships first to avoid matching them as fields
-    if (this.hasRelationship(property)) this.getRelationship(record, property);
+    if (this.hasRelationship(property))
+      return this.getRelationship(record, property);
     // Key or field, return as-is
     if (this.isModelKey(property) || this.hasField(property))
       return this.getFieldValue(record, property);

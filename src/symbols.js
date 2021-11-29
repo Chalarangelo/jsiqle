@@ -26,6 +26,7 @@ export default symbolizeAll(
   'addScope',
   'removeScope',
   'copyScopes',
+  'instances',
   'isRecord',
   'groupTag'
 );

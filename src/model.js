@@ -37,7 +37,7 @@ export class Model {
 
   constructor({
     name,
-    fields,
+    fields = [],
     key = 'id',
     methods = {},
     scopes = {},

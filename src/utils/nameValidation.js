@@ -1,8 +1,9 @@
 import { NameError } from 'src/errors';
 
 const restrictedNames = {
-  Field: ['toString', 'toObject', 'toJSON'],
+  Schema: [],
   Model: ['toString', 'toObject', 'toJSON'],
+  Field: ['toString', 'toObject', 'toJSON'],
   Relationship: ['toString', 'toObject', 'toJSON'],
 };
 

@@ -1,17 +1,12 @@
 import { Schema } from 'src/schema';
-import { Model } from 'src/model';
-import { Field, Key } from 'src/field';
-import { Relationship } from 'src/relationship';
+import { Validator } from 'src/validator';
 import types from 'src/types';
 
-// TODO: Records, Models, Schema
+// This is the public API, be extra careful not to add anything internal here.
 const jedql = {
   Schema,
-  Model,
-  Field,
-  Key,
-  Relationship,
   FieldTypes: types,
+  Validator,
 };
 
 export default jedql;

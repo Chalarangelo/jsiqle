@@ -1,33 +1,34 @@
 import EventEmitter from 'events';
+import { DuplicationError } from 'src/errors';
 import { Model } from 'src/model';
+import { validateName } from 'src/utils';
 
 export class Schema extends EventEmitter {
-  constructor(name) {
+  #models;
+
+  static #schemas = new Map();
+
+  constructor({ name, models = [] } = {}) {
     super();
-    this.name = name;
-    this.models = new Map();
+    this.name = validateName('Schema', name);
+    this.#models = new Map();
+
+    models.forEach(model => this.addModel(model));
   }
 
-  static schemas = new Map();
+  addModel(modelData) {
+    if (typeof modelData !== 'object')
+      throw new TypeError(`Model ${modelData} is not an object.`);
 
-  static create(name) {
-    return new Schema(name);
-  }
-
-  static get(name) {
-    return Schema.schemas.get(name);
-  }
-
-  addModel(model) {
-    if (!(model instanceof Model)) {
-      throw new Error('Model must be an instance of Model');
-    }
-    if (this.models.has(model.name)) {
-      throw new Error(
-        `Model ${model.name} already exists in schema ${this.name}.`
+    if (this.#models.has(modelData.name)) {
+      throw new DuplicationError(
+        `Model ${modelData.name} already exists in schema ${this.name}.`
       );
     }
-    this.models.set(model.name, model);
+
+    const model = new Model(modelData);
+
+    this.#models.set(model.name, model);
 
     // TODO: make the model an event emitter probably
     // model.on('change', () => {
@@ -35,26 +36,34 @@ export class Schema extends EventEmitter {
     // });
 
     this.emit('modelAdded', model);
-  }
-
-  removeModel(name) {
-    if (!this.models.has(name)) {
-      throw new Error(`Model ${name} does not exist in schema ${this.name}.`);
-    }
-    this.models.delete(name);
-    this.emit('modelRemoved', name);
+    return model;
   }
 
   getModel(name) {
-    return this.models.get(name);
+    return this.#models.get(name);
   }
 
-  getModels() {
-    return this.models;
+  removeModel(name) {
+    if (!this.#models.has(name)) {
+      throw new ReferenceError(
+        `Model ${name} does not exist in schema ${this.name}.`
+      );
+    }
+    this.#models.delete(name);
+    // TODO: Figure out a cascade for relationships
+    this.emit('modelRemoved', name);
   }
 
-  getModelNames() {
-    return Array.from(this.models.keys());
+  get models() {
+    return this.#models;
+  }
+
+  static create(name) {
+    return new Schema(name);
+  }
+
+  static get(name) {
+    return Schema.#schemas.get(name);
   }
 }
 

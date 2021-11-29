@@ -12,43 +12,51 @@ Object.keys(jedql).forEach(key => {
 });
 
 // Demos
-const { Model, FieldTypes } = jedql;
-const snippet = new Model({
-  name: 'snippet',
-  key: 'name',
-  fields: [
+const { Schema, FieldTypes } = jedql;
+
+const schema = new Schema({
+  name: 'mySchema',
+  models: [
     {
-      name: 'description',
-      type: FieldTypes.string,
-      required: true,
-      defaultValue: '',
-    },
-    {
-      name: 'code',
-      type: FieldTypes.string,
-      required: true,
-      defaultValue: '',
-    },
-    {
-      name: 'language',
-      type: FieldTypes.string,
-      required: false,
-    },
-    {
-      name: 'tags',
-      type: FieldTypes.arrayOf(FieldTypes.string),
-      required: false,
-      defaultValue: [],
+      name: 'snippet',
+      key: 'name',
+      fields: [
+        {
+          name: 'description',
+          type: FieldTypes.string,
+          required: true,
+          defaultValue: '',
+        },
+        {
+          name: 'code',
+          type: FieldTypes.string,
+          required: true,
+          defaultValue: '',
+        },
+        {
+          name: 'language',
+          type: FieldTypes.string,
+          required: false,
+        },
+        {
+          name: 'tags',
+          type: FieldTypes.arrayOf(FieldTypes.string),
+          required: false,
+          defaultValue: [],
+        },
+      ],
+      validators: {
+        uniqueDescription: (snippet, snippets) => {
+          return !snippets.some(s => s.description === snippet.description);
+        },
+      },
     },
   ],
-  validators: {
-    uniqueDescription: (snippet, snippets) => {
-      return !snippets.some(s => s.description === snippet.description);
-    },
-  },
 });
 
-const category = new Model({
+const snippet = schema.getModel('snippet');
+
+const category = schema.addModel({
   name: 'category',
   key: 'name',
   fields: [
@@ -130,6 +138,8 @@ const snippetC = snippet.add({
 
 // snippetA.category = 'categoryA';
 // snippetB.category = 'categoryA';
+
+replServer.context.schema = schema;
 
 replServer.context.snippet = snippet;
 replServer.context.snippetA = snippetA;

@@ -22,7 +22,7 @@ export class Relationship {
     this.#name = validateName('Relationship', name);
     this.#type = validateRelationshipType(type);
     this.#model = validateRelationshipModel(model);
-    this.#foreignKey = validateRelationshipForeignKey(foreignKey, model);
+    this.#foreignKey = validateRelationshipForeignKey(foreignKey, this.#model);
     this.#relationshipField = createRelationshipField(
       this.#name,
       this.#type,

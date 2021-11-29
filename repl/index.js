@@ -92,7 +92,7 @@ snippet.addField(
   record => {
     if (record.name === 'snippetA') {
       return 'special value for snippetA';
-    } else return '';
+    } else return record.name;
   }
 );
 
@@ -107,14 +107,14 @@ snippet.addScope('cool', record => {
 snippet.addRelationship({
   name: 'category',
   type: 'oneToOne',
-  model: category,
+  model: 'category',
   foreignKey: 'name',
 });
 
 snippet.addRelationship({
   name: 'siblings',
   type: 'oneToMany',
-  model: snippet,
+  model: 'snippet',
   foreignKey: 'name',
 });
 

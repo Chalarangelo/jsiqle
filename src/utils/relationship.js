@@ -48,7 +48,7 @@ export const createRelationshipField = (
 
 export const validateRelationshipType = relationshipType => {
   if (!Object.values(relationshipEnum).includes(relationshipType))
-    throw new TypeError(`Invalid relationship type: ${relationshipType}`);
+    throw new TypeError(`Invalid relationship type: ${relationshipType}.`);
   return relationshipType;
 };
 

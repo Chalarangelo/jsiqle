@@ -95,7 +95,7 @@ export const parseModelRelationship = (
 
   if (fields.has(relationship.name) || key === relationship.name)
     throw new DuplicationError(
-      `Model ${modelName} already has a field named ${relationship.name}.`
+      `Model ${modelName} already has a relationship named ${relationship.name}.`
     );
 
   return new Relationship(relationship);
@@ -109,10 +109,12 @@ export const validateModelMethod = (
 ) => {
   if (typeof callback !== 'function')
     throw new TypeError(`${callbackType} ${callbackName} is not a function.`);
+
   if (callbacks.has(callbackName))
     throw new DuplicationError(
       `${callbackType} ${callbackName} already exists.`
     );
+
   return callback;
 };
 
@@ -124,7 +126,7 @@ export const validateModelContains = (
 ) => {
   if (!objects.has(objectName)) {
     console.warn(
-      `${modelName} does not contains a ${objectType} named ${objectName}.`
+      `Model ${modelName} does not contain a ${objectType.toLowerCase()} named ${objectName}.`
     );
     return false;
   }

@@ -11,16 +11,19 @@ export const validateRecordSetMethod = (
 ) => {
   if (typeof callback !== 'function')
     throw new TypeError(`${callbackType} ${callbackName} is not a function.`);
+
   if (callbacks.has(callbackName))
     throw new DuplicationError(
       `${callbackType} ${callbackName} already exists.`
     );
+
   return callback;
 };
 
 export const validateRecordSetContains = (objectType, objectName, objects) => {
   if (!objects.has(objectName))
     throw new ReferenceError(`${objectType} ${objectName} does not exist.`);
+
   return objectName;
 };
 
@@ -85,11 +88,13 @@ export const validateNewRecordKey = (
   records
 ) => {
   let newRecordKey = recordKey;
+
   if (modelKey[$keyType] === 'string' && !modelKey.typeCheck(newRecordKey))
     throw new TypeError(
       `${modelName} record has invalid value for key ${modelKey.name}.`
     );
   if (modelKey[$keyType] === 'auto') newRecordKey = modelKey[$defaultValue];
+
   if (records.has(newRecordKey))
     throw new DuplicationError(
       `${modelName} record with key ${newRecordKey} already exists.`

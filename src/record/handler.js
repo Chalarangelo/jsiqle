@@ -25,7 +25,7 @@ class RecordHandler {
   }
 
   createRecord(recordData) {
-    if (!recordData) throw new TypeError('Record is required');
+    if (!recordData) throw new TypeError('Record data cannot be empty.');
     const modelName = this.getModelName();
     // Validate record key
     const newRecordKey = validateNewRecordKey(

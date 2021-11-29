@@ -46,7 +46,7 @@ class RecordSet extends Map {
 
   set(key, value) {
     if (this.#frozen) {
-      throw new TypeError('Cannot modify a frozen RecordSet');
+      throw new TypeError('Cannot modify a frozen RecordSet.');
     }
     super.set(key, value);
     return this;
@@ -54,7 +54,7 @@ class RecordSet extends Map {
 
   delete(key) {
     if (this.#frozen) {
-      throw new TypeError('Cannot modify a frozen RecordSet');
+      throw new TypeError('Cannot modify a frozen RecordSet.');
     }
     super.delete(key);
     return this;
@@ -62,7 +62,7 @@ class RecordSet extends Map {
 
   clear() {
     if (this.#frozen) {
-      throw new TypeError('Cannot modify a frozen RecordSet');
+      throw new TypeError('Cannot modify a frozen RecordSet.');
     }
     super.clear();
     return this;

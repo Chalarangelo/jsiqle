@@ -136,7 +136,6 @@ export class Model {
   }
 
   add(record) {
-    if (!record) throw new Error('Record is required');
     const [newRecordKey, newRecord] = this.#recordHandler.createRecord(record);
     this.#records.set(newRecordKey, newRecord);
     return newRecord;

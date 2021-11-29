@@ -135,6 +135,15 @@ class RecordSet extends Map {
     return undefined;
   }
 
+  except(...keys) {
+    return new RecordSet({
+      iterable: [...this.entries()].filter(([key]) => {
+        return !keys.includes(key);
+      }),
+      copyScopesFrom: this,
+    }).freeze();
+  }
+
   sort(comparatorFn) {
     const sorted = [...this.entries()].sort(([key1, value1], [key2, value2]) =>
       comparatorFn(value1, value2, key1, key2)

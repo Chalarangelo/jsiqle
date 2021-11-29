@@ -19,6 +19,7 @@ const {
   $methods,
   $relationships,
   $relationshipField,
+  $validators,
   $recordHandler,
   $addScope,
   $removeScope,
@@ -231,6 +232,10 @@ export class Model {
 
   get [$relationships]() {
     return this.#relationships;
+  }
+
+  get [$validators]() {
+    return this.#validators;
   }
 }
 

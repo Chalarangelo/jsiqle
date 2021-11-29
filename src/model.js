@@ -1,7 +1,6 @@
-import { Record, RecordSet, RecordHandler } from 'src/record';
+import { RecordSet, RecordHandler } from 'src/record';
 import symbols from 'src/symbols';
 import {
-  deepClone,
   parseModelKey,
   parseModelField,
   parseModelRelationship,
@@ -14,8 +13,6 @@ import {
 const {
   $fields,
   $key,
-  $keyType,
-  $defaultValue,
   $methods,
   $relationships,
   $relationshipField,
@@ -140,50 +137,7 @@ export class Model {
 
   add(record) {
     if (!record) throw new Error('Record is required');
-
-    let newRecordKey = record[this.#key.name];
-    if (this.#key[$keyType] === 'string' && !this.#key.typeCheck(newRecordKey))
-      throw new Error(
-        `${this.name} record has invalid value for key ${this.#key.name}.`
-      );
-    if (this.#key[$keyType] === 'auto') newRecordKey = this.#key[$defaultValue];
-    if (this.#records.has(newRecordKey))
-      throw new Error(
-        `${this.name} record with key ${newRecordKey} already exists.`
-      );
-
-    const clonedRecord = deepClone(record);
-    const extraFields = Object.keys(clonedRecord).filter(
-      key => !this.#fields.has(key) && key !== this.#key.name
-    );
-
-    if (extraFields.length > 0) {
-      console.warn(
-        `${this.name} record has extra fields: ${extraFields.join(', ')}.`
-      );
-    }
-
-    const newRecord = new Record(
-      {
-        [this.#key.name]: newRecordKey,
-        ...extraFields.reduce(
-          (obj, key) => ({ ...obj, [key]: clonedRecord[key] }),
-          {}
-        ),
-      },
-      this.#recordHandler
-    );
-    this.#fields.forEach(field => {
-      newRecord[field.name] = clonedRecord[field.name];
-    });
-
-    this.#validators.forEach((validator, validatorName) => {
-      if (!validator(newRecord, this.#records))
-        throw new Error(
-          `${this.name} record with key ${newRecordKey} failed validation for ${validatorName}.`
-        );
-    });
-
+    const [newRecordKey, newRecord] = this.#recordHandler.createRecord(record);
     this.#records.set(newRecordKey, newRecord);
     return newRecord;
   }

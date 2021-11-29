@@ -1,7 +1,7 @@
 import { DuplicationError } from 'src/errors';
 import types from 'src/types';
 import symbols from 'src/symbols';
-const { $fields, $key, $recordValue, $defaultValue } = symbols;
+const { $fields, $key, $keyType, $recordValue, $defaultValue } = symbols;
 
 export const validateRecordSetMethod = (
   callbackType,
@@ -76,4 +76,23 @@ export const recordToObject = (record, model, handler) => {
   };
 
   return toObject;
+};
+
+export const validateNewRecordKey = (
+  modelName,
+  modelKey,
+  recordKey,
+  records
+) => {
+  let newRecordKey = recordKey;
+  if (modelKey[$keyType] === 'string' && !modelKey.typeCheck(newRecordKey))
+    throw new Error(
+      `${modelName} record has invalid value for key ${modelKey.name}.`
+    );
+  if (modelKey[$keyType] === 'auto') newRecordKey = modelKey[$defaultValue];
+  if (records.has(newRecordKey))
+    throw new Error(
+      `${modelName} record with key ${newRecordKey} already exists.`
+    );
+  return newRecordKey;
 };

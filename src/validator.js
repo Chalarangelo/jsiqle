@@ -3,27 +3,27 @@ export class Validator {
     return (value, data) => data.every(item => item[field] !== value[field]);
   }
 
-  static length(field, min, max) {
+  static length(field, { min, max }) {
     return value => value[field].length >= min && value[field].length <= max;
   }
 
-  static minLength(field, min) {
+  static minLength(field, { min }) {
     return value => value[field].length >= min;
   }
 
-  static maxLength(field, max) {
+  static maxLength(field, { max }) {
     return value => value[field].length <= max;
   }
 
-  static range(field, min, max) {
+  static range(field, { min, max }) {
     return value => value[field] >= min && value[field] <= max;
   }
 
-  static minNumber(field, min) {
+  static minNumber(field, { min }) {
     return value => value[field] >= min;
   }
 
-  static maxNumber(field, max) {
+  static maxNumber(field, { max }) {
     return value => value[field] <= max;
   }
 
@@ -31,23 +31,23 @@ export class Validator {
     return value => Number.isInteger(value[field]);
   }
 
-  static date(field, min, max) {
+  static date(field, { min, max }) {
     return value => value[field] >= min && value[field] <= max;
   }
 
-  static minDate(field, min) {
+  static minDate(field, { min }) {
     return value => value[field] >= min;
   }
 
-  static maxDate(field, max) {
+  static maxDate(field, { max }) {
     return value => value[field] <= max;
   }
 
-  static regex(field, regex) {
+  static regex(field, { regex }) {
     return value => regex.test(value[field]);
   }
 
-  static custom(field, fn) {
+  static custom(field, { fn }) {
     return (value, data) =>
       fn(
         value[field],

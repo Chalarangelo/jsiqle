@@ -4,18 +4,26 @@ import {
   validateFieldType,
   validateFieldRequired,
   validateFieldDefaultValue,
+  parseFieldValidator,
 } from 'src/utils';
 import types, { standardTypes } from 'src/types';
 
-const { $defaultValue } = symbols;
+const { $defaultValue, $validators } = symbols;
 
 class Field {
   #name;
   #defaultValue;
   #required;
   #type;
+  #validators;
 
-  constructor({ name, type, required = false, defaultValue = null }) {
+  constructor({
+    name,
+    type,
+    required = false,
+    defaultValue = null,
+    validators = [],
+  }) {
     this.#name = validateName('Field', name);
     this.#required = validateFieldRequired(required);
     this.#type = validateFieldType(type, required);
@@ -24,6 +32,14 @@ class Field {
       this.#type,
       this.#required
     );
+    this.#validators = new Map();
+    validators.forEach(validator => {
+      this.addValidator(validator);
+    });
+  }
+
+  addValidator(validator) {
+    this.#validators.set(...parseFieldValidator(this.#name, validator));
   }
 
   get name() {
@@ -36,6 +52,10 @@ class Field {
 
   get [$defaultValue]() {
     return this.#defaultValue;
+  }
+
+  get [$validators]() {
+    return this.#validators;
   }
 
   typeCheck(value) {

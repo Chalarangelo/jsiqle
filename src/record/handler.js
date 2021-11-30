@@ -170,24 +170,27 @@ class RecordHandler {
   set(record, property, value, receiver, skipValidation) {
     // Receiver is the same as record but never used (API compatibility)
     const recordValue = record[$recordValue];
+    const recordKey = this.getKeyValue(record);
+    const otherRecords = this.model.records.except(recordKey);
     // Validate and set field, warn if field is not defined
     if (this.hasField(property)) {
-      setRecordField(
-        this.model.name,
-        recordValue,
-        this.getField(property),
-        value
-      );
+      const field = this.getField(property);
+      setRecordField(this.model.name, recordValue, field, value);
+      // Never skip individual field validation
+      field[$validators].forEach((validator, validatorName) => {
+        if (!validator(recordValue, otherRecords))
+          throw new RangeError(
+            `${this.getModelName()} record with key ${recordKey} failed validation for ${validatorName}.`
+          );
+      });
     } else {
       console.warn(`${this.name} record has extra field: ${property}.`);
       recordValue[property] = value;
     }
-    // Perform validations
+    // Perform model validations
     // The last argument, `skipValidation`, is used to skip validation
     // and should only ever be set to `true` by the by the handler itself.
     if (!skipValidation) {
-      const recordKey = this.getKeyValue(record);
-      const otherRecords = this.model.records.except(recordKey);
       this.getValidators().forEach((validator, validatorName) => {
         if (!validator(recordValue, otherRecords))
           throw new RangeError(

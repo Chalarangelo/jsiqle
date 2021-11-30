@@ -24,6 +24,7 @@ const schema = new Schema({
         {
           name: 'description',
           type: 'stringRequired',
+          validators: [{ type: 'unique' }],
         },
         {
           name: 'code',
@@ -38,9 +39,6 @@ const schema = new Schema({
           type: 'stringArray',
         },
       ],
-      validators: {
-        uniqueDescription: Validator.unique('description'),
-      },
     },
   ],
 });

@@ -1,7 +1,5 @@
 import EventEmitter from 'events';
-import { DuplicationError } from 'src/errors';
-import { Model } from 'src/model';
-import { validateName } from 'src/utils';
+import { validateName, parseModel } from 'src/utils';
 
 export class Schema extends EventEmitter {
   #models;
@@ -17,16 +15,7 @@ export class Schema extends EventEmitter {
   }
 
   addModel(modelData) {
-    if (typeof modelData !== 'object')
-      throw new TypeError(`Model ${modelData} is not an object.`);
-
-    if (this.#models.has(modelData.name)) {
-      throw new DuplicationError(
-        `Model ${modelData.name} already exists in schema ${this.name}.`
-      );
-    }
-
-    const model = new Model(modelData);
+    const model = parseModel(this.name, modelData, this.#models);
 
     this.#models.set(model.name, model);
 

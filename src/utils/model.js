@@ -2,6 +2,7 @@ import { Field } from 'src/field';
 import { Relationship } from 'src/relationship';
 import { DuplicationError, DefaultValueError } from 'src/errors';
 import { standardTypes, key } from 'src/types';
+import { validateObjectWithUniqueName } from './common';
 import symbols from 'src/symbols';
 
 const { $defaultValue, $keyType } = symbols;
@@ -72,13 +73,15 @@ export const parseModelKey = (modelName, key, fields) => {
 };
 
 export const parseModelField = (modelName, field, fields, key) => {
-  if (typeof field !== 'object')
-    throw new TypeError(`Field ${field} is not an object.`);
-
-  if (fields.has(field.name) || key === field.name)
-    throw new DuplicationError(
-      `Model ${modelName} already has a field named ${field.name}.`
-    );
+  validateObjectWithUniqueName(
+    {
+      objectType: 'Field',
+      parentType: 'Model',
+      parentName: modelName,
+    },
+    field,
+    [...fields.keys(), key]
+  );
 
   const isStandardType = allStandardTypes.includes(field.type);
 
@@ -96,14 +99,15 @@ export const parseModelRelationship = (
   fields,
   key
 ) => {
-  if (typeof relationship !== 'object')
-    throw new TypeError(`Relationship ${relationship} is not an object.`);
-
-  if (fields.has(relationship.name) || key === relationship.name)
-    throw new DuplicationError(
-      `Model ${modelName} already has a relationship named ${relationship.name}.`
-    );
-
+  validateObjectWithUniqueName(
+    {
+      objectType: 'Relationship',
+      parentType: 'Model',
+      parentName: modelName,
+    },
+    relationship,
+    [...fields.keys(), key]
+  );
   return new Relationship(relationship);
 };
 

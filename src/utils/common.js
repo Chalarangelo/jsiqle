@@ -1,3 +1,5 @@
+import { DuplicationError } from 'src/errors';
+
 export const deepClone = obj => {
   if (obj === null) return null;
   let clone = Object.assign({}, obj);
@@ -15,4 +17,24 @@ export const deepClone = obj => {
 export const allEqualBy = (arr, fn) => {
   const eql = fn(arr[0]);
   return arr.every(val => fn(val) === eql);
+};
+
+export const isObject = obj => obj && typeof obj === 'object';
+
+export const contains = (collection, item) => collection.includes(item);
+
+export const validateObjectWithUniqueName = (
+  { objectType, parentType, parentName },
+  obj,
+  collection
+) => {
+  if (!isObject(obj))
+    throw new TypeError(`${objectType} ${obj} is not an object.`);
+  if (contains(collection, obj.name))
+    throw new DuplicationError(
+      `${parentType} ${parentName} already has a ${objectType.toLowerCase()} named ${
+        obj.name
+      }.`
+    );
+  return true;
 };

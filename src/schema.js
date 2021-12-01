@@ -54,6 +54,29 @@ export class Schema extends EventEmitter {
   static get(name) {
     return Schema.#schemas.get(name);
   }
+
+  get(pathName) {
+    const [modelName, recordKey, ...rest] = pathName.split('.');
+    const model = this.getModel(modelName);
+
+    if (!model)
+      throw new ReferenceError(
+        `Model ${modelName} does not exist in schema ${this.name}.`
+      );
+
+    if (recordKey === undefined) return model;
+    const record = model.records.get(recordKey);
+
+    if (!record) {
+      if (rest.length)
+        throw new ReferenceError(
+          `Record ${recordKey} does not exist in model ${modelName}.`
+        );
+      return record;
+    }
+
+    return rest.reduce((acc, key) => acc[key], record);
+  }
 }
 
 export default Schema;

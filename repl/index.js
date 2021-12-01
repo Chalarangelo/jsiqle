@@ -47,9 +47,17 @@ const schema = new Schema({
   ],
 });
 
+schema.on('beforeCreateModel', ({ model }) => {
+  console.log(`Creating new model named ${model.name}...`);
+});
+
+schema.on('modelCreated', ({ model }) => {
+  console.log(`Model ${model.name} created!`);
+});
+
 const snippet = schema.getModel('snippet');
 
-const category = schema.addModel({
+const category = schema.createModel({
   name: 'category',
   key: 'name',
   fields: [

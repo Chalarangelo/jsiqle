@@ -25,12 +25,16 @@ export const validateFieldDefaultValue = (defaultValue, type, required) => {
   return defaultValue;
 };
 
-export const parseFieldValidator = (fieldName, validator) => {
-  if (typeof validator !== 'object')
-    throw new TypeError(`Validator ${validator} is not an object.`);
-
-  const { type, ...args } = validator;
-  if (Validator[type] === undefined)
-    throw new TypeError(`Validator ${type} is not defined.`);
-  return [`${fieldName}${capitalize(type)}`, Validator[type](fieldName, args)];
+export const parseFieldValidator = (fieldName, validatorName, validator) => {
+  if (Validator[validatorName] !== undefined)
+    return [
+      `${fieldName}${capitalize(validatorName)}`,
+      Validator[validatorName](fieldName, validator),
+    ];
+  if (typeof validator !== 'function')
+    throw new TypeError(`Validator ${validatorName} is not defined.`);
+  return [
+    `${fieldName}${capitalize(validatorName)}`,
+    Validator.custom(fieldName, validator),
+  ];
 };

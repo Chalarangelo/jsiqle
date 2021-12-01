@@ -1,8 +1,7 @@
 import { DuplicationError } from 'src/errors';
 
-export const capitalize = ([first, ...rest], lowerRest = false) =>
-  first.toUpperCase() +
-  (lowerRest ? rest.join('').toLowerCase() : rest.join(''));
+export const capitalize = ([first, ...rest]) =>
+  first.toUpperCase() + rest.join('');
 
 export const deepClone = obj => {
   if (obj === null) return null;

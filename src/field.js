@@ -22,7 +22,7 @@ class Field {
     type,
     required = false,
     defaultValue = null,
-    validators = [],
+    validators = {},
   }) {
     this.#name = validateName('Field', name);
     this.#required = validateFieldRequired(required);
@@ -33,13 +33,15 @@ class Field {
       this.#required
     );
     this.#validators = new Map();
-    validators.forEach(validator => {
-      this.addValidator(validator);
+    Object.entries(validators).forEach(([validatorName, validator]) => {
+      this.addValidator(validatorName, validator);
     });
   }
 
-  addValidator(validator) {
-    this.#validators.set(...parseFieldValidator(this.#name, validator));
+  addValidator(validatorName, validator) {
+    this.#validators.set(
+      ...parseFieldValidator(this.#name, validatorName, validator)
+    );
   }
 
   get name() {

@@ -12,7 +12,7 @@ Object.keys(jedql).forEach(key => {
 });
 
 // Demos
-const { Schema, Validator } = jedql;
+const { Schema } = jedql;
 
 const schema = new Schema({
   name: 'mySchema',
@@ -24,7 +24,11 @@ const schema = new Schema({
         {
           name: 'description',
           type: 'stringRequired',
-          validators: [{ type: 'unique' }],
+          validators: {
+            unique: true,
+            minLength: 5,
+            containsTheWordDescription: value => value.includes('description'),
+          },
         },
         {
           name: 'code',

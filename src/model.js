@@ -17,6 +17,8 @@ const {
   $key,
   $methods,
   $scopes,
+  $getField,
+  $hasField,
   $relationships,
   $relationshipField,
   $validators,
@@ -257,12 +259,12 @@ export class Model extends EventEmitter {
     return this.#records;
   }
 
-  getField(name) {
+  [$getField](name) {
     if (name === this.#key.name) return this.#key;
     return this.#fields.get(name);
   }
 
-  hasField(name) {
+  [$hasField](name) {
     return this.#key.name === name || this.#fields.has(name);
   }
 

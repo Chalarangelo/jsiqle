@@ -9,7 +9,7 @@ import {
 } from 'src/utils';
 import symbols from 'src/symbols';
 
-const { $relationshipField } = symbols;
+const { $relationshipField, $getField } = symbols;
 
 export class Relationship {
   #name;
@@ -26,7 +26,7 @@ export class Relationship {
     this.#relationshipField = createRelationshipField(
       this.#name,
       this.#type,
-      this.#model.getField(this.#foreignKey)
+      this.#model[$getField](this.#foreignKey)
     );
   }
 

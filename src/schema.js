@@ -1,5 +1,5 @@
 import EventEmitter from 'events';
-import { validateName, parseModel } from 'src/utils';
+import { capitalize, validateName, parseModel } from 'src/utils';
 
 /**
  * A Schema is a collection of models.
@@ -33,10 +33,13 @@ export class Schema extends EventEmitter {
 
     this.#models.set(model.name, model);
 
-    // TODO: make the model an event emitter probably
-    // model.on('change', () => {
-    //   this.emit('change');
-    // });
+    model.on('change', ({ type, ...eventData }) => {
+      this.emit('change', {
+        type: `model${capitalize(type)}`,
+        ...eventData,
+        schema: this,
+      });
+    });
 
     this.emit('modelCreated', { model, schema: this });
     this.emit('change', { type: 'modelCreated', model, schema: this });
@@ -117,6 +120,9 @@ export class Schema extends EventEmitter {
     const result = rest.reduce((acc, key) => acc[key], record);
     this.emit('got', { pathName, result, schema: this });
   }
+
+  // TODO: Add a way to create symmetrical relationships here
+  // e.g. category with many snippets -> category.snippets + snippet.category
 
   // TODO: V2 enhancements
   // Add a mechanism here so that plugins can hook up to the schema via the

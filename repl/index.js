@@ -55,6 +55,10 @@ schema.on('modelCreated', ({ model }) => {
   console.log(`Model ${model.name} created!`);
 });
 
+schema.on('change', data => {
+  console.log(JSON.stringify(data, null, 2));
+});
+
 const snippet = schema.getModel('snippet');
 
 const category = schema.createModel({

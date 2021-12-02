@@ -1,3 +1,4 @@
+import EventEmitter from 'events';
 import { RecordSet, RecordHandler } from 'src/record';
 import { NameError, DuplicationError } from 'src/errors';
 import symbols from 'src/symbols';
@@ -15,6 +16,7 @@ const {
   $fields,
   $key,
   $methods,
+  $scopes,
   $relationships,
   $relationshipField,
   $validators,
@@ -24,7 +26,7 @@ const {
   $instances,
 } = symbols;
 
-export class Model {
+export class Model extends EventEmitter {
   #records;
   #recordHandler;
   #fields;
@@ -32,6 +34,7 @@ export class Model {
   #methods;
   #relationships;
   #validators;
+  #updatingField = false;
 
   static #instances = new Map();
 
@@ -43,8 +46,11 @@ export class Model {
     scopes = {},
     relationships = {},
     validators = {},
+    // Actually add named listeners here and store them in a symbol
+    // so that it's easier to detach them when we want to.
     // hooks,
   } = {}) {
+    super();
     this.name = validateName('Model', name);
 
     if (Model.#instances.has(name))
@@ -92,6 +98,8 @@ export class Model {
   }
 
   addField(fieldOptions, retrofill) {
+    if (!this.#updatingField)
+      this.emit('beforeAddField', { field: fieldOptions, model: this });
     const field = parseModelField(
       this.name,
       fieldOptions,
@@ -99,41 +107,121 @@ export class Model {
       this.#key
     );
     this.#fields.set(fieldOptions.name, field);
-
+    if (!this.#updatingField) this.emit('fieldAdded', { field, model: this });
     // Retrofill records with new fields
+    // TODO: This before might be erroneous if the retrofill is non-existent
+    // Evaluate for V2, we might want to check and not emit events.
+    this.emit('beforeRetrofillField', { field, retrofill, model: this });
     applyModelFieldRetrofill(field, this.#records, retrofill);
+    this.emit('fieldRetrofilled', { field, retrofill, model: this });
+    if (!this.#updatingField)
+      this.emit('change', { type: 'fieldAdded', field, model: this });
+    return field;
   }
 
   removeField(name) {
-    if (validateModelContains(this.name, 'Field', name, this.#fields))
-      this.#fields.delete(name);
+    if (!validateModelContains(this.name, 'Field', name, this.#fields)) return;
+    const field = this.#fields.get(name);
+    if (!this.#updatingField)
+      this.emit('beforeRemoveField', { field, model: this });
+    this.#fields.delete(name);
+    if (!this.#updatingField) {
+      this.emit('fieldRemoved', { field: { name }, model: this });
+      this.emit('change', { type: 'fieldRemoved', field, model: this });
+    }
   }
 
-  updateField(name, field) {
+  updateField(name, field, retrofill) {
     if (field.name !== name)
       throw new NameError(`Field name ${field.name} does not match ${name}.`);
+    const prevField = this.#fields.get(name);
+    // Ensure that only update events are emitted, not add/remove ones.
+    this.#updatingField = true;
+    this.emit('beforeUpdateField', { prevField, field, model: this });
     this.removeField(name);
-    this.addField(field);
+    const newField = this.addField(field, retrofill);
+    this.emit('fieldUpdated', { field: newField, model: this });
+    this.#updatingField = false;
+    this.emit('change', { type: 'fieldUpdated', field: newField, model: this });
   }
 
   addMethod(name, method) {
+    this.emit('beforeAddMethod', {
+      method: { name, body: method },
+      model: this,
+    });
     this.#methods.set(
       name,
       validateModelMethod('Method', name, method, this.#methods)
     );
+    this.emit('methodAdded', {
+      method: { name, body: method },
+      model: this,
+    });
+    this.emit('change', {
+      type: 'methodAdded',
+      method: { name, body: method },
+      model: this,
+    });
   }
 
   removeMethod(name) {
-    if (validateModelContains(this.name, 'Method', name, this.#methods))
-      this.#methods.delete(name);
+    if (!validateModelContains(this.name, 'Method', name, this.#methods))
+      return;
+    const method = this.#methods.get(name);
+    this.emit('beforeRemoveMethod', {
+      method: { name, body: method },
+      model: this,
+    });
+    this.#methods.delete(name);
+    this.emit('methodRemoved', {
+      method: { name },
+      model: this,
+    });
+    this.emit('change', {
+      type: 'methodRemoved',
+      method: { name, body: method },
+      model: this,
+    });
   }
 
   addScope(name, scope) {
+    this.emit('beforeAddScope', {
+      scope: { name, body: scope },
+      model: this,
+    });
     this.#records[$addScope](name, scope);
+    this.emit('scopeAdded', {
+      scope: { name, body: scope },
+      model: this,
+    });
+    this.emit('change', {
+      type: 'scopeAdded',
+      scope: { name, body: scope },
+      model: this,
+    });
   }
 
   removeScope(name) {
+    if (
+      !validateModelContains(this.name, 'Scope', name, this.#records[$scopes])
+    )
+      return;
+    const scope = this.#records[$scopes].get(name);
+    this.emit('beforeRemoveScope', {
+      scope: { name, body: scope },
+      model: this,
+    });
     this.#records[$removeScope](name);
+    this.emit('scopeRemoved', {
+      scope: { name },
+      model: this,
+    });
+    this.emit('change', {
+      type: 'scopeRemoved',
+      scope: { name, body: scope },
+      model: this,
+    });
   }
 
   addRelationship(relationshipOptions) {

@@ -42,4 +42,6 @@ export const parseRelationship = (schemName, relationshipData, models) => {
 
   fromModel.addRelationship(relationship.assocation, relationship);
   toModel.addRelationship(relationship.reverseAssocation, relationship);
+
+  return relationship;
 };

@@ -228,7 +228,29 @@ export class Model extends EventEmitter {
 
   // TODO: Internalize!
   addRelationship([relationshipName, relationshipField], relationship) {
+    this.emit('beforeAddRelationship', {
+      relationship: {
+        name: relationshipName,
+        type: relationship.getType(this.modelName, relationshipName),
+      },
+      model: this,
+    });
     this.#fields.set(relationshipName, relationshipField);
+    this.emit('relationshipAdded', {
+      relationship: {
+        name: relationshipName,
+        type: relationship.getType(this.modelName, relationshipName),
+      },
+      model: this,
+    });
+    this.emit('change', {
+      type: 'relationshipAdded',
+      relationship: {
+        name: relationshipName,
+        type: relationship.getType(this.modelName, relationshipName),
+      },
+      model: this,
+    });
     this.#relationships.set(relationshipName, relationship);
   }
 

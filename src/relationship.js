@@ -169,6 +169,13 @@ export class Relationship {
   get reverseAssocation() {
     return [this.#reverseName, this.#reverseRelationshipField];
   }
+
+  getType(modelName, property) {
+    if (modelName === this.#from.name && property === this.#name)
+      return this.#type;
+    if (modelName === this.#to.name && property === this.#reverseName)
+      return reverseRelationship(this.#type);
+  }
 }
 
 export default Relationship;

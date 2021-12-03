@@ -85,8 +85,18 @@ export class Schema extends EventEmitter {
       relationship: relationshipData,
       schema: this,
     });
-    parseRelationship(this.name, relationshipData, this.#models);
-    // from, to, type,
+    const relationship = parseRelationship(
+      this.name,
+      relationshipData,
+      this.#models
+    );
+
+    this.emit('relationshipCreated', { relationship, schema: this });
+    this.emit('change', {
+      type: 'relationshipCreated',
+      relationship,
+      schema: this,
+    });
   }
 
   /**

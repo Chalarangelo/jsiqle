@@ -71,6 +71,8 @@ export class Relationship {
   constructor({ from, to, type } = {}) {
     // TODO: V2 enhancements
     // Clean up and make this a little less complex?
+    // Relationship receivers (to) expose a field which is essentially just a
+    // a method at the time being. Could be a potential solution.
     console.warn(
       'Relationships are experimental in the current version. Please use with caution.'
     );

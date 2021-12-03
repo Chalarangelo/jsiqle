@@ -28,6 +28,11 @@ const {
   $instances,
 } = symbols;
 
+// TODO: When adding methods, we must check if a field exists with the same name
+// or the key has the same name. Similarly, when adding fields, we must check if
+// a method exists with the same name. We just need a good old getter to grab
+// all names real quick, otherwise it's complete chaos.
+// Also methods might want to be name validated.
 export class Model extends EventEmitter {
   #records;
   #recordHandler;

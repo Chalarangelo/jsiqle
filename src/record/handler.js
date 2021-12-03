@@ -182,10 +182,14 @@ class RecordHandler {
     const otherRecords = this.model.records.except(recordKey);
     if (this.hasRelationship(property)) {
       if (this.isRelationshipReceiver(property) && !initCall) {
-        // TODO: Implement the setRelationship method actually
         throw new TypeError(
-          `Cannot set ${this.getModelName()} record ${recordKey} relationship ${property} to ${value}. This model is a relationship receiver, please use the setRelationship method instead.`
+          `Cannot set ${this.getModelName()} record ${recordKey} relationship ${property} to ${value}. This model is a relationship receiver, please apply this update in reverse.`
         );
+        // TODO: V2 enhancements
+        // Probably figure out a clean way to implement the reverse relationship
+        // update. Very expensive, but otherwise we'd have to remove symmetry
+        // and implement a method to get the reverse relationship. Which might
+        // not be the worst idea in the world!
       } else {
         const field = this.getField(property);
         setRecordField(this.model.name, recordValue, field, value);

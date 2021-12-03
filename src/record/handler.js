@@ -120,8 +120,16 @@ class RecordHandler {
     return this.model[$relationships].has(property);
   }
 
+  isRelationshipReceiver(property) {
+    return this.model[$relationships]
+      .get(property)
+      .isReceiver(this.getModelName(), property);
+  }
+
   getRelationship(record, property) {
-    return this.model[$relationships].get(property).get(record[$recordValue]);
+    return this.model[$relationships]
+      .get(property)
+      .get(this.getModelName(), property, record[$recordValue]);
   }
 
   isCallToSerialize(property) {
@@ -167,11 +175,22 @@ class RecordHandler {
     return undefined;
   }
 
-  set(record, property, value, receiver, skipValidation) {
+  set(record, property, value, receiver, initCall) {
     // Receiver is the same as record but never used (API compatibility)
     const recordValue = record[$recordValue];
     const recordKey = this.getKeyValue(record);
     const otherRecords = this.model.records.except(recordKey);
+    if (this.hasRelationship(property)) {
+      if (this.isRelationshipReceiver(property) && !initCall) {
+        // TODO: Implement the setRelationship method actually
+        throw new TypeError(
+          `Cannot set ${this.getModelName()} record ${recordKey} relationship ${property} to ${value}. This model is a relationship receiver, please use the setRelationship method instead.`
+        );
+      } else {
+        const field = this.getField(property);
+        setRecordField(this.model.name, recordValue, field, value);
+      }
+    }
     // Validate and set field, warn if field is not defined
     if (this.hasField(property)) {
       const field = this.getField(property);
@@ -188,9 +207,9 @@ class RecordHandler {
       recordValue[property] = value;
     }
     // Perform model validations
-    // The last argument, `skipValidation`, is used to skip validation
+    // The last argument, `initCall`, is used to skip validation
     // and should only ever be set to `true` by the by the handler itself.
-    if (!skipValidation) {
+    if (!initCall) {
       this.getValidators().forEach((validator, validatorName) => {
         if (!validator(recordValue, otherRecords))
           throw new RangeError(

@@ -18,7 +18,7 @@ const restrictedNames = {
  * @param {Array<string>} restrictedNames An array of restricted names.
  * @returns {boolean} Whether the name is valid.
  */
-const isValidName = (name, restrictedNames) => {
+const isValidName = (name, restrictedNames = []) => {
   if (typeof name !== 'string') return [false, 'must be a string'];
   if (!name) return [false, 'is required'];
   if (/^\d/.test(name)) return [false, 'cannot start with a number'];

@@ -24,6 +24,7 @@ const schema = new Schema({
         {
           name: 'description',
           type: 'stringRequired',
+          // Refactor to flatten validators in the definition?
           validators: {
             unique: true,
             minLength: 5,
@@ -56,7 +57,7 @@ schema.on('modelCreated', ({ model }) => {
 });
 
 schema.on('change', data => {
-  console.log(JSON.stringify(data, null, 2));
+  console.log(data.type);
 });
 
 const snippet = schema.getModel('snippet');
@@ -93,6 +94,11 @@ const categoryA = category.add({
   description: 'description of categoryA',
 });
 
+const categoryB = category.add({
+  name: 'categoryB',
+  description: 'description of categoryB',
+});
+
 snippet.addField(
   {
     name: 'special',
@@ -113,18 +119,16 @@ snippet.addScope('cool', record => {
   return record.isCool;
 });
 
-snippet.addRelationship({
-  name: 'category',
-  type: 'oneToOne',
-  model: 'category',
-  foreignKey: 'name',
+schema.createRelationship({
+  from: 'snippet',
+  to: 'category',
+  type: 'manyToMany',
 });
 
-snippet.addRelationship({
-  name: 'siblings',
+schema.createRelationship({
+  from: { model: 'snippet', name: 'children' },
+  to: { model: 'snippet', name: 'parent' },
   type: 'oneToMany',
-  model: 'snippet',
-  foreignKey: 'name',
 });
 
 const snippetC = snippet.add({
@@ -133,9 +137,13 @@ const snippetC = snippet.add({
   code: 'console.log("Hello World!");',
   language: 'javascript',
   tags: ['hello', 'world'],
-  category: 'categoryA',
-  siblings: ['snippetA', 'snippetB'],
+  categorySet: ['categoryA'],
+  children: ['snippetA', 'snippetB'],
 });
+
+snippetA.categorySet = ['categoryB', 'categoryA'];
+
+// categoryA.snippetSet = ['snippetC'];
 
 replServer.context.schema = schema;
 
@@ -146,3 +154,10 @@ replServer.context.snippetC = snippetC;
 
 replServer.context.category = category;
 replServer.context.categoryA = categoryA;
+replServer.context.categoryB = categoryB;
+
+// try {
+//   snippetA.snippetSet;
+// } catch (e) {
+//   console.trace(e);
+// }

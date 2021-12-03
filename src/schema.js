@@ -1,5 +1,10 @@
 import EventEmitter from 'events';
-import { capitalize, validateName, parseModel } from 'src/utils';
+import {
+  capitalize,
+  validateName,
+  parseModel,
+  parseRelationship,
+} from 'src/utils';
 
 /**
  * A Schema is a collection of models.
@@ -73,6 +78,15 @@ export class Schema extends EventEmitter {
 
     this.emit('modelRemoved', { model: { name }, schema: this });
     this.emit('change', { type: 'modelRemoved', model, schema: this });
+  }
+
+  createRelationship(relationshipData) {
+    this.emit('beforeCreateRelationship', {
+      relationship: relationshipData,
+      schema: this,
+    });
+    parseRelationship(this.name, relationshipData, this.#models);
+    // from, to, type,
   }
 
   /**

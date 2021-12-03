@@ -226,7 +226,18 @@ export class Model extends EventEmitter {
     });
   }
 
-  addRelationship(relationshipOptions) {
+  // TODO: Internalize!
+  addRelationship([relationshipName, relationshipField], relationship) {
+    this.#fields.set(relationshipName, relationshipField);
+    this.#relationships.set(relationshipName, relationship);
+  }
+
+  // TODO: Evaluate these a bit more
+  // TODO: No remove? fishy!
+  // Most likely createRelationship should only be exposed from the schema and
+  // not the model!!!
+  createRelationship(relationshipOptions) {
+    this.emit('beforeAddRelationship', relationshipOptions);
     const relationship = parseModelRelationship(
       this.name,
       relationshipOptions,
@@ -235,6 +246,7 @@ export class Model extends EventEmitter {
     );
     this.#fields.set(relationship.name, relationship[$relationshipField]);
     this.#relationships.set(relationship.name, relationship);
+    this.emit('relationshipAdd', relationshipOptions);
   }
 
   add(record) {

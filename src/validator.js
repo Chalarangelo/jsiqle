@@ -35,6 +35,9 @@ export class Validator {
     return value => regex.test(value[field]);
   }
 
+  // TODO: sorted array
+  // TODO: unique values in array
+
   static custom(field, fn) {
     return (value, data) =>
       fn(

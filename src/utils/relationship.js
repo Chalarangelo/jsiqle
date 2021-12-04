@@ -5,7 +5,7 @@ import symbols from 'src/symbols';
 import { Model } from 'src/model';
 import { validateName } from './nameValidation';
 
-const { $defaultValue, $instances, $hasField } = symbols;
+const { $defaultValue, $instances, $isNameInUse } = symbols;
 
 const relationshipEnum = {
   oneToOne: 'oneToOne',
@@ -84,7 +84,7 @@ export const validateRelationshipModel = modelData => {
 };
 
 export const validateRelationshipForeignKey = (foreignKey, model) => {
-  if (!model[$hasField](foreignKey))
+  if (!model[$isNameInUse](foreignKey))
     throw new TypeError(`Invalid foreign key: ${foreignKey}`);
   return foreignKey;
 };

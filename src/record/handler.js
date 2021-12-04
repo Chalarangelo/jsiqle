@@ -180,6 +180,7 @@ class RecordHandler {
     const recordValue = record[$recordValue];
     const recordKey = this.getKeyValue(record);
     const otherRecords = this.model.records.except(recordKey);
+    // Ensure non-writables are not overwritten (e.g. methods and relationships)
     if (this.hasRelationship(property)) {
       if (this.isRelationshipReceiver(property) && !initCall) {
         throw new TypeError(

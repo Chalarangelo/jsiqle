@@ -17,8 +17,8 @@ const {
   $key,
   $methods,
   $scopes,
+  $isNameInUse,
   $getField,
-  $hasField,
   $relationships,
   $relationshipField,
   $validators,
@@ -298,13 +298,24 @@ export class Model extends EventEmitter {
     return this.#records;
   }
 
+  // Protected (package internal-use only)
+
+  static get [$instances]() {
+    return Model.#instances;
+  }
+
+  // Utility for checking if a name is in use (i.e. field, method, key)
+  [$isNameInUse](name) {
+    return (
+      this.#key.name === name ||
+      this.#fields.has(name) ||
+      this.#methods.has(name)
+    );
+  }
+
   [$getField](name) {
     if (name === this.#key.name) return this.#key;
     return this.#fields.get(name);
-  }
-
-  [$hasField](name) {
-    return this.#key.name === name || this.#fields.has(name);
   }
 
   get [$recordHandler]() {
@@ -329,10 +340,6 @@ export class Model extends EventEmitter {
 
   get [$validators]() {
     return this.#validators;
-  }
-
-  static get [$instances]() {
-    return Model.#instances;
   }
 }
 

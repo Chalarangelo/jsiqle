@@ -16,7 +16,7 @@ export default symbolizeAll(
   'methods',
   'scopes',
   'getField',
-  'hasField',
+  'isNameInUse',
   'relationships',
   'relationshipField',
   'validators',

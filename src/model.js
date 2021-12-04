@@ -284,25 +284,52 @@ export class Model extends EventEmitter {
     });
   }
 
-  // TODO: Properly eventize this.
   addValidator(name, validator) {
+    this.emit('beforeAddValidator', {
+      validator: { name, body: validator },
+      model: this,
+    });
+    // Validators are not name-validated by design.
     this.#validators.set(
       name,
       Model.#validateModelMethod('Validator', name, validator, this.#validators)
     );
+    this.emit('validatorAdded', {
+      validator: { name, body: validator },
+      model: this,
+    });
+    this.emit('change', {
+      type: 'validatorAdded',
+      validator: { name, body: validator },
+      model: this,
+    });
   }
 
-  // TODO: Properly eventize this.
   removeValidator(name) {
     if (
-      Model.#validateModelContains(
+      !Model.#validateModelContains(
         this.name,
         'Validator',
         name,
         this.#validators
       )
     )
-      this.#validators.delete(name);
+      return;
+    const validator = this.#validators.get(name);
+    this.emit('beforeRemoveValidator', {
+      validator: { name, body: validator },
+      model: this,
+    });
+    this.#validators.delete(name);
+    this.emit('validatorRemoved', {
+      validator: { name },
+      model: this,
+    });
+    this.emit('change', {
+      type: 'validatorRemoved',
+      validator: { name, body: validator },
+      model: this,
+    });
   }
 
   // TODO: Rename to createRecord

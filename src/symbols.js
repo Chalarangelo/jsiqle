@@ -15,8 +15,6 @@ export default symbolizeAll(
   'keyType',
   'methods',
   'scopes',
-  'getField',
-  'isNameInUse',
   'relationships',
   'relationshipField',
   'validators',

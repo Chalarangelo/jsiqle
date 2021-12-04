@@ -1,62 +1,15 @@
 import {
-  validateName,
   validateRelationshipType,
-  validateRelationshipModel,
-  validateRelationshipForeignKey,
   createRelationshipField,
   reverseRelationship,
   parseModelsAndNames,
   isToOne,
-  isToMany,
   isFromOne,
   isSymmetric,
 } from 'src/utils';
 import symbols from 'src/symbols';
 
-const { $relationshipField, $getField, $key, $recordValue } = symbols;
-
-export class OldRelationship {
-  #name;
-  #type;
-  #model;
-  #foreignKey;
-  #relationshipField;
-
-  constructor({ name, type, model, foreignKey } = {}) {
-    this.#name = validateName('Relationship', name);
-    this.#type = validateRelationshipType(type);
-    this.#model = validateRelationshipModel(model);
-    this.#foreignKey = validateRelationshipForeignKey(foreignKey, this.#model);
-    this.#relationshipField = createRelationshipField(
-      this.#name,
-      this.#type,
-      this.#model[$getField](this.#foreignKey)
-    );
-  }
-
-  get(record) {
-    if (isToOne(this.#type)) {
-      return this.#model.records.get(record[this.#name]);
-    } else if (isToMany(this.#type)) {
-      const recordKeys = record[this.#name] || [];
-      return this.#model.records.where(associatedRecord => {
-        return recordKeys.includes(associatedRecord[this.#foreignKey]);
-      });
-    }
-  }
-
-  get name() {
-    return this.#name;
-  }
-
-  get type() {
-    return this.#type;
-  }
-
-  get [$relationshipField]() {
-    return this.#relationshipField;
-  }
-}
+const { $relationshipField, $key, $recordValue } = symbols;
 
 export class Relationship {
   #type;

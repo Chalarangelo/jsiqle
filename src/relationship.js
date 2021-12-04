@@ -36,7 +36,7 @@ export class Relationship {
     console.warn(
       'Relationships are experimental in the current version. There is neither validation of existence in foreign tables nor guarantee that associations work. Please use with caution.'
     );
-    this.#type = Relationship.#validateRelationshipType(type);
+    this.#type = Relationship.#validateType(type);
     const [fromModel, fromName, toModel, toName] =
       Relationship.#parseModelsAndNames(from, to, type);
     this.#from = fromModel;
@@ -53,7 +53,7 @@ export class Relationship {
         'Relationship cannot be symmetric if the from and to models are the same and no name is provided for either one.'
       );
 
-    this.#relationshipField = Relationship.#createRelationshipField(
+    this.#relationshipField = Relationship.#createField(
       this.#name,
       this.#type,
       this.#to[$key]
@@ -162,7 +162,7 @@ export class Relationship {
     );
   }
 
-  static #createRelationshipField(name, relationshipType, foreignField) {
+  static #createField(name, relationshipType, foreignField) {
     // TODO: Potentially add a check if the other model contains the key(s)?
     const isSingleSource = Relationship.#isFromOne(relationshipType);
     const isMultiple = Relationship.#isToMany(relationshipType);
@@ -195,13 +195,13 @@ export class Relationship {
     return relationshipField;
   }
 
-  static #validateRelationshipType(relationshipType) {
+  static #validateType(relationshipType) {
     if (!Object.values(relationshipEnum).includes(relationshipType))
       throw new TypeError(`Invalid relationship type: ${relationshipType}.`);
     return relationshipType;
   }
 
-  static #validateRelationshipModel(modelData) {
+  static #validateModel(modelData) {
     const modelName =
       typeof modelData === 'string' ? modelData : modelData.model;
     if (!Model[$instances].has(modelName))
@@ -210,18 +210,18 @@ export class Relationship {
     return Model[$instances].get(modelName);
   }
 
-  static #createRelationshipName(type, to) {
+  static #createName(type, to) {
     if (Relationship.#isToOne(type)) return to.toLowerCase();
     if (Relationship.#isToMany(type)) return `${to.toLowerCase()}Set`;
   }
 
-  static #createReverseRelationshipName = (type, from) => {
+  static #createReverseName = (type, from) => {
     if (Relationship.#isFromOne(type)) return from.toLowerCase();
     if (Relationship.#isFromMany(type)) return `${from.toLowerCase()}Set`;
   };
 
   static #validateModelParams(modelData) {
-    const model = Relationship.#validateRelationshipModel(modelData);
+    const model = Relationship.#validateModel(modelData);
     const name =
       typeof modelData === 'string'
         ? null
@@ -234,12 +234,9 @@ export class Relationship {
     [fromModel, fromName] = Relationship.#validateModelParams(from);
     [toModel, toName] = Relationship.#validateModelParams(to);
     if (fromName === null)
-      fromName = Relationship.#createRelationshipName(type, toModel.name);
+      fromName = Relationship.#createName(type, toModel.name);
     if (toName === null)
-      toName = Relationship.#createReverseRelationshipName(
-        type,
-        fromModel.name
-      );
+      toName = Relationship.#createReverseName(type, fromModel.name);
     return [fromModel, fromName, toModel, toName];
   }
 }

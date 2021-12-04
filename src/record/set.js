@@ -299,7 +299,7 @@ class RecordSet extends Map {
   // Protected (package internal-use only)
 
   [$addScope](name, scope) {
-    RecordSet.#validateRecordSetMethod('Scope', name, scope, this.#scopes);
+    RecordSet.#validateMethod('Scope', name, scope, this.#scopes);
     if (this[name])
       throw new NameError(`Scope name ${name} is already in use.`);
 
@@ -313,7 +313,7 @@ class RecordSet extends Map {
 
   [$removeScope](name) {
     this.#scopes.delete(
-      RecordSet.#validateRecordSetContains('Scope', name, this.#scopes)
+      RecordSet.#validateContains('Scope', name, this.#scopes)
     );
     delete this[name];
   }
@@ -330,12 +330,7 @@ class RecordSet extends Map {
 
   // Private
 
-  static #validateRecordSetMethod(
-    callbackType,
-    callbackName,
-    callback,
-    callbacks
-  ) {
+  static #validateMethod(callbackType, callbackName, callback, callbacks) {
     if (typeof callback !== 'function')
       throw new TypeError(`${callbackType} ${callbackName} is not a function.`);
 
@@ -347,7 +342,7 @@ class RecordSet extends Map {
     return callback;
   }
 
-  static #validateRecordSetContains(objectType, objectName, objects) {
+  static #validateContains(objectType, objectName, objects) {
     if (!objects.has(objectName))
       throw new ReferenceError(`${objectType} ${objectName} does not exist.`);
 

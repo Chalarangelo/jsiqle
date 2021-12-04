@@ -21,9 +21,9 @@ class Field {
     validators = {},
   }) {
     this.#name = validateName('Field', name);
-    this.#required = Field.#validateFieldRequired(required);
-    this.#type = Field.#validateFieldType(type, required);
-    this.#defaultValue = Field.#validateFieldDefaultValue(
+    this.#required = Field.#validateRequired(required);
+    this.#type = Field.#validateType(type, required);
+    this.#defaultValue = Field.#validateDefaultValue(
       defaultValue,
       this.#type,
       this.#required
@@ -64,21 +64,21 @@ class Field {
 
   // Private
 
-  static #validateFieldType(type, required) {
+  static #validateType(type, required) {
     if (typeof type !== 'function') {
       throw new TypeError('Field type must be a function.');
     }
     return required ? type : types.optional(type);
   }
 
-  static #validateFieldRequired(required) {
+  static #validateRequired(required) {
     if (typeof required !== 'boolean') {
       throw new TypeError('Field required must be a boolean.');
     }
     return required;
   }
 
-  static #validateFieldDefaultValue(defaultValue, type, required) {
+  static #validateDefaultValue(defaultValue, type, required) {
     if (required && types.nil(defaultValue))
       throw new ValidationError('Default value cannot be null or undefined.');
     if (!type(defaultValue))

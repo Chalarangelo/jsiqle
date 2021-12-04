@@ -1,19 +1,16 @@
 import EventEmitter from 'events';
+import { Field } from 'src/field';
 import { RecordSet, RecordHandler } from 'src/record';
-import { NameError, DuplicationError } from 'src/errors';
+import { NameError, DuplicationError, DefaultValueError } from 'src/errors';
 import symbols from 'src/symbols';
-import {
-  parseModelKey,
-  parseModelField,
-  validateName,
-  validateModelMethod,
-  validateModelContains,
-  applyModelFieldRetrofill,
-} from 'src/utils';
+import { standardTypes, key } from 'src/types';
+import { validateObjectWithUniqueName, validateName } from 'src/utils';
 
 const {
   $fields,
+  $defaultValue,
   $key,
+  $keyType,
   $methods,
   $scopes,
   $relationships,
@@ -23,6 +20,14 @@ const {
   $removeScope,
   $instances,
 } = symbols;
+
+const allStandardTypes = [
+  ...Object.keys(standardTypes),
+  ...Object.keys(standardTypes).map(type => `${type}Required`),
+  'enum',
+  'enumRequired',
+  'auto',
+];
 
 // TODO: When adding methods, we must check if a field exists with the same name
 // or the key has the same name. Similarly, when adding fields, we must check if
@@ -65,7 +70,7 @@ export class Model extends EventEmitter {
     this.#recordHandler = new RecordHandler(this);
 
     // Check and create the key field, no need to check for duplicate fields
-    this.#key = parseModelKey(this.name, key);
+    this.#key = Model.#parseModelKey(this.name, key);
 
     // Initialize private fields
     this.#fields = new Map();
@@ -105,7 +110,7 @@ export class Model extends EventEmitter {
   addField(fieldOptions, retrofill) {
     if (!this.#updatingField)
       this.emit('beforeAddField', { field: fieldOptions, model: this });
-    const field = parseModelField(this.name, fieldOptions, [
+    const field = Model.#parseModelField(this.name, fieldOptions, [
       ...this.#fields.keys(),
       this.#key.name,
       ...this.#methods.keys(),
@@ -116,7 +121,7 @@ export class Model extends EventEmitter {
     // TODO: This before might be erroneous if the retrofill is non-existent
     // Evaluate for V2, we might want to check and not emit events.
     this.emit('beforeRetrofillField', { field, retrofill, model: this });
-    applyModelFieldRetrofill(field, this.#records, retrofill);
+    Model.#applyModelFieldRetrofill(field, this.#records, retrofill);
     this.emit('fieldRetrofilled', { field, retrofill, model: this });
     if (!this.#updatingField)
       this.emit('change', { type: 'fieldAdded', field, model: this });
@@ -124,7 +129,8 @@ export class Model extends EventEmitter {
   }
 
   removeField(name) {
-    if (!validateModelContains(this.name, 'Field', name, this.#fields)) return;
+    if (!Model.#validateModelContains(this.name, 'Field', name, this.#fields))
+      return;
     const field = this.#fields.get(name);
     if (!this.#updatingField)
       this.emit('beforeRemoveField', { field, model: this });
@@ -156,7 +162,7 @@ export class Model extends EventEmitter {
     });
     this.#methods.set(
       name,
-      validateModelMethod('Method', name, method, [
+      Model.#validateModelMethod('Method', name, method, [
         ...this.#fields.keys(),
         this.#key.name,
         ...this.#methods.keys(),
@@ -174,7 +180,7 @@ export class Model extends EventEmitter {
   }
 
   removeMethod(name) {
-    if (!validateModelContains(this.name, 'Method', name, this.#methods))
+    if (!Model.#validateModelContains(this.name, 'Method', name, this.#methods))
       return;
     const method = this.#methods.get(name);
     this.emit('beforeRemoveMethod', {
@@ -212,7 +218,12 @@ export class Model extends EventEmitter {
 
   removeScope(name) {
     if (
-      !validateModelContains(this.name, 'Scope', name, this.#records[$scopes])
+      !Model.#validateModelContains(
+        this.name,
+        'Scope',
+        name,
+        this.#records[$scopes]
+      )
     )
       return;
     const scope = this.#records[$scopes].get(name);
@@ -284,12 +295,19 @@ export class Model extends EventEmitter {
   addValidator(name, validator) {
     this.#validators.set(
       name,
-      validateModelMethod('Validator', name, validator, this.#validators)
+      Model.#validateModelMethod('Validator', name, validator, this.#validators)
     );
   }
 
   removeValidator(name) {
-    if (validateModelContains(this.name, 'Validator', name, this.#validators))
+    if (
+      Model.#validateModelContains(
+        this.name,
+        'Validator',
+        name,
+        this.#validators
+      )
+    )
       this.#validators.delete(name);
   }
 
@@ -325,6 +343,125 @@ export class Model extends EventEmitter {
 
   get [$validators]() {
     return this.#validators;
+  }
+
+  // Private
+
+  static #createKey(options) {
+    let name = 'id';
+    let type = 'string';
+    if (typeof options === 'string') name = options;
+    else if (typeof options === 'object') {
+      name = options.name || name;
+      type = options.type || type;
+    }
+
+    let keyField;
+
+    if (type === 'string') {
+      keyField = new Field({
+        name,
+        type: key,
+        required: true,
+        defaultValue: '__emptyKey__',
+      });
+      // Override the default value to throw an error
+      Object.defineProperty(keyField, $defaultValue, {
+        get() {
+          throw new DefaultValueError(
+            `Key field ${name} does not have a default value.`
+          );
+        },
+      });
+    } else if (type === 'auto') keyField = Field.auto(name);
+    // Additional property to get the type from the model
+    Object.defineProperty(keyField, $keyType, {
+      get() {
+        return type;
+      },
+    });
+
+    return keyField;
+  }
+
+  static #parseModelKey(modelName, key) {
+    if (typeof key !== 'string' && typeof key !== 'object')
+      throw new TypeError(`${modelName} key ${key} is not a string or object.`);
+
+    if (typeof key === 'object' && !key.name)
+      throw new TypeError(`${modelName} key ${key} is missing a name.`);
+
+    if (typeof key === 'object' && !['auto', 'string'].includes(key.type))
+      throw new TypeError(
+        `${modelName} key ${key} type must be either "string" or "auto".`
+      );
+
+    const _key = Model.#createKey(key);
+    return _key;
+  }
+
+  static #parseModelField(modelName, field, restrictedNames) {
+    validateObjectWithUniqueName(
+      {
+        objectType: 'Field',
+        parentType: 'Model',
+        parentName: modelName,
+      },
+      field,
+      restrictedNames
+    );
+
+    const isStandardType = allStandardTypes.includes(field.type);
+
+    if (isStandardType) return Field[field.type](field);
+    else if (typeof field.type === 'function')
+      console.warn(
+        `The provided type for ${field.name} is not part of the standard types. Function types are experimental and may go away in a later release.`
+      );
+    return new Field(field);
+  }
+
+  static #validateModelMethod(
+    callbackType,
+    callbackName,
+    callback,
+    restrictedNames
+  ) {
+    if (typeof callback !== 'function')
+      throw new TypeError(`${callbackType} ${callbackName} is not a function.`);
+
+    if (restrictedNames.includes(callbackName))
+      throw new DuplicationError(
+        `${callbackType} ${callbackName} already exists.`
+      );
+
+    return callback;
+  }
+
+  static #validateModelContains(modelName, objectType, objectName, objects) {
+    if (!objects.has(objectName)) {
+      console.warn(
+        `Model ${modelName} does not contain a ${objectType.toLowerCase()} named ${objectName}.`
+      );
+      return false;
+    }
+    return true;
+  }
+
+  static #applyModelFieldRetrofill(field, records, retrofill) {
+    if (!field.required && retrofill === undefined) return;
+
+    const retrofillFunction =
+      retrofill !== undefined
+        ? typeof retrofill === 'function'
+          ? retrofill
+          : () => retrofill
+        : record =>
+            record[field.name] ? record[field.name] : field[$defaultValue];
+
+    records.forEach(record => {
+      record[field.name] = retrofillFunction(record);
+    });
   }
 }
 

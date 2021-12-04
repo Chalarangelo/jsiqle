@@ -1,9 +1,10 @@
 import EventEmitter from 'events';
+import { Model } from 'src/model';
+import { Relationship } from 'src/relationship';
 import {
   capitalize,
+  validateObjectWithUniqueName,
   validateName,
-  parseModel,
-  parseRelationship,
 } from 'src/utils';
 
 /**
@@ -34,7 +35,7 @@ export class Schema extends EventEmitter {
    */
   createModel(modelData) {
     this.emit('beforeCreateModel', { model: modelData, schema: this });
-    const model = parseModel(this.name, modelData, this.#models);
+    const model = Schema.#parseModel(this.name, modelData, this.#models);
 
     this.#models.set(model.name, model);
 
@@ -85,7 +86,7 @@ export class Schema extends EventEmitter {
       relationship: relationshipData,
       schema: this,
     });
-    const relationship = parseRelationship(
+    const relationship = Schema.#parseRelationship(
       this.name,
       relationshipData,
       this.#models
@@ -143,6 +144,50 @@ export class Schema extends EventEmitter {
 
     const result = rest.reduce((acc, key) => acc[key], record);
     this.emit('got', { pathName, result, schema: this });
+  }
+
+  // Private
+
+  static #parseModel(schemaName, modelData, models) {
+    validateObjectWithUniqueName(
+      {
+        objectType: 'Model',
+        parentType: 'Schema',
+        parentName: schemaName,
+      },
+      modelData,
+      [...models.keys()]
+    );
+    return new Model(modelData);
+  }
+
+  static #parseRelationship(schemName, relationshipData, models) {
+    const { from, to, type /* , cascade */ } = relationshipData;
+    [from, to].forEach(model => {
+      if (!['string', 'object'].includes(typeof model))
+        throw new TypeError(`Invalid relationship model: ${model}.`);
+    });
+
+    const fromModelName = typeof from === 'string' ? from : from.model;
+    const toModelName = typeof to === 'string' ? to : to.model;
+
+    const fromModel = models.get(fromModelName);
+    const toModel = models.get(toModelName);
+    if (!fromModel)
+      throw new ReferenceError(
+        `Model ${fromModelName} not found in schema ${schemName} when attempting to create a relationship.`
+      );
+    if (!toModel)
+      throw new ReferenceError(
+        `Model ${toModelName} not found in schema ${schemName} when attempting to create a relationship.`
+      );
+
+    const relationship = new Relationship({ from, to, type });
+
+    fromModel.addRelationship(relationship.assocation, relationship);
+    toModel.addRelationship(relationship.reverseAssocation, relationship);
+
+    return relationship;
   }
 
   // TODO: Add a way to create symmetrical relationships here

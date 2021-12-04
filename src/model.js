@@ -17,6 +17,8 @@ const {
   $validators,
   $recordHandler,
   $addScope,
+  $addRelationshipAsField,
+  $addRelationshipAsMethod,
   $removeScope,
   $instances,
 } = symbols;
@@ -47,7 +49,6 @@ export class Model extends EventEmitter {
     key = 'id',
     methods = {},
     scopes = {},
-    relationships = {},
     validators = {},
     // TODO: Actually add named listeners here and store them in a symbol
     // so that it's easier to detach them when we want to.
@@ -86,13 +87,6 @@ export class Model extends EventEmitter {
       this.addScope(scopeName, scope);
     });
 
-    // Add relationships, checking for duplicates and invalids
-    Object.entries(relationships).forEach(
-      ([relationshipName, relationship]) => {
-        this.addRelationship(relationshipName, relationship);
-      }
-    );
-
     // Add validators, checking for duplicates and invalids
     Object.entries(validators).forEach(([validatorName, validator]) => {
       this.addValidator(validatorName, validator);
@@ -126,7 +120,7 @@ export class Model extends EventEmitter {
 
   removeField(name) {
     if (!Model.#validateModelContains(this.name, 'Field', name, this.#fields))
-      return;
+      return false;
     const field = this.#fields.get(name);
     if (!this.#updatingField)
       this.emit('beforeRemoveField', { field, model: this });
@@ -135,6 +129,7 @@ export class Model extends EventEmitter {
       this.emit('fieldRemoved', { field: { name }, model: this });
       this.emit('change', { type: 'fieldRemoved', field, model: this });
     }
+    return true;
   }
 
   updateField(name, field, retrofill) {
@@ -223,7 +218,7 @@ export class Model extends EventEmitter {
         this.#records[$scopes]
       )
     )
-      return;
+      return false;
     const scope = this.#records[$scopes].get(name);
     this.emit('beforeRemoveScope', {
       scope: { name, body: scope },
@@ -239,49 +234,7 @@ export class Model extends EventEmitter {
       scope: { name, body: scope },
       model: this,
     });
-  }
-
-  // TODO: Internalize and refactor
-  addRelationship([relationshipName, relationshipField], relationship) {
-    this.emit('beforeAddRelationship', {
-      relationship: {
-        name: relationshipName,
-        type: relationship.getType(this.modelName, relationshipName),
-      },
-      model: this,
-    });
-    if (
-      [
-        ...this.#fields.keys(),
-        this.#key.name,
-        ...this.#methods.keys(),
-      ].includes(relationshipName)
-    )
-      throw new NameError(
-        `Relationship field ${relationshipField} is already in use.`
-      );
-    if (this.#relationships.has(relationshipName))
-      throw new NameError(
-        `Relationship ${relationshipName} is already in use.`
-      );
-
-    this.#fields.set(relationshipName, relationshipField);
-    this.#relationships.set(relationshipName, relationship);
-    this.emit('relationshipAdded', {
-      relationship: {
-        name: relationshipName,
-        type: relationship.getType(this.modelName, relationshipName),
-      },
-      model: this,
-    });
-    this.emit('change', {
-      type: 'relationshipAdded',
-      relationship: {
-        name: relationshipName,
-        type: relationship.getType(this.modelName, relationshipName),
-      },
-      model: this,
-    });
+    return true;
   }
 
   addValidator(name, validator) {
@@ -314,7 +267,7 @@ export class Model extends EventEmitter {
         this.#validators
       )
     )
-      return;
+      return false;
     const validator = this.#validators.get(name);
     this.emit('beforeRemoveValidator', {
       validator: { name, body: validator },
@@ -330,17 +283,52 @@ export class Model extends EventEmitter {
       validator: { name, body: validator },
       model: this,
     });
+    return true;
   }
 
-  // TODO: Rename to createRecord
-  add(record) {
+  // Record operations do not emit 'change' events by design
+  createRecord(record) {
+    this.emit('beforeCreateRecord', { record, model: this });
     const [newRecordKey, newRecord] = this.#recordHandler.createRecord(record);
     this.#records.set(newRecordKey, newRecord);
+    this.emit('recordCreated', { newRecord, model: this });
     return newRecord;
   }
 
-  // TODO: Add removeRecord
-  // TODO: Add updateRecord
+  removeRecord(recordKey) {
+    if (!this.#records.has(recordKey)) {
+      console.warn(`Record ${recordKey} does not exist.`);
+      return false;
+    }
+    const record = this.#records.get(recordKey);
+    this.emit('beforeRemoveRecord', { record, model: this });
+    this.#records.delete(record.key);
+    this.emit('recordRemoved', {
+      record: { [this.#key.name]: recordKey },
+      model: this,
+    });
+    return true;
+  }
+
+  updateRecord(recordKey, record) {
+    if (!this.#records.has(recordKey)) {
+      throw new ReferenceError(`Record ${recordKey} does not exist.`);
+    }
+    const oldRecord = this.#records.get(recordKey);
+    this.emit('beforeUpdateRecord', {
+      record: oldRecord,
+      newRecord: { [this.#key.name]: recordKey, ...record },
+      model: this,
+    });
+    Object.entries(record).forEach(([fieldName, fieldValue]) => {
+      oldRecord[fieldName] = fieldValue;
+    });
+    this.emit('recordUpdated', {
+      record: oldRecord,
+      model: this,
+    });
+    return oldRecord;
+  }
 
   get records() {
     return this.#records;
@@ -374,6 +362,80 @@ export class Model extends EventEmitter {
 
   get [$validators]() {
     return this.#validators;
+  }
+
+  [$addRelationshipAsField](relationship) {
+    const { name, type, fieldName, field } = relationship.getField();
+    const relationshipName = `${name}.${fieldName}`;
+    this.emit('beforeAddRelationship', {
+      relationship: { name, type },
+      model: this,
+    });
+    if (
+      [
+        ...this.#fields.keys(),
+        this.#key.name,
+        ...this.#methods.keys(),
+      ].includes(fieldName)
+    )
+      throw new NameError(`Relationship field ${fieldName} is already in use.`);
+    if (this.#relationships.has(relationshipName))
+      throw new NameError(
+        `Relationship ${relationshipName} is already in use.`
+      );
+
+    this.#fields.set(fieldName, field);
+    this.#relationships.set(relationshipName, relationship);
+
+    this.emit('relationshipAdded', {
+      relationship: { name, type },
+      model: this,
+    });
+    this.emit('change', {
+      type: 'relationshipAdded',
+      relationship: {
+        relationship: { name, type },
+        model: this,
+      },
+      model: this,
+    });
+  }
+
+  [$addRelationshipAsMethod](relationship) {
+    const { name, type, methodName, method } = relationship.getMethod();
+    const relationshipName = `${name}.${methodName}`;
+    this.emit('beforeAddRelationship', {
+      relationship: { name, type },
+      model: this,
+    });
+    if (
+      [
+        ...this.#fields.keys(),
+        this.#key.name,
+        ...this.#methods.keys(),
+      ].includes(methodName)
+    )
+      throw new NameError(
+        `Relationship method ${methodName} is already in use.`
+      );
+    if (this.#relationships.has(relationshipName))
+      throw new NameError(`Relationship ${name} is already in use.`);
+
+    this.#methods.set(methodName, method);
+    this.#relationships.set(relationshipName, relationship);
+
+    this.emit('relationshipAdded', {
+      relationship: { name, type },
+      model: this,
+    });
+    this.emit('change', {
+      type: 'relationshipAdded',
+      relationship: {
+        relationship: { name, type },
+        model: this,
+      },
+      model: this,
+    });
   }
 
   // Private

@@ -6,6 +6,13 @@ import {
   validateObjectWithUniqueName,
   validateName,
 } from 'src/utils';
+import symbols from 'src/symbols';
+
+const { $addRelationshipAsField, $addRelationshipAsMethod } = symbols;
+
+// TODO: Add a config object with something like:
+// - `experimentalAPIMessages`: 'warn', 'error', 'off'
+// - More?!
 
 /**
  * A Schema is a collection of models.
@@ -86,7 +93,7 @@ export class Schema extends EventEmitter {
       relationship: relationshipData,
       schema: this,
     });
-    const relationship = Schema.#parseRelationship(
+    const relationship = Schema.#applyRelationship(
       this.name,
       relationshipData,
       this.#models
@@ -160,7 +167,7 @@ export class Schema extends EventEmitter {
     return new Model(modelData);
   }
 
-  static #parseRelationship(schemName, relationshipData, models) {
+  static #applyRelationship(schemName, relationshipData, models) {
     const { from, to, type /* , cascade */ } = relationshipData;
     [from, to].forEach(model => {
       if (!['string', 'object'].includes(typeof model))
@@ -183,9 +190,8 @@ export class Schema extends EventEmitter {
 
     const relationship = new Relationship({ from, to, type });
 
-    // TODO: Ensure the toModel gets a relationship method instead of a field!
-    fromModel.addRelationship(relationship.assocation, relationship);
-    toModel.addRelationship(relationship.reverseAssocation, relationship);
+    fromModel[$addRelationshipAsField](relationship);
+    toModel[$addRelationshipAsMethod](relationship);
 
     return relationship;
   }

@@ -115,19 +115,21 @@ class RecordHandler {
     return this.model[$methods].get(property)(record[$recordValue]);
   }
 
-  hasRelationship(property) {
-    return this.model[$relationships].has(property);
-  }
-
-  isRelationshipReceiver(property) {
-    return this.model[$relationships]
-      .get(property)
-      .isReceiver(this.getModelName(), property);
+  hasRelationshipField(property) {
+    // A relationship field exists if a field with the same name exists and
+    // a relationship exists named `${property}.${property}`. This is due to
+    // relationships being stored as a `.`-delimited tuple of the relationship
+    // name and the field/method name. In the case of the field name, it's the
+    // same as the actual relationship name.
+    if (!this.hasField(property)) return false;
+    return this.model[$relationships].has(`${property}.${property}`);
   }
 
   getRelationship(record, property) {
+    // Get the relationship from the field only. The field name matches that of
+    // the relationship, so the relationship key is ${property}.${property}`.
     return this.model[$relationships]
-      .get(property)
+      .get(`${property}.${property}`)
       .get(this.getModelName(), property, record[$recordValue]);
   }
 
@@ -155,12 +157,12 @@ class RecordHandler {
 
   get(record, property) {
     // Check relationships first to avoid matching them as fields
-    if (this.hasRelationship(property))
+    if (this.hasRelationshipField(property))
       return this.getRelationship(record, property);
     // Key or field, return as-is
     if (this.isModelKey(property) || this.hasField(property))
       return this.getFieldValue(record, property);
-    // Method, get and call
+    // Method, get and call, this also matches relationship reverses (methods)
     if (this.hasMethod(property)) return this.getMethod(record, property);
     // Serialize method, call and return
     if (this.isCallToSerialize(property))
@@ -174,32 +176,17 @@ class RecordHandler {
     return undefined;
   }
 
-  set(record, property, value, receiver, initCall) {
+  set(record, property, value, receiver, skipValidation) {
     // Receiver is the same as record but never used (API compatibility)
     const recordValue = record[$recordValue];
     const recordKey = this.getKeyValue(record);
     const otherRecords = this.model.records.except(recordKey);
-    // Ensure non-writables are not overwritten (e.g. methods and relationships)
-    if (this.hasRelationship(property)) {
-      if (this.isRelationshipReceiver(property) && !initCall) {
-        throw new TypeError(
-          `Cannot set ${this.getModelName()} record ${recordKey} relationship ${property} to ${value}. This model is a relationship receiver, please apply this update in reverse.`
-        );
-        // TODO: V2 enhancements
-        // Probably figure out a clean way to implement the reverse relationship
-        // update. Very expensive, but otherwise we'd have to remove symmetry
-        // and implement a method to get the reverse relationship. Which might
-        // not be the worst idea in the world!
-      } else {
-        const field = this.getField(property);
-        RecordHandler.#setRecordField(
-          this.model.name,
-          recordValue,
-          field,
-          value
-        );
-      }
-    }
+    // Throw an error when trying to set a method, also catches
+    // relationship reverses, safeguarding against issues there.
+    if (this.hasMethod(property))
+      throw new TypeError(
+        `${this.getModelName()} record ${recordKey} cannot set method ${property}.`
+      );
     // Validate and set field, warn if field is not defined
     if (this.hasField(property)) {
       const field = this.getField(property);
@@ -216,9 +203,9 @@ class RecordHandler {
       recordValue[property] = value;
     }
     // Perform model validations
-    // The last argument, `initCall`, is used to skip validation
+    // The last argument, `skipValidation`, is used to skip validation
     // and should only ever be set to `true` by the by the handler itself.
-    if (!initCall) {
+    if (!skipValidation) {
       this.getValidators().forEach((validator, validatorName) => {
         if (!validator(recordValue, otherRecords))
           throw new RangeError(

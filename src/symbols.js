@@ -24,6 +24,8 @@ export default symbolizeAll(
   'recordTag',
   'defaultValue',
   'addScope',
+  'addRelationshipAsField',
+  'addRelationshipAsMethod',
   'removeScope',
   'copyScopes',
   'instances',

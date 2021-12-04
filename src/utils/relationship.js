@@ -25,38 +25,30 @@ export const isFromMany = type =>
 export const isSymmetric = type =>
   [relationshipEnum.oneToOne, relationshipEnum.manyToMany].includes(type);
 
-export const reverseRelationship = type => {
-  switch (type) {
-    case relationshipEnum.oneToOne:
-      return relationshipEnum.oneToOne;
-    case relationshipEnum.oneToMany:
-      return relationshipEnum.manyToOne;
-    case relationshipEnum.manyToOne:
-      return relationshipEnum.oneToMany;
-    case relationshipEnum.manyToMany:
-      return relationshipEnum.manyToMany;
-    default:
-      throw new RangeError(`Unknown relationship type: ${type}`);
-  }
-};
-
 export const createRelationshipField = (
   name,
   relationshipType,
   foreignField
 ) => {
+  // TODO: Potentially add a check if the other model contains the key(s)?
+  const isSingleSource = isFromOne(relationshipType);
   const isMultiple = isToMany(relationshipType);
   const type = isMultiple
     ? types.arrayOf(value => foreignField.typeCheck(value))
     : value => foreignField.typeCheck(value);
-  // TODO: Add validators so that the field can verify uniqueness (in case of array)
-  // and existence in general?
+  const validators = {};
+  // oneToOne means that for each record in the to model, there is at most
+  // one record in the from model. No overlap.
+  if (isSingleSource && !isMultiple) validators.unique = true;
+  // toMany relationships are not allowed to have duplicate values.
+  if (isMultiple) validators.uniqueValues = true;
 
   const relationshipField = new Field({
     name,
     type,
     required: false,
     defaultValue: null,
+    validators,
   });
   // Override the default value to throw an error
   Object.defineProperty(relationshipField, $defaultValue, {

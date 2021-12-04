@@ -73,7 +73,7 @@ const category = schema.createModel({
   ],
 });
 
-const snippetA = snippet.add({
+const snippetA = snippet.createRecord({
   name: 'snippetA',
   description: 'description of snippetA',
   code: 'console.log("Hello World!");',
@@ -81,7 +81,7 @@ const snippetA = snippet.add({
   tags: ['hello', 'world'],
 });
 
-const snippetB = snippet.add({
+const snippetB = snippet.createRecord({
   name: 'snippetB',
   description: 'description of snippetB',
   code: 'console.log("Hello World!");',
@@ -89,12 +89,12 @@ const snippetB = snippet.add({
   papaya: 'banana',
 });
 
-const categoryA = category.add({
+const categoryA = category.createRecord({
   name: 'categoryA',
   description: 'description of categoryA',
 });
 
-const categoryB = category.add({
+const categoryB = category.createRecord({
   name: 'categoryB',
   description: 'description of categoryB',
 });
@@ -131,7 +131,7 @@ schema.createRelationship({
   type: 'oneToMany',
 });
 
-const snippetC = snippet.add({
+const snippetC = snippet.createRecord({
   name: 'snippetC',
   description: 'description of snippetC',
   code: 'console.log("Hello World!");',

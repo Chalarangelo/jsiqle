@@ -29,11 +29,6 @@ const allStandardTypes = [
   'auto',
 ];
 
-// TODO: When adding methods, we must check if a field exists with the same name
-// or the key has the same name. Similarly, when adding fields, we must check if
-// a method exists with the same name. We just need a good old getter to grab
-// all names real quick, otherwise it's complete chaos.
-// Also methods might want to be name validated.
 export class Model extends EventEmitter {
   #records;
   #recordHandler;
@@ -54,7 +49,7 @@ export class Model extends EventEmitter {
     scopes = {},
     relationships = {},
     validators = {},
-    // Actually add named listeners here and store them in a symbol
+    // TODO: Actually add named listeners here and store them in a symbol
     // so that it's easier to detach them when we want to.
     // hooks,
   } = {}) {
@@ -118,8 +113,9 @@ export class Model extends EventEmitter {
     this.#fields.set(fieldOptions.name, field);
     if (!this.#updatingField) this.emit('fieldAdded', { field, model: this });
     // Retrofill records with new fields
-    // TODO: This before might be erroneous if the retrofill is non-existent
-    // Evaluate for V2, we might want to check and not emit events.
+    // TODO: V2 enhancements
+    // This before might be erroneous if the retrofill is non-existent. We could
+    // check for that and skip emitting the event if it's not there.
     this.emit('beforeRetrofillField', { field, retrofill, model: this });
     Model.#applyModelFieldRetrofill(field, this.#records, retrofill);
     this.emit('fieldRetrofilled', { field, retrofill, model: this });
@@ -160,8 +156,9 @@ export class Model extends EventEmitter {
       method: { name, body: method },
       model: this,
     });
+    const methodName = validateName('Method', name);
     this.#methods.set(
-      name,
+      methodName,
       Model.#validateModelMethod('Method', name, method, [
         ...this.#fields.keys(),
         this.#key.name,
@@ -169,12 +166,12 @@ export class Model extends EventEmitter {
       ])
     );
     this.emit('methodAdded', {
-      method: { name, body: method },
+      method: { name: methodName, body: method },
       model: this,
     });
     this.emit('change', {
       type: 'methodAdded',
-      method: { name, body: method },
+      method: { name: methodName, body: method },
       model: this,
     });
   }
@@ -204,14 +201,15 @@ export class Model extends EventEmitter {
       scope: { name, body: scope },
       model: this,
     });
-    this.#records[$addScope](name, scope);
+    const scopeName = validateName('Scope', name);
+    this.#records[$addScope](scopeName, scope);
     this.emit('scopeAdded', {
-      scope: { name, body: scope },
+      scope: { name: scopeName, body: scope },
       model: this,
     });
     this.emit('change', {
       type: 'scopeAdded',
-      scope: { name, body: scope },
+      scope: { name: scopeName, body: scope },
       model: this,
     });
   }
@@ -243,7 +241,7 @@ export class Model extends EventEmitter {
     });
   }
 
-  // TODO: Internalize!
+  // TODO: Internalize and refactor
   addRelationship([relationshipName, relationshipField], relationship) {
     this.emit('beforeAddRelationship', {
       relationship: {
@@ -286,12 +284,7 @@ export class Model extends EventEmitter {
     });
   }
 
-  add(record) {
-    const [newRecordKey, newRecord] = this.#recordHandler.createRecord(record);
-    this.#records.set(newRecordKey, newRecord);
-    return newRecord;
-  }
-
+  // TODO: Properly eventize this.
   addValidator(name, validator) {
     this.#validators.set(
       name,
@@ -299,6 +292,7 @@ export class Model extends EventEmitter {
     );
   }
 
+  // TODO: Properly eventize this.
   removeValidator(name) {
     if (
       Model.#validateModelContains(
@@ -310,6 +304,16 @@ export class Model extends EventEmitter {
     )
       this.#validators.delete(name);
   }
+
+  // TODO: Rename to createRecord
+  add(record) {
+    const [newRecordKey, newRecord] = this.#recordHandler.createRecord(record);
+    this.#records.set(newRecordKey, newRecord);
+    return newRecord;
+  }
+
+  // TODO: Add removeRecord
+  // TODO: Add updateRecord
 
   get records() {
     return this.#records;

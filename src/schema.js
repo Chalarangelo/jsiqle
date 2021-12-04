@@ -121,7 +121,6 @@ export class Schema extends EventEmitter {
    * @returns The value at the specified path.
    */
   get(pathName) {
-    // TODO: Decide upon `.` or `/` as path separator
     this.emit('beforeGet', { pathName, schema: this });
     const [modelName, recordKey, ...rest] = pathName.split('.');
     const model = this.getModel(modelName);
@@ -184,14 +183,12 @@ export class Schema extends EventEmitter {
 
     const relationship = new Relationship({ from, to, type });
 
+    // TODO: Ensure the toModel gets a relationship method instead of a field!
     fromModel.addRelationship(relationship.assocation, relationship);
     toModel.addRelationship(relationship.reverseAssocation, relationship);
 
     return relationship;
   }
-
-  // TODO: Add a way to create symmetrical relationships here
-  // e.g. category with many snippets -> category.snippets + snippet.category
 
   // TODO: V2 enhancements
   // Add a mechanism here so that plugins can hook up to the schema via the

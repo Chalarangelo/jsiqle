@@ -50,6 +50,7 @@ export const createRelationshipField = (
     ? types.arrayOf(value => foreignField.typeCheck(value))
     : value => foreignField.typeCheck(value);
   // TODO: Add validators so that the field can verify uniqueness (in case of array)
+  // and existence in general?
 
   const relationshipField = new Field({
     name,

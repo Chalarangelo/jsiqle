@@ -54,25 +54,23 @@ const createKey = options => {
   return keyField;
 };
 
-export const parseModelKey = (modelName, key, fields) => {
+export const parseModelKey = (modelName, key) => {
   if (typeof key !== 'string' && typeof key !== 'object')
-    throw new TypeError(`Key ${key} is not a string or object.`);
+    throw new TypeError(`${modelName} key ${key} is not a string or object.`);
 
   if (typeof key === 'object' && !key.name)
-    throw new TypeError(`Key ${key} is missing a name.`);
+    throw new TypeError(`${modelName} key ${key} is missing a name.`);
 
   if (typeof key === 'object' && !['auto', 'string'].includes(key.type))
-    throw new TypeError(`Key ${key} type must be either "string" or "auto".`);
+    throw new TypeError(
+      `${modelName} key ${key} type must be either "string" or "auto".`
+    );
 
   const _key = createKey(key);
-  if (fields.has(_key.name))
-    throw new DuplicationError(
-      `Model ${modelName} already has a field named ${_key.name}.`
-    );
   return _key;
 };
 
-export const parseModelField = (modelName, field, fields, key) => {
+export const parseModelField = (modelName, field, restrictedNames) => {
   validateObjectWithUniqueName(
     {
       objectType: 'Field',
@@ -80,7 +78,7 @@ export const parseModelField = (modelName, field, fields, key) => {
       parentName: modelName,
     },
     field,
-    [...fields.keys(), key]
+    restrictedNames
   );
 
   const isStandardType = allStandardTypes.includes(field.type);

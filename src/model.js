@@ -66,15 +66,19 @@ export class Model extends EventEmitter {
     this.#records = new RecordSet();
     this.#recordHandler = new RecordHandler(this);
 
-    // Add fields, checking for duplicates and invalids
+    // Check and create the key field, no need to check for duplicate fields
+    this.#key = parseModelKey(this.name, key);
+
+    // Initialize private fields
     this.#fields = new Map();
+    this.#methods = new Map();
+    this.#relationships = new Map();
+    this.#validators = new Map();
+
+    // Add fields, checking for duplicates and invalids
     fields.forEach(field => this.addField(field));
 
-    // Check and create the key field
-    this.#key = parseModelKey(this.name, key, this.#fields);
-
     // Add methods, checking for duplicates and invalids
-    this.#methods = new Map();
     Object.entries(methods).forEach(([methodName, method]) => {
       this.addMethod(methodName, method);
     });
@@ -85,7 +89,6 @@ export class Model extends EventEmitter {
     });
 
     // Add relationships, checking for duplicates and invalids
-    this.#relationships = new Map();
     Object.entries(relationships).forEach(
       ([relationshipName, relationship]) => {
         this.addRelationship(relationshipName, relationship);
@@ -93,7 +96,6 @@ export class Model extends EventEmitter {
     );
 
     // Add validators, checking for duplicates and invalids
-    this.#validators = new Map();
     Object.entries(validators).forEach(([validatorName, validator]) => {
       this.addValidator(validatorName, validator);
     });
@@ -105,12 +107,11 @@ export class Model extends EventEmitter {
   addField(fieldOptions, retrofill) {
     if (!this.#updatingField)
       this.emit('beforeAddField', { field: fieldOptions, model: this });
-    const field = parseModelField(
-      this.name,
-      fieldOptions,
-      this.#fields,
-      this.#key
-    );
+    const field = parseModelField(this.name, fieldOptions, [
+      ...this.#fields.keys(),
+      this.#key.name,
+      ...this.#methods.keys(),
+    ]);
     this.#fields.set(fieldOptions.name, field);
     if (!this.#updatingField) this.emit('fieldAdded', { field, model: this });
     // Retrofill records with new fields

@@ -1,4 +1,5 @@
 import { Field } from 'src/field';
+import { Schema } from 'src/schema';
 import { DefaultValueError } from 'src/errors';
 import { Model } from 'src/model';
 import { validateName } from 'src/utils';
@@ -13,6 +14,7 @@ const {
   $get,
   $defaultValue,
   $instances,
+  $handleExperimentalAPIMessage,
 } = symbols;
 
 const relationshipEnum = {
@@ -31,9 +33,11 @@ export class Relationship {
   #relationshipField; // relationship field in the from model
   #relationshipMethod; // relationship method in the to model
 
-  // TODO: cascade
+  // TODO: V2 enhancements
+  // After the API for relationships is stable-ish, figure out a way to add
+  // cascade.
   constructor({ from, to, type } = {}) {
-    console.warn(
+    Schema[$handleExperimentalAPIMessage](
       'Relationships are experimental in the current version. There is neither validation of existence in foreign tables nor guarantee that associations work. Please use with caution.'
     );
     this.#type = Relationship.#validateType(type);
@@ -163,7 +167,8 @@ export class Relationship {
   }
 
   static #createField(name, relationshipType, foreignField) {
-    // TODO: Potentially add a check if the other model contains the key(s)?
+    // TODO: V2 enhancements
+    // Potentially add a check if the other model contains the key(s)?
     const isSingleSource = Relationship.#isFromOne(relationshipType);
     const isMultiple = Relationship.#isToMany(relationshipType);
     const type = isMultiple

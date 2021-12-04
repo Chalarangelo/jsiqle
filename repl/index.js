@@ -46,6 +46,9 @@ const schema = new Schema({
       ],
     },
   ],
+  config: {
+    experimentalAPIMessages: 'off',
+  },
 });
 
 schema.on('beforeCreateModel', ({ model }) => {

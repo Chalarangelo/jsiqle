@@ -1,6 +1,7 @@
 import EventEmitter from 'events';
 import { Model } from 'src/model';
 import { Relationship } from 'src/relationship';
+import { ExperimentalAPIUsageError } from 'src/errors';
 import {
   capitalize,
   validateObjectWithUniqueName,
@@ -8,11 +9,11 @@ import {
 } from 'src/utils';
 import symbols from 'src/symbols';
 
-const { $addRelationshipAsField, $addRelationshipAsMethod } = symbols;
-
-// TODO: Add a config object with something like:
-// - `experimentalAPIMessages`: 'warn', 'error', 'off'
-// - More?!
+const {
+  $addRelationshipAsField,
+  $addRelationshipAsMethod,
+  $handleExperimentalAPIMessage,
+} = symbols;
 
 /**
  * A Schema is a collection of models.
@@ -25,12 +26,21 @@ const { $addRelationshipAsField, $addRelationshipAsMethod } = symbols;
 export class Schema extends EventEmitter {
   #models;
 
+  static defaultConfig = {
+    experimentalAPIMessages: 'warn',
+  };
+
+  static config = {
+    ...Schema.defaultConfig,
+  };
+
   static #schemas = new Map();
 
-  constructor({ name, models = [] } = {}) {
+  constructor({ name, models = [], config = {} } = {}) {
     super();
     this.name = validateName('Schema', name);
     this.#models = new Map();
+    Schema.#parseConfig(config);
 
     models.forEach(model => this.createModel(model));
   }
@@ -82,7 +92,8 @@ export class Schema extends EventEmitter {
       );
     this.#models.delete(name);
 
-    // TODO: Figure out a cascade for relationships
+    // TODO: V2 enhancements
+    // Figure out a way to add cascade for relationships
 
     this.emit('modelRemoved', { model: { name }, schema: this });
     this.emit('change', { type: 'modelRemoved', model, schema: this });
@@ -152,6 +163,16 @@ export class Schema extends EventEmitter {
     this.emit('got', { pathName, result, schema: this });
   }
 
+  // Protected (package internal-use only)
+  static [$handleExperimentalAPIMessage](message) {
+    const { experimentalAPIMessages } = Schema.config;
+    if (experimentalAPIMessages === 'warn') {
+      console.warn(message);
+    } else if (experimentalAPIMessages === 'error') {
+      throw new ExperimentalAPIUsageError(message);
+    }
+  }
+
   // Private
 
   static #parseModel(schemaName, modelData, models) {
@@ -194,6 +215,16 @@ export class Schema extends EventEmitter {
     toModel[$addRelationshipAsMethod](relationship);
 
     return relationship;
+  }
+
+  static #parseConfig(config = {}) {
+    if (!config) return;
+    ['experimentalAPIMessages'].forEach(key => {
+      if (config[key] !== undefined) {
+        if (['warn', 'error', 'off'].includes(config[key]))
+          Schema.config[key] = config[key];
+      }
+    });
   }
 
   // TODO: V2 enhancements

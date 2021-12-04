@@ -25,3 +25,10 @@ export class DefaultValueError extends Error {
     this.name = 'DefaultValueError';
   }
 }
+
+export class ExperimentalAPIUsageError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'ExperimentalAPIUsageError';
+  }
+}

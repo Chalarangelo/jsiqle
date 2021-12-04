@@ -1,4 +1,5 @@
 import EventEmitter from 'events';
+import { Schema } from 'src/schema';
 import { Field } from 'src/field';
 import { RecordSet, RecordHandler } from 'src/record';
 import { NameError, DuplicationError, DefaultValueError } from 'src/errors';
@@ -23,6 +24,7 @@ const {
   $getMethod,
   $removeScope,
   $instances,
+  $handleExperimentalAPIMessage,
 } = symbols;
 
 const allStandardTypes = [
@@ -499,10 +501,11 @@ export class Model extends EventEmitter {
     const isStandardType = allStandardTypes.includes(field.type);
 
     if (isStandardType) return Field[field.type](field);
-    else if (typeof field.type === 'function')
-      console.warn(
+    else if (typeof field.type === 'function') {
+      Schema[$handleExperimentalAPIMessage](
         `The provided type for ${field.name} is not part of the standard types. Function types are experimental and may go away in a later release.`
       );
+    }
     return new Field(field);
   }
 

@@ -33,5 +33,6 @@ export default symbolizeAll(
   'instances',
   'isRecord',
   'groupTag',
-  'get'
+  'get',
+  '$handleExperimentalAPIMessage'
 );

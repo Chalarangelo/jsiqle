@@ -3,30 +3,6 @@ import types from 'src/types';
 import symbols from 'src/symbols';
 const { $fields, $key, $keyType, $recordValue, $defaultValue } = symbols;
 
-export const validateRecordSetMethod = (
-  callbackType,
-  callbackName,
-  callback,
-  callbacks
-) => {
-  if (typeof callback !== 'function')
-    throw new TypeError(`${callbackType} ${callbackName} is not a function.`);
-
-  if (callbacks.has(callbackName))
-    throw new DuplicationError(
-      `${callbackType} ${callbackName} already exists.`
-    );
-
-  return callback;
-};
-
-export const validateRecordSetContains = (objectType, objectName, objects) => {
-  if (!objects.has(objectName))
-    throw new ReferenceError(`${objectType} ${objectName} does not exist.`);
-
-  return objectName;
-};
-
 export const setRecordField = (modelName, record, field, value) => {
   // Set the default value if the field is null or undefined
   const recordValue =

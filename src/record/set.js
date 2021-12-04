@@ -1,10 +1,6 @@
 import symbols from 'src/symbols';
-import {
-  allEqualBy,
-  validateRecordSetMethod,
-  validateRecordSetContains,
-} from 'src/utils';
-import { NameError } from 'src/errors';
+import { allEqualBy } from 'src/utils';
+import { NameError, DuplicationError } from 'src/errors';
 import PartialRecord from './partial';
 import RecordFragment from './fragment';
 import RecordGroup from './group';
@@ -238,52 +234,6 @@ class RecordSet extends Map {
     return this.filter((value, key, map) => !callbackFn(value, key, map));
   }
 
-  /* istanbul ignore next */
-  get [Symbol.toStringTag]() {
-    const records = [...this.values()];
-    try {
-      const firstModel = records[0][$recordModel].name;
-      if (allEqualBy(records, value => value[$recordModel].name === firstModel))
-        return firstModel;
-    } catch (e) {
-      return '';
-    }
-    return '';
-  }
-
-  /* istanbul ignore next */
-  static get [Symbol.species]() {
-    return Map;
-  }
-
-  [$addScope](name, scope) {
-    validateRecordSetMethod('Scope', name, scope, this.#scopes);
-    if (this[name])
-      throw new NameError(`Scope name ${name} is already in use.`);
-
-    this.#scopes.set(name, scope);
-    Object.defineProperty(this, name, {
-      get: () => {
-        return this.where(this.#scopes.get(name));
-      },
-    });
-  }
-
-  [$removeScope](name) {
-    this.#scopes.delete(validateRecordSetContains('Scope', name, this.#scopes));
-    delete this[name];
-  }
-
-  [$copyScopes](otherRecordSet) {
-    otherRecordSet[$scopes].forEach((scope, name) => {
-      this[$addScope](name, scope);
-    });
-  }
-
-  get [$scopes]() {
-    return this.#scopes;
-  }
-
   *batchIterator(batchSize) {
     let batch = [];
     for (const [key, value] of this) {
@@ -326,6 +276,82 @@ class RecordSet extends Map {
       obj[key] = value;
       return obj;
     }, {});
+  }
+
+  /* istanbul ignore next */
+  get [Symbol.toStringTag]() {
+    const records = [...this.values()];
+    try {
+      const firstModel = records[0][$recordModel].name;
+      if (allEqualBy(records, value => value[$recordModel].name === firstModel))
+        return firstModel;
+    } catch (e) {
+      return '';
+    }
+    return '';
+  }
+
+  /* istanbul ignore next */
+  static get [Symbol.species]() {
+    return Map;
+  }
+
+  // Protected (package internal-use only)
+
+  [$addScope](name, scope) {
+    RecordSet.#validateRecordSetMethod('Scope', name, scope, this.#scopes);
+    if (this[name])
+      throw new NameError(`Scope name ${name} is already in use.`);
+
+    this.#scopes.set(name, scope);
+    Object.defineProperty(this, name, {
+      get: () => {
+        return this.where(this.#scopes.get(name));
+      },
+    });
+  }
+
+  [$removeScope](name) {
+    this.#scopes.delete(
+      RecordSet.#validateRecordSetContains('Scope', name, this.#scopes)
+    );
+    delete this[name];
+  }
+
+  [$copyScopes](otherRecordSet) {
+    otherRecordSet[$scopes].forEach((scope, name) => {
+      this[$addScope](name, scope);
+    });
+  }
+
+  get [$scopes]() {
+    return this.#scopes;
+  }
+
+  // Private
+
+  static #validateRecordSetMethod(
+    callbackType,
+    callbackName,
+    callback,
+    callbacks
+  ) {
+    if (typeof callback !== 'function')
+      throw new TypeError(`${callbackType} ${callbackName} is not a function.`);
+
+    if (callbacks.has(callbackName))
+      throw new DuplicationError(
+        `${callbackType} ${callbackName} already exists.`
+      );
+
+    return callback;
+  }
+
+  static #validateRecordSetContains(objectType, objectName, objects) {
+    if (!objects.has(objectName))
+      throw new ReferenceError(`${objectType} ${objectName} does not exist.`);
+
+    return objectName;
   }
 }
 

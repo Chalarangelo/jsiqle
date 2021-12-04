@@ -94,12 +94,12 @@ export const validateModelMethod = (
   callbackType,
   callbackName,
   callback,
-  callbacks
+  restrictedNames
 ) => {
   if (typeof callback !== 'function')
     throw new TypeError(`${callbackType} ${callbackName} is not a function.`);
 
-  if (callbacks.has(callbackName))
+  if (restrictedNames.includes(callbackName))
     throw new DuplicationError(
       `${callbackType} ${callbackName} already exists.`
     );

@@ -156,7 +156,11 @@ export class Model extends EventEmitter {
     });
     this.#methods.set(
       name,
-      validateModelMethod('Method', name, method, this.#methods)
+      validateModelMethod('Method', name, method, [
+        ...this.#fields.keys(),
+        this.#key.name,
+        ...this.#methods.keys(),
+      ])
     );
     this.emit('methodAdded', {
       method: { name, body: method },

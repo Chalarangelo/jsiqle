@@ -1,15 +1,14 @@
 import Record from './record';
+import { DuplicationError } from 'src/errors';
+import types from 'src/types';
 import symbols from 'src/symbols';
-import {
-  deepClone,
-  setRecordField,
-  recordToObject,
-  validateNewRecordKey,
-} from 'src/utils';
+import { deepClone } from 'src/utils';
 
 const {
   $fields,
+  $defaultValue,
   $key,
+  $keyType,
   $methods,
   $relationships,
   $validators,
@@ -28,7 +27,7 @@ class RecordHandler {
     if (!recordData) throw new TypeError('Record data cannot be empty.');
     const modelName = this.getModelName();
     // Validate record key
-    const newRecordKey = validateNewRecordKey(
+    const newRecordKey = RecordHandler.#validateNewRecordKey(
       modelName,
       this.getKey(),
       recordData[this.getKey().name],
@@ -165,7 +164,7 @@ class RecordHandler {
     if (this.hasMethod(property)) return this.getMethod(record, property);
     // Serialize method, call and return
     if (this.isCallToSerialize(property))
-      return recordToObject(record, this.model, this);
+      return RecordHandler.#recordToObject(record, this.model, this);
     // Call toString method, return key value
     if (this.isCallToString(property)) return this.getKeyValue(record);
     // Known symbol, handle as required
@@ -193,13 +192,18 @@ class RecordHandler {
         // not be the worst idea in the world!
       } else {
         const field = this.getField(property);
-        setRecordField(this.model.name, recordValue, field, value);
+        RecordHandler.#setRecordField(
+          this.model.name,
+          recordValue,
+          field,
+          value
+        );
       }
     }
     // Validate and set field, warn if field is not defined
     if (this.hasField(property)) {
       const field = this.getField(property);
-      setRecordField(this.model.name, recordValue, field, value);
+      RecordHandler.#setRecordField(this.model.name, recordValue, field, value);
       // Never skip individual field validation
       field[$validators].forEach((validator, validatorName) => {
         if (!validator(recordValue, otherRecords))
@@ -224,6 +228,78 @@ class RecordHandler {
     }
     return true;
   }
+
+  // Private methods
+
+  static #setRecordField(modelName, record, field, value) {
+    // Set the default value if the field is null or undefined
+    const recordValue =
+      field.required && types.nil(value) ? field[$defaultValue] : value;
+    if (!field.typeCheck(recordValue))
+      // Throw an error if the field value is invalid
+      throw new TypeError(
+        `${modelName} record has invalid value for field ${field.name}.`
+      );
+    record[field.name] = recordValue;
+  }
+
+  static #recordToObject(record, model, handler) {
+    const recordValue = record[$recordValue];
+    const fields = model[$fields];
+    const key = model[$key].name;
+    const object = {
+      [key]: recordValue[key],
+    };
+
+    fields.forEach(field => {
+      const value = recordValue[field.name];
+      if (value !== undefined) object[field.name] = recordValue[field.name];
+    });
+
+    const toObject = ({ include = [] } = {}) => {
+      let result = object;
+
+      // e.g. include: ['category', 'siblings.category']
+      const included = include.map(name => {
+        const [field, ...props] = name.split('.');
+        return [field, props.join('.')];
+      });
+
+      included.forEach(([includedField, props]) => {
+        if (object[includedField]) {
+          if (Array.isArray(object[includedField])) {
+            const records = handler.get(record, includedField);
+            object[includedField] = records.map(record =>
+              record.toObject({ include: [props] })
+            );
+          } else {
+            object[includedField] = handler
+              .get(record, includedField)
+              .toObject({ include: [props] });
+          }
+        }
+      });
+      return result;
+    };
+
+    return toObject;
+  }
+
+  static #validateNewRecordKey = (modelName, modelKey, recordKey, records) => {
+    let newRecordKey = recordKey;
+
+    if (modelKey[$keyType] === 'string' && !modelKey.typeCheck(newRecordKey))
+      throw new TypeError(
+        `${modelName} record has invalid value for key ${modelKey.name}.`
+      );
+    if (modelKey[$keyType] === 'auto') newRecordKey = modelKey[$defaultValue];
+
+    if (records.has(newRecordKey))
+      throw new DuplicationError(
+        `${modelName} record with key ${newRecordKey} already exists.`
+      );
+    return newRecordKey;
+  };
 }
 
 export default RecordHandler;

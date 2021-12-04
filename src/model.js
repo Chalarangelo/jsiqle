@@ -5,7 +5,6 @@ import symbols from 'src/symbols';
 import {
   parseModelKey,
   parseModelField,
-  parseModelRelationship,
   validateName,
   validateModelMethod,
   validateModelContains,
@@ -18,7 +17,6 @@ const {
   $methods,
   $scopes,
   $relationships,
-  $relationshipField,
   $validators,
   $recordHandler,
   $addScope,
@@ -239,7 +237,23 @@ export class Model extends EventEmitter {
       },
       model: this,
     });
+    if (
+      [
+        ...this.#fields.keys(),
+        this.#key.name,
+        ...this.#methods.keys(),
+      ].includes(relationshipName)
+    )
+      throw new NameError(
+        `Relationship field ${relationshipField} is already in use.`
+      );
+    if (this.#relationships.has(relationshipName))
+      throw new NameError(
+        `Relationship ${relationshipName} is already in use.`
+      );
+
     this.#fields.set(relationshipName, relationshipField);
+    this.#relationships.set(relationshipName, relationship);
     this.emit('relationshipAdded', {
       relationship: {
         name: relationshipName,
@@ -255,24 +269,6 @@ export class Model extends EventEmitter {
       },
       model: this,
     });
-    this.#relationships.set(relationshipName, relationship);
-  }
-
-  // TODO: Evaluate these a bit more
-  // TODO: No remove? fishy!
-  // Most likely createRelationship should only be exposed from the schema and
-  // not the model!!!
-  createRelationship(relationshipOptions) {
-    this.emit('beforeAddRelationship', relationshipOptions);
-    const relationship = parseModelRelationship(
-      this.name,
-      relationshipOptions,
-      this.#fields,
-      this.#key
-    );
-    this.#fields.set(relationship.name, relationship[$relationshipField]);
-    this.#relationships.set(relationship.name, relationship);
-    this.emit('relationshipAdd', relationshipOptions);
   }
 
   add(record) {

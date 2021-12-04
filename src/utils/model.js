@@ -1,5 +1,4 @@
 import { Field } from 'src/field';
-import { Relationship } from 'src/relationship';
 import { DuplicationError, DefaultValueError } from 'src/errors';
 import { standardTypes, key } from 'src/types';
 import { validateObjectWithUniqueName } from './common';
@@ -89,24 +88,6 @@ export const parseModelField = (modelName, field, restrictedNames) => {
       `The provided type for ${field.name} is not part of the standard types. Function types are experimental and may go away in a later release.`
     );
   return new Field(field);
-};
-
-export const parseModelRelationship = (
-  modelName,
-  relationship,
-  fields,
-  key
-) => {
-  validateObjectWithUniqueName(
-    {
-      objectType: 'Relationship',
-      parentType: 'Model',
-      parentName: modelName,
-    },
-    relationship,
-    [...fields.keys(), key]
-  );
-  return new Relationship(relationship);
 };
 
 export const validateModelMethod = (

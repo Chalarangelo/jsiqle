@@ -9,7 +9,7 @@ import {
 } from 'src/utils';
 import symbols from 'src/symbols';
 
-const { $relationshipField, $key, $recordValue } = symbols;
+const { $key, $recordValue } = symbols;
 
 export class Relationship {
   #type;
@@ -111,10 +111,6 @@ export class Relationship {
 
   isReceiver(modelName, property) {
     return modelName === this.#to.name && property === this.#reverseName;
-  }
-
-  get [$relationshipField]() {
-    return this.#relationshipField;
   }
 
   get assocation() {

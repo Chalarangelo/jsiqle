@@ -35,8 +35,23 @@ export class Validator {
     return value => regex.test(value[field]);
   }
 
-  // TODO: sorted array
-  // TODO: unique values in array
+  static uniqueValues(field) {
+    return value => new Set(value[field]).size === value[field].length;
+  }
+
+  static sortedAscending(field) {
+    return value =>
+      value[field].every(
+        (item, index) => index === 0 || item >= value[field][index - 1]
+      );
+  }
+
+  static sortedDescending(field) {
+    return value =>
+      value[field].every(
+        (item, index) => index === 0 || item <= value[field][index - 1]
+      );
+  }
 
   static custom(field, fn) {
     return (value, data) =>

@@ -16,6 +16,7 @@ const {
   $recordModel,
   $recordTag,
   $isRecord,
+  $get,
 } = symbols;
 
 class RecordHandler {
@@ -70,6 +71,7 @@ class RecordHandler {
   }
 
   /*  ======  Utility methods  ======  */
+  // TODO: Internalize these!
 
   getModelName() {
     return this.model.name;
@@ -130,7 +132,7 @@ class RecordHandler {
     // the relationship, so the relationship key is ${property}.${property}`.
     return this.model[$relationships]
       .get(`${property}.${property}`)
-      .get(this.getModelName(), property, record[$recordValue]);
+      [$get](this.getModelName(), property, record[$recordValue]);
   }
 
   isCallToSerialize(property) {

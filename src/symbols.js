@@ -26,9 +26,12 @@ export default symbolizeAll(
   'addScope',
   'addRelationshipAsField',
   'addRelationshipAsMethod',
+  'getField',
+  'getMethod',
   'removeScope',
   'copyScopes',
   'instances',
   'isRecord',
-  'groupTag'
+  'groupTag',
+  'get'
 );

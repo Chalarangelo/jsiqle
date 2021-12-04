@@ -19,6 +19,8 @@ const {
   $addScope,
   $addRelationshipAsField,
   $addRelationshipAsMethod,
+  $getField,
+  $getMethod,
   $removeScope,
   $instances,
 } = symbols;
@@ -365,7 +367,7 @@ export class Model extends EventEmitter {
   }
 
   [$addRelationshipAsField](relationship) {
-    const { name, type, fieldName, field } = relationship.getField();
+    const { name, type, fieldName, field } = relationship[$getField]();
     const relationshipName = `${name}.${fieldName}`;
     this.emit('beforeAddRelationship', {
       relationship: { name, type },
@@ -402,7 +404,7 @@ export class Model extends EventEmitter {
   }
 
   [$addRelationshipAsMethod](relationship) {
-    const { name, type, methodName, method } = relationship.getMethod();
+    const { name, type, methodName, method } = relationship[$getMethod]();
     const relationshipName = `${name}.${methodName}`;
     this.emit('beforeAddRelationship', {
       relationship: { name, type },

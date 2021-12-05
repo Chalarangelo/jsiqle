@@ -1,4 +1,9 @@
-import { deepClone, allEqualBy, validateName } from 'src/utils';
+import {
+  deepClone,
+  allEqualBy,
+  validateName,
+  validateObjectWithUniqueName,
+} from 'src/utils';
 
 describe('deepClone', () => {
   it('deep clones an oject', () => {
@@ -32,14 +37,59 @@ describe('allEqualBy', () => {
   });
 });
 
+describe('validateObjectWithUniqueName', () => {
+  it('throws when passed a non-object value', () => {
+    expect(() =>
+      validateObjectWithUniqueName(
+        {
+          objectType: 'object',
+          parentType: 'parent',
+          parentName: 'myParent',
+        },
+        'myObject',
+        []
+      )
+    ).toThrow();
+  });
+
+  it('throws when the object name is already in the collection', () => {
+    expect(() =>
+      validateObjectWithUniqueName(
+        {
+          objectType: 'object',
+          parentType: 'parent',
+          parentName: 'myParent',
+        },
+        { name: 'myObject' },
+        ['myObject']
+      )
+    ).toThrow();
+  });
+
+  it('returns true for a valid object value', () => {
+    expect(
+      validateObjectWithUniqueName(
+        {
+          objectType: 'object',
+          parentType: 'parent',
+          parentName: 'myParent',
+        },
+        { name: 'myObject' },
+        []
+      )
+    ).toBe(true);
+  });
+});
+
 describe('validateName', () => {
   it('returns if name is valid', () => {
     expect(() => validateName('Field', 'test')).not.toThrow();
     expect(() => validateName('Field', 'test1')).not.toThrow();
     expect(() => validateName('Field', '_test')).not.toThrow();
+    expect(() => validateName('Other', 'toString')).not.toThrow();
   });
 
-  it('returns false if name is invalid', () => {
+  it('throws if name is invalid', () => {
     expect(() => validateName('Field', 1)).toThrow();
     expect(() => validateName('Field', '')).toThrow();
     expect(() => validateName('Field', undefined)).toThrow();

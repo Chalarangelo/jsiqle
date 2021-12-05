@@ -152,6 +152,7 @@ export class Schema extends EventEmitter {
       );
 
     if (recordKey === undefined) return model;
+    // TODO: Account for keys that are auto, and not strings
     const record = model.records.get(recordKey);
 
     if (!record) {

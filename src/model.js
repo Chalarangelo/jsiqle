@@ -139,6 +139,8 @@ export class Model extends EventEmitter {
   updateField(name, field, retrofill) {
     if (field.name !== name)
       throw new NameError(`Field name ${field.name} does not match ${name}.`);
+    if (!Model.#validateContains(this.name, 'Field', name, this.#fields))
+      throw new ReferenceError(`Field ${name} does not exist.`);
     const prevField = this.#fields.get(name);
     // Ensure that only update events are emitted, not add/remove ones.
     this.#updatingField = true;
@@ -177,7 +179,7 @@ export class Model extends EventEmitter {
 
   removeMethod(name) {
     if (!Model.#validateContains(this.name, 'Method', name, this.#methods))
-      return;
+      return false;
     const method = this.#methods.get(name);
     this.emit('beforeRemoveMethod', {
       method: { name, body: method },
@@ -193,6 +195,7 @@ export class Model extends EventEmitter {
       method: { name, body: method },
       model: this,
     });
+    return true;
   }
 
   addScope(name, scope) {
@@ -244,7 +247,9 @@ export class Model extends EventEmitter {
     // Validators are not name-validated by design.
     this.#validators.set(
       name,
-      Model.#validateMethod('Validator', name, validator, this.#validators)
+      Model.#validateMethod('Validator', name, validator, [
+        ...this.#validators.keys(),
+      ])
     );
     this.emit('validatorAdded', {
       validator: { name, body: validator },
@@ -296,7 +301,7 @@ export class Model extends EventEmitter {
     }
     const record = this.#records.get(recordKey);
     this.emit('beforeRemoveRecord', { record, model: this });
-    this.#records.delete(record.key);
+    this.#records.delete(recordKey);
     this.emit('recordRemoved', {
       record: { [this.#key.name]: recordKey },
       model: this,
@@ -305,9 +310,10 @@ export class Model extends EventEmitter {
   }
 
   updateRecord(recordKey, record) {
-    if (!this.#records.has(recordKey)) {
+    if (typeof record !== 'object')
+      throw new TypeError('Record data must be an object.');
+    if (!this.#records.has(recordKey))
       throw new ReferenceError(`Record ${recordKey} does not exist.`);
-    }
     const oldRecord = this.#records.get(recordKey);
     this.emit('beforeUpdateRecord', {
       record: oldRecord,
@@ -439,6 +445,8 @@ export class Model extends EventEmitter {
     let type = 'string';
     if (typeof options === 'string') name = options;
     else if (typeof options === 'object') {
+      // Don't worry about these two being uncovered, they are a safeguard
+      // that should never be reached under normal circumstances.
       name = options.name || name;
       type = options.type || type;
     }
@@ -454,6 +462,7 @@ export class Model extends EventEmitter {
       });
       // Override the default value to throw an error
       Object.defineProperty(keyField, $defaultValue, {
+        /* istanbul ignore next */
         get() {
           throw new DefaultValueError(
             `Key field ${name} does not have a default value.`

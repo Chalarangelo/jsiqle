@@ -10,7 +10,6 @@ describe('Field', () => {
     expect(() => new Field({ name: undefined })).toThrow();
     expect(() => new Field({ name: '' })).toThrow();
     expect(() => new Field({ name: ' ' })).toThrow();
-    expect(() => new Field({ name: '_a' })).toThrow();
     expect(() => new Field({ name: '1' })).toThrow();
     expect(() => new Field({ name: 'a&1*b' })).toThrow();
   });

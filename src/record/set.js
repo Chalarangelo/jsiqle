@@ -305,6 +305,7 @@ class RecordSet extends Map {
 
     this.#scopes.set(name, scope);
     Object.defineProperty(this, name, {
+      configurable: true, // Allows deletion in $removeScope
       get: () => {
         return this.where(this.#scopes.get(name));
       },

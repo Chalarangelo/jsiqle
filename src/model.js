@@ -54,9 +54,9 @@ export class Model extends EventEmitter {
     methods = {},
     scopes = {},
     validators = {},
-    // TODO: Actually add named listeners here and store them in a symbol
-    // so that it's easier to detach them when we want to.
-    // hooks,
+    // TODO: V2 Enhancements
+    // Adding a hooks parameter would be an interesting idea. There's a blind
+    // spot currently where we can't listen for events on model creation.
   } = {}) {
     super();
     this.name = validateName('Model', name);

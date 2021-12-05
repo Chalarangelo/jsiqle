@@ -1,20 +1,14 @@
-const jedql = require('../dist/main').default;
+const jsiqle = require('../dist/main').default;
 const repl = require('repl');
 
 let replServer = repl.start({
-  prompt: 'jedql > ',
+  prompt: 'jsiqle > ',
 });
 
-replServer.context.jedql = jedql;
-
-Object.keys(jedql).forEach(key => {
-  replServer.context[key] = jedql[key];
-});
+replServer.context.jsiqle = jsiqle;
 
 // Demos
-const { Schema } = jedql;
-
-const schema = new Schema({
+const schema = jsiqle.create({
   name: 'mySchema',
   models: [
     {

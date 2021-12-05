@@ -94,6 +94,7 @@ export class Relationship {
       return this.#getAssociatedRecords(record);
     }
     // When to model is specified, reverse the relationship before applying it
+    /* istanbul ignore next */
     if (modelName === this.#to.name && property === this.#reverseName) {
       console.warn(
         'Relationship getter called by the receiver model. This might indicate an issue with the library and should be reported.'
@@ -245,5 +246,3 @@ export class Relationship {
     return [fromModel, fromName, toModel, toName];
   }
 }
-
-export default Relationship;

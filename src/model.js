@@ -552,5 +552,3 @@ export class Model extends EventEmitter {
     });
   }
 }
-
-export default Model;

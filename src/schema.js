@@ -125,6 +125,9 @@ export class Schema extends EventEmitter {
     return this.#models;
   }
 
+  // TODO: Make users use this instead of the constructor, using a private flag.
+  // Use another private flag to throw if more than one schema is created
+  // (not supported for this release).
   static create(name) {
     return new Schema(name);
   }

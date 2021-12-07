@@ -53,6 +53,9 @@ export const validateName = (objectType, name) => {
 export const capitalize = ([first, ...rest]) =>
   first.toUpperCase() + rest.join('');
 
+export const reverseCapitalize = ([first, ...rest]) =>
+  first.toLowerCase() + rest.join('');
+
 export const deepClone = obj => {
   if (obj === null) return null;
   let clone = Object.assign({}, obj);

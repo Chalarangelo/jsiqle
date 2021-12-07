@@ -1,14 +1,15 @@
 import { Field } from 'src/field';
 import { Schema } from 'src/schema';
-import { DefaultValueError } from 'src/errors';
+import { DefaultValueError, DuplicationError } from 'src/errors';
 import { Model } from 'src/model';
-import { validateName } from 'src/utils';
+import { validateName, reverseCapitalize } from 'src/utils';
 import types from 'src/types';
 import symbols from 'src/symbols';
 
 const {
   $key,
   $recordValue,
+  $fields,
   $getField,
   $getMethod,
   $get,
@@ -124,7 +125,8 @@ export class Relationship {
   #getAssociatedRecordsReverse(record) {
     const associationValue = record[this.#to[$key].name];
     const matcher = Relationship.#isToOne(this.#type)
-      ? associatedRecord => associatedRecord === associationValue
+      ? associatedRecord =>
+          associatedRecord[$recordValue][this.#name] === associationValue
       : associatedRecord => {
           const associatedRecordValue =
             associatedRecord[$recordValue][this.#name];
@@ -175,6 +177,9 @@ export class Relationship {
     const type = isMultiple
       ? types.arrayOf(value => foreignField.typeCheck(value))
       : value => foreignField.typeCheck(value);
+    // TODO: V2 enhancements
+    // Add a custom validator for symmetric relationships to ensure that a
+    // record does not reference itself in the relationship, creating a loop.
     const validators = {};
     // oneToOne means that for each record in the to model, there is at most
     // one record in the from model. No overlap.
@@ -186,7 +191,7 @@ export class Relationship {
       name,
       type,
       required: false,
-      defaultValue: null,
+      defaultValue: isMultiple ? [] : null,
       validators,
     });
     // Override the default value to throw an error
@@ -217,13 +222,13 @@ export class Relationship {
   }
 
   static #createName(type, to) {
-    if (Relationship.#isToOne(type)) return to.toLowerCase();
-    if (Relationship.#isToMany(type)) return `${to.toLowerCase()}Set`;
+    if (Relationship.#isToOne(type)) return reverseCapitalize(to);
+    if (Relationship.#isToMany(type)) return `${reverseCapitalize(to)}Set`;
   }
 
   static #createReverseName = (type, from) => {
-    if (Relationship.#isFromOne(type)) return from.toLowerCase();
-    if (Relationship.#isFromMany(type)) return `${from.toLowerCase()}Set`;
+    if (Relationship.#isFromOne(type)) return reverseCapitalize(from);
+    if (Relationship.#isFromMany(type)) return `${reverseCapitalize(from)}Set`;
   };
 
   static #validateModelParams(modelData) {
@@ -232,6 +237,10 @@ export class Relationship {
       typeof modelData === 'string'
         ? null
         : validateName('Field', modelData.name);
+    if (name !== null && model[$fields].has(name))
+      throw new DuplicationError(
+        `Field ${name} already exists in ${model.name}.`
+      );
     return [model, name];
   }
 

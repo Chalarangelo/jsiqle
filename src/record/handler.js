@@ -123,7 +123,10 @@ class RecordHandler {
       );
       // Never skip individual field validation
       field[$validators].forEach((validator, validatorName) => {
-        if (!validator(recordValue, otherRecords))
+        if (
+          ![null, undefined].includes(recordValue[property]) &&
+          !validator(recordValue, otherRecords)
+        )
           throw new RangeError(
             `${this.#getModelName()} record with key ${recordKey} failed validation for ${validatorName}.`
           );

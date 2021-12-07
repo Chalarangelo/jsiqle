@@ -175,6 +175,12 @@ class RecordSet extends Map {
     }).freeze();
   }
 
+  flatSelect(...keys) {
+    return [...this.values()].map(value =>
+      keys.reduce((obj, key) => ({ ...obj, [key]: value[key] }), {})
+    );
+  }
+
   pluck(...keys) {
     return new RecordSet({
       iterable: [...this.entries()].map(([key, value]) => {
@@ -183,6 +189,10 @@ class RecordSet extends Map {
       }),
       copyScopesFrom: this,
     }).freeze();
+  }
+
+  flatPluck(...keys) {
+    return [...this.values()].map(value => keys.map(key => value[key]));
   }
 
   // groupBy(key)

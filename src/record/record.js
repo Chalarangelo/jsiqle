@@ -13,6 +13,7 @@ class Record {
     return new Proxy(this, this.#recordHandler);
   }
 
+  /* istanbul ignore next */
   get [$recordHandler]() {
     return this.#recordHandler;
   }
@@ -21,16 +22,19 @@ class Record {
     return this.#recordValue;
   }
 
+  /* istanbul ignore next */
   get [$recordModel]() {
     return this.#recordHandler.model;
   }
 
+  /* istanbul ignore next */
   get [$recordTag]() {
     const model = this[$recordModel];
     const key = model[$key].name;
     return `${model.name}#${this[$recordValue][key]}`;
   }
 
+  /* istanbul ignore next */
   get [Symbol.toStringTag]() {
     return this[$recordTag];
   }

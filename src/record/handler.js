@@ -93,7 +93,7 @@ class RecordHandler {
     if (this.#isCallToSerialize(property))
       return RecordHandler.#recordToObject(record, this.#model, this);
     // Call toString method, return key value
-    if (this.#isCallToString(property)) return this.#getKeyValue(record);
+    if (this.#isCallToString(property)) return () => this.#getKeyValue(record);
     // Known symbol, handle as required
     if (this.#isKnownSymbol(property))
       return this.#getKnownSymbol(record, property);
@@ -113,6 +113,7 @@ class RecordHandler {
         `${this.#getModelName()} record ${recordKey} cannot set method ${property}.`
       );
     // Validate and set field, warn if field is not defined
+    /* istanbul ignore else*/
     if (this.#hasField(property)) {
       const field = this.#getField(property);
       RecordHandler.#setRecordField(
@@ -166,6 +167,7 @@ class RecordHandler {
   static #recordToObject(record, model, handler) {
     const recordValue = record[$recordValue];
     const fields = model[$fields];
+    const methods = model[$methods];
     const key = model[$key].name;
     const object = {
       [key]: recordValue[key],
@@ -176,10 +178,15 @@ class RecordHandler {
       if (value !== undefined) object[field.name] = recordValue[field.name];
     });
 
+    // TODO: V2 enhancements
+    // If we end up keeping this API, we might be interested in adding
+    // nesting that works correctly with relationships. Currently, you can
+    // only specify the relationship name, and it will serialize the
+    // full object. Examples like ['category', 'siblings.category'] should
+    // work eventually.
+    // We also need to account for nested arrays and objects etc.
     const toObject = ({ include = [] } = {}) => {
       let result = object;
-
-      // e.g. include: ['category', 'siblings.category']
       const included = include.map(name => {
         const [field, ...props] = name.split('.');
         return [field, props.join('.')];
@@ -197,6 +204,8 @@ class RecordHandler {
               .get(record, includedField)
               .toObject({ include: [props] });
           }
+        } else if (methods.has(includedField)) {
+          object[includedField] = handler.get(record, includedField);
         }
       });
       return result;

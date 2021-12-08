@@ -13,6 +13,8 @@ const {
   $addRelationshipAsField,
   $addRelationshipAsMethod,
   $handleExperimentalAPIMessage,
+  $key,
+  $keyType,
 } = symbols;
 
 /**
@@ -24,6 +26,7 @@ const {
  * the schema.
  */
 export class Schema extends EventEmitter {
+  #name;
   #models;
 
   static defaultConfig = {
@@ -38,9 +41,10 @@ export class Schema extends EventEmitter {
 
   constructor({ name, models = [], config = {} } = {}) {
     super();
-    this.name = validateName('Schema', name);
+    this.#name = validateName('Schema', name);
     this.#models = new Map();
     Schema.#parseConfig(config);
+    Schema.#schemas.set(this.#name, this);
 
     models.forEach(model => this.createModel(model));
   }
@@ -52,7 +56,7 @@ export class Schema extends EventEmitter {
    */
   createModel(modelData) {
     this.emit('beforeCreateModel', { model: modelData, schema: this });
-    const model = Schema.#parseModel(this.name, modelData, this.#models);
+    const model = Schema.#parseModel(this.#name, modelData, this.#models);
 
     this.#models.set(model.name, model);
 
@@ -88,7 +92,7 @@ export class Schema extends EventEmitter {
 
     if (!this.#models.has(name))
       throw new ReferenceError(
-        `Model ${name} does not exist in schema ${this.name}.`
+        `Model ${name} does not exist in schema ${this.#name}.`
       );
     this.#models.delete(name);
 
@@ -105,7 +109,7 @@ export class Schema extends EventEmitter {
       schema: this,
     });
     const relationship = Schema.#applyRelationship(
-      this.name,
+      this.#name,
       relationshipData,
       this.#models
     );
@@ -116,6 +120,13 @@ export class Schema extends EventEmitter {
       relationship,
       schema: this,
     });
+  }
+
+  /**
+   * Gets the schema's name.
+   */
+  get name() {
+    return this.#name;
   }
 
   /**
@@ -148,26 +159,29 @@ export class Schema extends EventEmitter {
 
     if (!model)
       throw new ReferenceError(
-        `Model ${modelName} does not exist in schema ${this.name}.`
+        `Model ${modelName} does not exist in schema ${this.#name}.`
       );
 
     if (recordKey === undefined) return model;
-    // TODO: Account for keys that are auto, and not strings
-    const record = model.records.get(recordKey);
+    const keyType = model[$key][$keyType];
+    const record = model.records.get(
+      keyType === 'string' ? recordKey : Number.parseInt(recordKey)
+    );
 
-    if (!record) {
-      if (rest.length)
-        throw new ReferenceError(
-          `Record ${recordKey} does not exist in model ${modelName}.`
-        );
-      return record;
-    }
+    if (!rest.length) return record;
+
+    if (!record)
+      throw new ReferenceError(
+        `Record ${recordKey} does not exist in model ${modelName}.`
+      );
 
     const result = rest.reduce((acc, key) => acc[key], record);
     this.emit('got', { pathName, result, schema: this });
+    return result;
   }
 
   // Protected (package internal-use only)
+  /* istanbul ignore next */
   static [$handleExperimentalAPIMessage](message) {
     const { experimentalAPIMessages } = Schema.config;
     if (experimentalAPIMessages === 'warn') {

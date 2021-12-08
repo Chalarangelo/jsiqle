@@ -97,6 +97,9 @@ describe('Model', () => {
       () => new Model({ ...modelParams, scopes: { toString: () => null } })
     ).toThrow();
     expect(
+      () => new Model({ ...modelParams, scopes: { map: () => null } })
+    ).toThrow();
+    expect(
       () => new Model({ ...modelParams, scopes: { '2d': () => null } })
     ).toThrow();
   });

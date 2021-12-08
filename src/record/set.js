@@ -229,6 +229,7 @@ class RecordSet extends Map {
   }
 
   get last() {
+    if (this.size === 0) return undefined;
     return [...this.entries()].pop()[1];
   }
 
@@ -310,7 +311,10 @@ class RecordSet extends Map {
 
   [$addScope](name, scope) {
     RecordSet.#validateMethod('Scope', name, scope, this.#scopes);
-    if (this[name])
+    if (
+      this[name] ||
+      Object.getOwnPropertyNames(RecordSet.prototype).includes(name)
+    )
       throw new NameError(`Scope name ${name} is already in use.`);
 
     this.#scopes.set(name, scope);

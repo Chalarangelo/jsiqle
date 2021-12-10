@@ -6,14 +6,19 @@ export default class RecordFragment extends Array {
   #tag;
 
   constructor(values, tag) {
-    super(...values);
+    super();
+    values.forEach(value => {
+      this.push(value);
+    });
     this.#tag = tag;
   }
 
+  /* istanbul ignore next */
   get [$recordTag]() {
     return this.#tag;
   }
 
+  /* istanbul ignore next */
   get [Symbol.toStringTag]() {
     return this[$recordTag];
   }

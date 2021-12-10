@@ -11,10 +11,12 @@ export default class RecordGroup extends RecordSet {
     this.#groupName = groupName;
   }
 
+  /* istanbul ignore next */
   get [$groupTag]() {
     return this.#groupName;
   }
 
+  /* istanbul ignore next */
   get [Symbol.toStringTag]() {
     return this[$groupTag];
   }

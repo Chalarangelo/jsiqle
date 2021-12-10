@@ -12,10 +12,12 @@ export default class PartialRecord {
     this.#tag = tag;
   }
 
+  /* istanbul ignore next */
   get [$recordTag]() {
     return this.#tag;
   }
 
+  /* istanbul ignore next */
   get [Symbol.toStringTag]() {
     return this[$recordTag];
   }

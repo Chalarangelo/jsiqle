@@ -212,6 +212,22 @@ class RecordSet extends Map {
   }
 
   /**
+   * Returns all elements in the record set whose keys  match the provided
+   * key/keys.
+   * @param  {...any} keys A list of keys to exclude from the record set.
+   * @returns {RecordSet} A new record set with all elements whose keys
+   * match the provided key/keys.
+   */
+  only(...keys) {
+    return new RecordSet({
+      iterable: [...this.entries()].filter(([key]) => {
+        return keys.includes(key);
+      }),
+      copyScopesFrom: this,
+    }).freeze();
+  }
+
+  /**
    * Returns all elements in the record set whose keys do not match the provided
    * key/keys.
    * @param  {...any} keys A list of keys to exclude from the record set.

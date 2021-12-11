@@ -225,6 +225,20 @@ describe('RecordSet', () => {
     });
   });
 
+  describe('only', () => {
+    it('should return a record set with only the given keys', () => {
+      const result = model.records.only(0, 1);
+      expect(result.count).toBe(2);
+      expect(result.first.name).toBe('John Doe');
+      expect(result.last.name).toBe('Jane Doe');
+    });
+
+    it('should return an empty record set if no records', () => {
+      model.records.clear();
+      expect(model.records.except(0, 1).count).toBe(0);
+    });
+  });
+
   describe('except', () => {
     it('should return a record set with the given keys removed', () => {
       const result = model.records.except(0, 1);

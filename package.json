@@ -12,14 +12,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Chalarangelo/jedql.git"
+    "url": "git+https://github.com/Chalarangelo/jsiqle.git"
   },
   "author": "Angelos Chalaris",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Chalarangelo/jedql/issues"
+    "url": "https://github.com/Chalarangelo/jsiqle/issues"
   },
-  "homepage": "https://github.com/Chalarangelo/jedql#readme",
+  "homepage": "https://github.com/Chalarangelo/jsiqle#readme",
   "devDependencies": {
     "@babel/core": "^7.15.8",
     "@babel/preset-env": "^7.15.8",

@@ -6,7 +6,7 @@ module.exports = {
     filename: 'main.js',
     path: path.resolve(__dirname, 'dist'),
     library: {
-      name: 'jedql',
+      name: '@jsiqle/core',
       type: 'umd2',
     },
   },

@@ -103,6 +103,12 @@ export class Schema extends EventEmitter {
     this.emit('change', { type: 'modelRemoved', model, schema: this });
   }
 
+  /**
+   * EXPERIMENTAL
+   * Creates a relationship between two models and adds it to the schema.
+   * @param {Object} relationshipData Data for the relationship to be added.
+   * @returns The newly created relationship.
+   */
   createRelationship(relationshipData) {
     this.emit('beforeCreateRelationship', {
       relationship: relationshipData,
@@ -120,6 +126,7 @@ export class Schema extends EventEmitter {
       relationship,
       schema: this,
     });
+    return relationship;
   }
 
   /**
@@ -139,10 +146,17 @@ export class Schema extends EventEmitter {
   // TODO: Make users use this instead of the constructor, using a private flag.
   // Use another private flag to throw if more than one schema is created
   // (not supported for this release).
-  static create(name) {
-    return new Schema(name);
+  /**
+   * Creates a new schema with the given name and options.
+   * @param {Object} schemaData Data for the schema to be created.
+   * @returns The newly created schema.
+   */
+  static create(schemaData) {
+    return new Schema(schemaData);
   }
 
+  // TODO: V2 enhancements
+  // Check validity of this. Currently it's not mentioned anywhere in the docs.
   static get(name) {
     return Schema.#schemas.get(name);
   }

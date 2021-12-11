@@ -8,7 +8,7 @@
     "repl": "webpack --mode=development && node ./repl/index.js",
     "test": "jest --coverage",
     "lint": "eslint src",
-    "prepublish": "npm run lint && npm run test && npm run build"
+    "prepare": "npm run lint && npm run test && npm run build"
   },
   "repository": {
     "type": "git",

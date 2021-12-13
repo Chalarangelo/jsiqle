@@ -1,4 +1,3 @@
-import { Schema } from 'src/schema';
 import { allEqualBy } from 'src/utils';
 import { NameError, DuplicationError } from 'src/errors';
 import PartialRecord from './partial';
@@ -15,7 +14,6 @@ const {
   $copyScopes,
   $isRecord,
   $key,
-  $handleExperimentalAPIMessage,
 } = symbols;
 
 /**

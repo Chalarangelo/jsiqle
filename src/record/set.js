@@ -56,9 +56,11 @@ class RecordSet extends Map {
    * @returns {RecordSet} The record set itself.
    */
   set(key, value) {
-    Schema[$handleExperimentalAPIMessage](
-      'Calling RecordSet.prototype.set() is discouraged as it may cause unexpected behavior. This method may be removed in a future version of the library.'
-    );
+    // TODO: V2 Enhancements
+    // Ensure this is only ever called internally (maybe symbolize it?)
+    // Schema[$handleExperimentalAPIMessage](
+    //   'Calling RecordSet.prototype.set() is discouraged as it may cause unexpected behavior. This method may be removed in a future version of the library.'
+    // );
     if (this.#frozen) throw new TypeError('Cannot modify a frozen RecordSet.');
     super.set(key, value);
     return this;

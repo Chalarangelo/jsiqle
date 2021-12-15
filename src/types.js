@@ -27,6 +27,7 @@ const isObject = shape => {
   return val => {
     if (val === null || val === undefined || typeof val !== 'object')
       return false;
+    if (props.length === 0) return true;
     const valProps = Object.keys(val);
     if (valProps.length !== props.length) return false;
     return props.every(prop => shape[prop](val[prop]));

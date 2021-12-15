@@ -14,6 +14,7 @@ describe('deepClone', () => {
           d: [1, 2, 3],
         },
         e: null,
+        f: new Date('2019-01-01'),
       },
     };
     const clone = deepClone(obj);
@@ -22,6 +23,7 @@ describe('deepClone', () => {
     expect(clone.a).not.toBe(obj.a);
     expect(clone.a.b).not.toBe(obj.a.b);
     expect(clone.a.b.d).not.toBe(obj.a.b.d);
+    expect(clone.a.f).not.toBe(obj.a.f);
   });
 });
 

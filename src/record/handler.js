@@ -13,6 +13,7 @@ const {
   $relationships,
   $validators,
   $recordValue,
+  $wrappedRecordValue,
   $recordModel,
   $recordTag,
   $isRecord,
@@ -273,7 +274,7 @@ class RecordHandler {
   }
 
   #getMethod(record, property) {
-    return this.#model[$methods].get(property)(record[$recordValue]);
+    return this.#model[$methods].get(property)(record[$wrappedRecordValue]);
   }
 
   #hasRelationshipField(property) {

@@ -20,6 +20,7 @@ export default symbolizeAll(
   'validators',
   'recordModel',
   'recordValue',
+  'wrappedRecordValue',
   'recordHandler',
   'recordTag',
   'defaultValue',

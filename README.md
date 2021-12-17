@@ -274,7 +274,7 @@ MyModel.addProperty(
 );
 ```
 
-Properties defined as part of the model definition as specified as key-value pairs, whereas properties defined in `Model.prototype.addProperty()` are passed as two separate arguments, the name and the property body.
+Properties defined as part of the model definition are specified as key-value pairs, whereas properties defined in `Model.prototype.addProperty()` are passed as two separate arguments, the name and the property body.
 
 Properties expect one argument, the current record, and may return any type of value.
 
@@ -282,6 +282,45 @@ You can remove a property from a model using `Model.prototype.removeProperty()`:
 
 ```js
 MyModel.removeProperty('formalName');
+```
+#### Method definitions
+
+Methods can be defined as part of a model definition or added individually to a model by calling `Model.prototype.addMethod()`:
+
+```js
+import jsiqle from '@jsiqle/core';
+const MySchema = jsiqle.create({
+  name: 'MySchema',
+  models: [
+    {
+      name: 'MyModel',
+      fields: [
+        { name: 'firstName', type: 'string' },
+        { name: 'lastName', type: 'string' },
+      ],
+      methods: {
+        prefixedName: (record, prefix) => `${prefix} ${record.lastName}`
+      }
+    }
+  ]
+});
+
+const MyModel = MySchema.getModel('MyModel');
+
+MyModel.addProperty(
+  'suffixedName',
+  (record, suffix) => `${record.firstName} ${suffix}`
+);
+```
+
+Methods defined as part of the model definition are specified as key-value pairs, whereas methods defined in `Model.prototype.addMethod()` are passed as two separate arguments, the name and the method body.
+
+Methods expect any number of arguments, the current record and any arguments passed to them when called, and may return any type of value.
+
+You can remove a method from a model using `Model.prototype.removeMethod()`:
+
+```js
+MyModel.removeMethod('prefixedName');
 ```
 
 #### Scope definitions

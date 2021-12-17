@@ -13,6 +13,7 @@ const {
   $key,
   $keyType,
   $properties,
+  $methods,
   $scopes,
   $relationships,
   $validators,
@@ -41,6 +42,7 @@ export class Model extends EventEmitter {
   #fields;
   #key;
   #properties;
+  #methods;
   #relationships;
   #validators;
   #updatingField = false;
@@ -52,6 +54,7 @@ export class Model extends EventEmitter {
     fields = [],
     key = 'id',
     properties = {},
+    methods = {},
     scopes = {},
     validators = {},
     // TODO: V2 Enhancements
@@ -75,6 +78,7 @@ export class Model extends EventEmitter {
     // Initialize private fields
     this.#fields = new Map();
     this.#properties = new Map();
+    this.#methods = new Map();
     this.#relationships = new Map();
     this.#validators = new Map();
 
@@ -84,6 +88,11 @@ export class Model extends EventEmitter {
     // Add properties, checking for duplicates and invalids
     Object.entries(properties).forEach(([propertyName, property]) => {
       this.addProperty(propertyName, property);
+    });
+
+    // Add methods, checking for duplicates and invalids
+    Object.entries(methods).forEach(([methodName, method]) => {
+      this.addMethod(methodName, method);
     });
 
     // Add scopes, checking for duplicates and invalids
@@ -107,6 +116,7 @@ export class Model extends EventEmitter {
       ...this.#fields.keys(),
       this.#key.name,
       ...this.#properties.keys(),
+      ...this.#methods.keys(),
     ]);
     this.#fields.set(fieldOptions.name, field);
     if (!this.#updatingField) this.emit('fieldAdded', { field, model: this });
@@ -160,10 +170,11 @@ export class Model extends EventEmitter {
     const propertyName = validateName('Property', name);
     this.#properties.set(
       propertyName,
-      Model.#validateProperty('Property', name, property, [
+      Model.#validateFunction('Property', name, property, [
         ...this.#fields.keys(),
         this.#key.name,
         ...this.#properties.keys(),
+        ...this.#methods.keys(),
       ])
     );
     this.emit('propertyAdded', {
@@ -193,6 +204,53 @@ export class Model extends EventEmitter {
     this.emit('change', {
       type: 'propertyRemoved',
       property: { name, body: property },
+      model: this,
+    });
+    return true;
+  }
+
+  addMethod(name, method) {
+    this.emit('beforeAddMethod', {
+      method: { name, body: method },
+      model: this,
+    });
+    const methodName = validateName('Method', name);
+    this.#methods.set(
+      methodName,
+      Model.#validateFunction('Method', name, method, [
+        ...this.#fields.keys(),
+        this.#key.name,
+        ...this.#properties.keys(),
+        ...this.#methods.keys(),
+      ])
+    );
+    this.emit('methodAdded', {
+      method: { name: methodName, body: method },
+      model: this,
+    });
+    this.emit('change', {
+      type: 'methodAdded',
+      method: { name: methodName, body: method },
+      model: this,
+    });
+  }
+
+  removeMethod(name) {
+    if (!Model.#validateContains(this.name, 'Method', name, this.#methods))
+      return false;
+    const method = this.#methods.get(name);
+    this.emit('beforeRemoveMethod', {
+      method: { name, body: method },
+      model: this,
+    });
+    this.#methods.delete(name);
+    this.emit('methodRemoved', {
+      method: { name },
+      model: this,
+    });
+    this.emit('change', {
+      type: 'methodRemoved',
+      method: { name, body: method },
       model: this,
     });
     return true;
@@ -247,7 +305,7 @@ export class Model extends EventEmitter {
     // Validators are not name-validated by design.
     this.#validators.set(
       name,
-      Model.#validateProperty('Validator', name, validator, [
+      Model.#validateFunction('Validator', name, validator, [
         ...this.#validators.keys(),
       ])
     );
@@ -361,6 +419,10 @@ export class Model extends EventEmitter {
     return this.#properties;
   }
 
+  get [$methods]() {
+    return this.#methods;
+  }
+
   get [$relationships]() {
     return this.#relationships;
   }
@@ -381,6 +443,7 @@ export class Model extends EventEmitter {
         ...this.#fields.keys(),
         this.#key.name,
         ...this.#properties.keys(),
+        ...this.#methods.keys(),
       ].includes(fieldName)
     )
       throw new NameError(`Relationship field ${fieldName} is already in use.`);
@@ -418,6 +481,7 @@ export class Model extends EventEmitter {
         ...this.#fields.keys(),
         this.#key.name,
         ...this.#properties.keys(),
+        ...this.#methods.keys(),
       ].includes(propertyName)
     )
       throw new NameError(
@@ -523,7 +587,7 @@ export class Model extends EventEmitter {
     return new Field(field);
   }
 
-  static #validateProperty(
+  static #validateFunction(
     callbackType,
     callbackName,
     callback,

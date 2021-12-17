@@ -14,6 +14,7 @@ export default symbolizeAll(
   'key',
   'keyType',
   'properties',
+  'methods',
   'scopes',
   'relationships',
   'relationshipField',

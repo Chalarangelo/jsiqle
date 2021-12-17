@@ -8,6 +8,7 @@ const {
   $keyType,
   $fields,
   $properties,
+  $methods,
   $scopes,
   $validators,
 } = symbols;
@@ -346,6 +347,52 @@ describe('Model', () => {
     });
   });
 
+  describe('addMethod', () => {
+    let model;
+
+    beforeEach(() => {
+      model = new Model({ name: 'aModel', key: 'id' });
+    });
+
+    it('throws if "name" is invalid', () => {
+      expect(() => model.addMethod(null)).toThrow();
+      expect(() => model.addMethod(2)).toThrow();
+      expect(() => model.addMethod('2f')).toThrow();
+      expect(() => model.addMethod('id')).toThrow();
+    });
+
+    it('throws if "method" is not a function', () => {
+      expect(() => model.addMethod('aProperty', null)).toThrow();
+      expect(() => model.addMethod('aProperty', 2)).toThrow();
+    });
+
+    it('creates the appropriate property', () => {
+      model.addMethod('aMethod', () => null);
+      expect(model[$methods].has('aMethod')).toEqual(true);
+    });
+  });
+
+  describe('removeMethod', () => {
+    let model;
+
+    beforeEach(() => {
+      model = new Model({
+        name: 'aModel',
+        key: 'id',
+        methods: { aMethod: () => null },
+      });
+    });
+
+    it('returns false if "propertyName" does not exist', () => {
+      expect(model.removeMethod('bMethod')).toEqual(false);
+    });
+
+    it('removes the appropriate field and returns true', () => {
+      expect(model.removeMethod('aMethod')).toEqual(true);
+      expect(model[$methods].has('aMethod')).toEqual(false);
+    });
+  });
+
   describe('addScope', () => {
     let model;
 
@@ -459,6 +506,9 @@ describe('Model', () => {
         properties: {
           nameAndId: record => `${record.name}_${record.id}`,
         },
+        methods: {
+          nameWithSuffix: (record, suffix) => `${record.name}_${suffix}`,
+        },
         validators: {
           nameNotEqualToId: record => record.id !== record.name,
         },
@@ -532,6 +582,10 @@ describe('Model', () => {
 
       it('the record has the correct properties', () => {
         expect(record.nameAndId).toEqual('aName_a');
+      });
+
+      it('the record has the correct methods', () => {
+        expect(record.nameWithSuffix('suffix')).toEqual('aName_suffix');
       });
 
       it('matches the record to the correct scopes', () => {

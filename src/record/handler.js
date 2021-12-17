@@ -10,6 +10,7 @@ const {
   $key,
   $keyType,
   $properties,
+  $methods,
   $relationships,
   $validators,
   $recordValue,
@@ -90,6 +91,8 @@ class RecordHandler {
       return this.#getFieldValue(record, property);
     // Property, get and call, this also matches relationship reverses (properties)
     if (this.#hasProperty(property)) return this.#getProperty(record, property);
+    // Method, get and call
+    if (this.#hasMethod(property)) return this.#getMethod(record, property);
     // Serialize method, call and return
     if (this.#isCallToSerialize(property))
       return RecordHandler.#recordToObject(record, this.#model, this);
@@ -112,6 +115,11 @@ class RecordHandler {
     if (this.#hasProperty(property))
       throw new TypeError(
         `${this.#getModelName()} record ${recordKey} cannot set property ${property}.`
+      );
+    // Throw an error when trying to set a method.
+    if (this.#hasMethod(property))
+      throw new TypeError(
+        `${this.#getModelName()} record ${recordKey} cannot set method ${property}.`
       );
     // Validate and set field, warn if field is not defined
     /* istanbul ignore else*/
@@ -275,6 +283,15 @@ class RecordHandler {
 
   #getProperty(record, property) {
     return this.#model[$properties].get(property)(record[$wrappedRecordValue]);
+  }
+
+  #hasMethod(method) {
+    return this.#model[$methods].has(method);
+  }
+
+  #getMethod(record, method) {
+    const methodFn = this.#model[$methods].get(method);
+    return (...args) => methodFn(record[$wrappedRecordValue], ...args);
   }
 
   #hasRelationshipField(property) {

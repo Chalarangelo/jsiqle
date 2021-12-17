@@ -367,7 +367,7 @@ Validators should be used to perform multi-field validations. For single-field v
 
 **Note:** The relationships API is not currently stable and is considered experimental. While no major changes are expected in the future, it might not be fit for use in production just yet.
 
-Relationships can be defined by calling `Schema.prototype.createRelationship()`:
+Relationships can be defined either as part of the schema definition or individually using `Schema.prototype.createRelationship()`:
 
 ```js
 import jsiqle from '@jsiqle/core';
@@ -389,13 +389,14 @@ const MySchema = jsiqle.create({
         { name: 'amount', type: 'number' }
       ]
     }
+  ],
+  relationships: [
+    {
+      from: { model: 'Transaction', name: 'payer' },
+      to: { model: 'Person', name: 'outgoingTransactions' },
+      type: 'manyToOne'
+    }
   ]
-});
-
-Ledger.createRelationship({
-  from: { model: 'Transaction', name: 'payer' },
-  to: { model: 'Person', name: 'outgoingTransactions' },
-  type: 'manyToOne'
 });
 
 Ledger.createRelationship({

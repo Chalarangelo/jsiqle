@@ -12,16 +12,16 @@ const {
   $defaultValue,
   $key,
   $keyType,
-  $methods,
+  $properties,
   $scopes,
   $relationships,
   $validators,
   $recordHandler,
   $addScope,
   $addRelationshipAsField,
-  $addRelationshipAsMethod,
+  $addRelationshipAsProperty,
   $getField,
-  $getMethod,
+  $getProperty,
   $removeScope,
   $instances,
   $handleExperimentalAPIMessage,
@@ -40,7 +40,7 @@ export class Model extends EventEmitter {
   #recordHandler;
   #fields;
   #key;
-  #methods;
+  #properties;
   #relationships;
   #validators;
   #updatingField = false;
@@ -51,7 +51,7 @@ export class Model extends EventEmitter {
     name,
     fields = [],
     key = 'id',
-    methods = {},
+    properties = {},
     scopes = {},
     validators = {},
     // TODO: V2 Enhancements
@@ -74,16 +74,16 @@ export class Model extends EventEmitter {
 
     // Initialize private fields
     this.#fields = new Map();
-    this.#methods = new Map();
+    this.#properties = new Map();
     this.#relationships = new Map();
     this.#validators = new Map();
 
     // Add fields, checking for duplicates and invalids
     fields.forEach(field => this.addField(field));
 
-    // Add methods, checking for duplicates and invalids
-    Object.entries(methods).forEach(([methodName, method]) => {
-      this.addMethod(methodName, method);
+    // Add properties, checking for duplicates and invalids
+    Object.entries(properties).forEach(([propertyName, property]) => {
+      this.addProperty(propertyName, property);
     });
 
     // Add scopes, checking for duplicates and invalids
@@ -106,7 +106,7 @@ export class Model extends EventEmitter {
     const field = Model.#parseField(this.name, fieldOptions, [
       ...this.#fields.keys(),
       this.#key.name,
-      ...this.#methods.keys(),
+      ...this.#properties.keys(),
     ]);
     this.#fields.set(fieldOptions.name, field);
     if (!this.#updatingField) this.emit('fieldAdded', { field, model: this });
@@ -152,47 +152,47 @@ export class Model extends EventEmitter {
     this.emit('change', { type: 'fieldUpdated', field: newField, model: this });
   }
 
-  addMethod(name, method) {
-    this.emit('beforeAddMethod', {
-      method: { name, body: method },
+  addProperty(name, property) {
+    this.emit('beforeAddProperty', {
+      property: { name, body: property },
       model: this,
     });
-    const methodName = validateName('Method', name);
-    this.#methods.set(
-      methodName,
-      Model.#validateMethod('Method', name, method, [
+    const propertyName = validateName('Property', name);
+    this.#properties.set(
+      propertyName,
+      Model.#validateProperty('Property', name, property, [
         ...this.#fields.keys(),
         this.#key.name,
-        ...this.#methods.keys(),
+        ...this.#properties.keys(),
       ])
     );
-    this.emit('methodAdded', {
-      method: { name: methodName, body: method },
+    this.emit('propertyAdded', {
+      property: { name: propertyName, body: property },
       model: this,
     });
     this.emit('change', {
-      type: 'methodAdded',
-      method: { name: methodName, body: method },
+      type: 'propertyAdded',
+      property: { name: propertyName, body: property },
       model: this,
     });
   }
 
-  removeMethod(name) {
-    if (!Model.#validateContains(this.name, 'Method', name, this.#methods))
+  removeProperty(name) {
+    if (!Model.#validateContains(this.name, 'Property', name, this.#properties))
       return false;
-    const method = this.#methods.get(name);
-    this.emit('beforeRemoveMethod', {
-      method: { name, body: method },
+    const property = this.#properties.get(name);
+    this.emit('beforeRemoveProperty', {
+      property: { name, body: property },
       model: this,
     });
-    this.#methods.delete(name);
-    this.emit('methodRemoved', {
-      method: { name },
+    this.#properties.delete(name);
+    this.emit('propertyRemoved', {
+      property: { name },
       model: this,
     });
     this.emit('change', {
-      type: 'methodRemoved',
-      method: { name, body: method },
+      type: 'propertyRemoved',
+      property: { name, body: property },
       model: this,
     });
     return true;
@@ -247,7 +247,7 @@ export class Model extends EventEmitter {
     // Validators are not name-validated by design.
     this.#validators.set(
       name,
-      Model.#validateMethod('Validator', name, validator, [
+      Model.#validateProperty('Validator', name, validator, [
         ...this.#validators.keys(),
       ])
     );
@@ -357,8 +357,8 @@ export class Model extends EventEmitter {
     return this.#key;
   }
 
-  get [$methods]() {
-    return this.#methods;
+  get [$properties]() {
+    return this.#properties;
   }
 
   get [$relationships]() {
@@ -380,7 +380,7 @@ export class Model extends EventEmitter {
       [
         ...this.#fields.keys(),
         this.#key.name,
-        ...this.#methods.keys(),
+        ...this.#properties.keys(),
       ].includes(fieldName)
     )
       throw new NameError(`Relationship field ${fieldName} is already in use.`);
@@ -406,9 +406,9 @@ export class Model extends EventEmitter {
     });
   }
 
-  [$addRelationshipAsMethod](relationship) {
-    const { name, type, methodName, method } = relationship[$getMethod]();
-    const relationshipName = `${name}.${methodName}`;
+  [$addRelationshipAsProperty](relationship) {
+    const { name, type, propertyName, property } = relationship[$getProperty]();
+    const relationshipName = `${name}.${propertyName}`;
     this.emit('beforeAddRelationship', {
       relationship: { name, type },
       model: this,
@@ -417,16 +417,16 @@ export class Model extends EventEmitter {
       [
         ...this.#fields.keys(),
         this.#key.name,
-        ...this.#methods.keys(),
-      ].includes(methodName)
+        ...this.#properties.keys(),
+      ].includes(propertyName)
     )
       throw new NameError(
-        `Relationship method ${methodName} is already in use.`
+        `Relationship property ${propertyName} is already in use.`
       );
     if (this.#relationships.has(relationshipName))
       throw new NameError(`Relationship ${name} is already in use.`);
 
-    this.#methods.set(methodName, method);
+    this.#properties.set(propertyName, property);
     this.#relationships.set(relationshipName, relationship);
 
     this.emit('relationshipAdded', {
@@ -523,7 +523,7 @@ export class Model extends EventEmitter {
     return new Field(field);
   }
 
-  static #validateMethod(
+  static #validateProperty(
     callbackType,
     callbackName,
     callback,

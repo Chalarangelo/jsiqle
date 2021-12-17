@@ -108,7 +108,7 @@ snippet.addField(
   }
 );
 
-snippet.addMethod('isCool', record => {
+snippet.addProperty('isCool', record => {
   return record.tags.includes('cool');
 });
 

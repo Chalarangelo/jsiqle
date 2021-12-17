@@ -2,7 +2,7 @@ import { Schema } from 'src/schema';
 import { Model } from 'src/model';
 import symbols from 'src/symbols';
 
-const { $instances, $fields, $methods } = symbols;
+const { $instances, $fields, $properties } = symbols;
 
 describe('Schema', () => {
   let consoleWarn = console.warn;
@@ -171,11 +171,11 @@ describe('Schema', () => {
       ).toThrow();
     });
 
-    it('creates the correct fields and methods on the given models', () => {
+    it('creates the correct fields and properties on the given models', () => {
       expect(schema.getModel('aModel')[$fields].has('bModel')).toBe(true);
-      expect(schema.getModel('aModel')[$methods].has('children')).toBe(true);
+      expect(schema.getModel('aModel')[$properties].has('children')).toBe(true);
       expect(schema.getModel('bModel')[$fields].has('parent')).toBe(true);
-      expect(schema.getModel('bModel')[$methods].has('aModel')).toBe(true);
+      expect(schema.getModel('bModel')[$properties].has('aModel')).toBe(true);
     });
   });
 

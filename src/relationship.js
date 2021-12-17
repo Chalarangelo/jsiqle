@@ -11,7 +11,7 @@ const {
   $recordValue,
   $fields,
   $getField,
-  $getMethod,
+  $getProperty,
   $get,
   $defaultValue,
   $instances,
@@ -32,7 +32,7 @@ export class Relationship {
   #name; // relationship field name in the from table
   #reverseName; // relationship field name in the to table
   #relationshipField; // relationship field in the from model
-  #relationshipMethod; // relationship method in the to model
+  #relationshipProperty; // relationship property in the to model
 
   // TODO: V2 enhancements
   // After the API for relationships is stable-ish, figure out a way to add
@@ -64,7 +64,7 @@ export class Relationship {
       this.#to[$key]
     );
 
-    this.#relationshipMethod = record => {
+    this.#relationshipProperty = record => {
       return this.#getAssociatedRecordsReverse(record);
     };
   }
@@ -80,12 +80,12 @@ export class Relationship {
     };
   }
 
-  [$getMethod]() {
+  [$getProperty]() {
     return {
       name: this.#name,
       type: this.#type,
-      methodName: this.#reverseName,
-      method: this.#relationshipMethod,
+      propertyName: this.#reverseName,
+      property: this.#relationshipProperty,
     };
   }
 

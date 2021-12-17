@@ -2,8 +2,15 @@ import { Model } from 'src/model';
 import { Schema } from 'src/schema';
 import symbols from 'src/symbols';
 
-const { $instances, $key, $keyType, $fields, $methods, $scopes, $validators } =
-  symbols;
+const {
+  $instances,
+  $key,
+  $keyType,
+  $fields,
+  $properties,
+  $scopes,
+  $validators,
+} = symbols;
 
 describe('Model', () => {
   let consoleWarn = console.warn;
@@ -69,19 +76,19 @@ describe('Model', () => {
     ).toThrow();
   });
 
-  it('throws if "methods" contain invalid values', () => {
+  it('throws if "properties" contain invalid values', () => {
     const modelParams = { name: 'aModel', key: 'id' };
 
-    expect(() => new Model({ ...modelParams, methods: null })).toThrow();
-    expect(() => new Model({ ...modelParams, methods: [2] })).toThrow();
+    expect(() => new Model({ ...modelParams, properties: null })).toThrow();
+    expect(() => new Model({ ...modelParams, properties: [2] })).toThrow();
     expect(
-      () => new Model({ ...modelParams, methods: { aMethod: 'hi' } })
+      () => new Model({ ...modelParams, properties: { aProperty: 'hi' } })
     ).toThrow();
     expect(
-      () => new Model({ ...modelParams, methods: { id: () => null } })
+      () => new Model({ ...modelParams, properties: { id: () => null } })
     ).toThrow();
     expect(
-      () => new Model({ ...modelParams, methods: { '2d': () => null } })
+      () => new Model({ ...modelParams, properties: { '2d': () => null } })
     ).toThrow();
   });
 
@@ -150,15 +157,15 @@ describe('Model', () => {
       expect(model[$fields].has('dField')).toEqual(true);
     });
 
-    it('has the correct methods', () => {
-      const methods = {
-        aMethod: () => null,
-        bMethod: () => null,
+    it('has the correct properties', () => {
+      const properties = {
+        aProperty: () => null,
+        bProperty: () => null,
       };
 
-      const model = new Model({ name: 'aModel', methods });
-      expect(model[$methods].has('aMethod')).toEqual(true);
-      expect(model[$methods].has('bMethod')).toEqual(true);
+      const model = new Model({ name: 'aModel', properties });
+      expect(model[$properties].has('aProperty')).toEqual(true);
+      expect(model[$properties].has('bProperty')).toEqual(true);
     });
 
     it('has the correct scopes', () => {
@@ -293,7 +300,7 @@ describe('Model', () => {
     });
   });
 
-  describe('addMethod', () => {
+  describe('addProperty', () => {
     let model;
 
     beforeEach(() => {
@@ -301,41 +308,41 @@ describe('Model', () => {
     });
 
     it('throws if "name" is invalid', () => {
-      expect(() => model.addMethod(null)).toThrow();
-      expect(() => model.addMethod(2)).toThrow();
-      expect(() => model.addMethod('2f')).toThrow();
-      expect(() => model.addMethod('id')).toThrow();
+      expect(() => model.addProperty(null)).toThrow();
+      expect(() => model.addProperty(2)).toThrow();
+      expect(() => model.addProperty('2f')).toThrow();
+      expect(() => model.addProperty('id')).toThrow();
     });
 
-    it('throws if "method" is not a function', () => {
-      expect(() => model.addMethod('aMethod', null)).toThrow();
-      expect(() => model.addMethod('aMethod', 2)).toThrow();
+    it('throws if "property" is not a function', () => {
+      expect(() => model.addProperty('aProperty', null)).toThrow();
+      expect(() => model.addProperty('aProperty', 2)).toThrow();
     });
 
-    it('creates the appropriate method', () => {
-      model.addMethod('aMethod', () => null);
-      expect(model[$methods].has('aMethod')).toEqual(true);
+    it('creates the appropriate property', () => {
+      model.addProperty('aProperty', () => null);
+      expect(model[$properties].has('aProperty')).toEqual(true);
     });
   });
 
-  describe('removeMethod', () => {
+  describe('removeProperty', () => {
     let model;
 
     beforeEach(() => {
       model = new Model({
         name: 'aModel',
         key: 'id',
-        methods: { aMethod: () => null },
+        properties: { aProperty: () => null },
       });
     });
 
-    it('returns false if "methodName" does not exist', () => {
-      expect(model.removeMethod('bMethod')).toEqual(false);
+    it('returns false if "propertyName" does not exist', () => {
+      expect(model.removeProperty('bProperty')).toEqual(false);
     });
 
     it('removes the appropriate field and returns true', () => {
-      expect(model.removeMethod('aMethod')).toEqual(true);
-      expect(model[$methods].has('aMethod')).toEqual(false);
+      expect(model.removeProperty('aProperty')).toEqual(true);
+      expect(model[$properties].has('aProperty')).toEqual(false);
     });
   });
 
@@ -449,7 +456,7 @@ describe('Model', () => {
         scopes: {
           adult: ({ age }) => age >= 18,
         },
-        methods: {
+        properties: {
           nameAndId: record => `${record.name}_${record.id}`,
         },
         validators: {
@@ -523,7 +530,7 @@ describe('Model', () => {
         expect(model.records.has('a')).toEqual(true);
       });
 
-      it('the record has the correct methods', () => {
+      it('the record has the correct properties', () => {
         expect(record.nameAndId).toEqual('aName_a');
       });
 
@@ -672,22 +679,22 @@ describe('Model', () => {
         );
       });
 
-      it('when a method is added', () => {
+      it('when a property is added', () => {
         const spy = jest.fn();
         model.on('change', spy);
-        model.addMethod('nameAndId', () => 'aName_a');
+        model.addProperty('nameAndId', () => 'aName_a');
         expect(spy).toHaveBeenCalledWith(
-          expect.objectContaining({ type: 'methodAdded' })
+          expect.objectContaining({ type: 'propertyAdded' })
         );
       });
 
-      it('when a method is removed', () => {
+      it('when a property is removed', () => {
         const spy = jest.fn();
-        model.addMethod('nameAndId', () => 'aName_a');
+        model.addProperty('nameAndId', () => 'aName_a');
         model.on('change', spy);
-        model.removeMethod('nameAndId');
+        model.removeProperty('nameAndId');
         expect(spy).toHaveBeenCalledWith(
-          expect.objectContaining({ type: 'methodRemoved' })
+          expect.objectContaining({ type: 'propertyRemoved' })
         );
       });
 

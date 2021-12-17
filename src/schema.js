@@ -11,7 +11,7 @@ import symbols from 'src/symbols';
 
 const {
   $addRelationshipAsField,
-  $addRelationshipAsMethod,
+  $addRelationshipAsProperty,
   $handleExperimentalAPIMessage,
   $key,
   $keyType,
@@ -244,7 +244,7 @@ export class Schema extends EventEmitter {
     const relationship = new Relationship({ from, to, type });
 
     fromModel[$addRelationshipAsField](relationship);
-    toModel[$addRelationshipAsMethod](relationship);
+    toModel[$addRelationshipAsProperty](relationship);
 
     return relationship;
   }

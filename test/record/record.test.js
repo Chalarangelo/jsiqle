@@ -32,7 +32,7 @@ describe('Record', () => {
         { name: 'name', type: 'string' },
         { name: 'age', type: 'number' },
       ],
-      methods: {
+      properties: {
         firstName: rec => rec.name.split(' ')[0],
       },
       validators: {

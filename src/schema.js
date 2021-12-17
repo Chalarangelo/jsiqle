@@ -11,7 +11,7 @@ import symbols from 'src/symbols';
 
 const {
   $addRelationshipAsField,
-  $addRelationshipAsMethod,
+  $addRelationshipAsProperty,
   $handleExperimentalAPIMessage,
   $key,
   $keyType,
@@ -39,7 +39,7 @@ export class Schema extends EventEmitter {
 
   static #schemas = new Map();
 
-  constructor({ name, models = [], config = {} } = {}) {
+  constructor({ name, models = [], relationships = [], config = {} } = {}) {
     super();
     this.#name = validateName('Schema', name);
     this.#models = new Map();
@@ -47,6 +47,9 @@ export class Schema extends EventEmitter {
     Schema.#schemas.set(this.#name, this);
 
     models.forEach(model => this.createModel(model));
+    relationships.forEach(relationship =>
+      this.createRelationship(relationship)
+    );
   }
 
   /**
@@ -244,7 +247,7 @@ export class Schema extends EventEmitter {
     const relationship = new Relationship({ from, to, type });
 
     fromModel[$addRelationshipAsField](relationship);
-    toModel[$addRelationshipAsMethod](relationship);
+    toModel[$addRelationshipAsProperty](relationship);
 
     return relationship;
   }

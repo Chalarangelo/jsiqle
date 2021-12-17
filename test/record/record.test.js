@@ -32,8 +32,11 @@ describe('Record', () => {
         { name: 'name', type: 'string' },
         { name: 'age', type: 'number' },
       ],
-      methods: {
+      properties: {
         firstName: rec => rec.name.split(' ')[0],
+      },
+      methods: {
+        prefixedName: (rec, prefix) => `${prefix} ${rec.name}`,
       },
       validators: {
         nameNotSameAsId: rec => rec.name !== rec.id,
@@ -64,6 +67,7 @@ describe('Record', () => {
     expect(() => (record.name = 5)).toThrow();
     expect(() => (record.firstName = null)).toThrow();
     expect(() => (record.name = 'jd')).toThrow();
+    expect(() => (record.prefixedName = 'jd')).toThrow();
   });
 
   it('gets serialized correctly', () => {

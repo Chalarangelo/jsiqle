@@ -6,9 +6,9 @@ import symbols from 'src/symbols';
 const {
   $instances,
   $getField,
-  $getMethod,
+  $getProperty,
   $addRelationshipAsField,
-  $addRelationshipAsMethod,
+  $addRelationshipAsProperty,
 } = symbols;
 
 describe('Relationship', () => {
@@ -150,7 +150,7 @@ describe('Relationship', () => {
         type: 'oneToOne',
       });
       models.modelAlpha[$addRelationshipAsField](relationships.oneToOne);
-      models.modelBeta[$addRelationshipAsMethod](relationships.oneToOne);
+      models.modelBeta[$addRelationshipAsProperty](relationships.oneToOne);
 
       relationships.oneToMany = new Relationship({
         from: 'modelBeta',
@@ -158,7 +158,7 @@ describe('Relationship', () => {
         type: 'oneToMany',
       });
       models.modelBeta[$addRelationshipAsField](relationships.oneToMany);
-      models.modelGamma[$addRelationshipAsMethod](relationships.oneToMany);
+      models.modelGamma[$addRelationshipAsProperty](relationships.oneToMany);
 
       relationships.manyToOne = new Relationship({
         from: 'modelGamma',
@@ -166,7 +166,7 @@ describe('Relationship', () => {
         type: 'manyToOne',
       });
       models.modelGamma[$addRelationshipAsField](relationships.manyToOne);
-      models.modelDelta[$addRelationshipAsMethod](relationships.manyToOne);
+      models.modelDelta[$addRelationshipAsProperty](relationships.manyToOne);
 
       relationships.manyToMany = new Relationship({
         from: 'modelDelta',
@@ -174,7 +174,7 @@ describe('Relationship', () => {
         type: 'manyToMany',
       });
       models.modelDelta[$addRelationshipAsField](relationships.manyToMany);
-      models.modelAlpha[$addRelationshipAsMethod](relationships.manyToMany);
+      models.modelAlpha[$addRelationshipAsProperty](relationships.manyToMany);
 
       relationships.oneToOneNamed = new Relationship({
         from: { model: 'modelAlpha', name: 'parent' },
@@ -182,7 +182,7 @@ describe('Relationship', () => {
         type: 'oneToOne',
       });
       models.modelAlpha[$addRelationshipAsField](relationships.oneToOneNamed);
-      models.modelBeta[$addRelationshipAsMethod](relationships.oneToOneNamed);
+      models.modelBeta[$addRelationshipAsProperty](relationships.oneToOneNamed);
 
       relationships.oneToManyNamed = new Relationship({
         from: { model: 'modelBeta', name: 'children' },
@@ -190,7 +190,9 @@ describe('Relationship', () => {
         type: 'oneToMany',
       });
       models.modelBeta[$addRelationshipAsField](relationships.oneToManyNamed);
-      models.modelGamma[$addRelationshipAsMethod](relationships.oneToManyNamed);
+      models.modelGamma[$addRelationshipAsProperty](
+        relationships.oneToManyNamed
+      );
 
       relationships.manyToOneNamed = new Relationship({
         from: { model: 'modelGamma', name: 'parent2' },
@@ -198,7 +200,9 @@ describe('Relationship', () => {
         type: 'manyToOne',
       });
       models.modelGamma[$addRelationshipAsField](relationships.manyToOneNamed);
-      models.modelDelta[$addRelationshipAsMethod](relationships.manyToOneNamed);
+      models.modelDelta[$addRelationshipAsProperty](
+        relationships.manyToOneNamed
+      );
 
       relationships.manyToManyNamed = new Relationship({
         from: { model: 'modelDelta', name: 'friends' },
@@ -206,7 +210,7 @@ describe('Relationship', () => {
         type: 'manyToMany',
       });
       models.modelDelta[$addRelationshipAsField](relationships.manyToManyNamed);
-      models.modelAlpha[$addRelationshipAsMethod](
+      models.modelAlpha[$addRelationshipAsProperty](
         relationships.manyToManyNamed
       );
 
@@ -218,7 +222,7 @@ describe('Relationship', () => {
       models.modelAlpha[$addRelationshipAsField](
         relationships.sameModelOneToOne
       );
-      models.modelAlpha[$addRelationshipAsMethod](
+      models.modelAlpha[$addRelationshipAsProperty](
         relationships.sameModelOneToOne
       );
 
@@ -230,12 +234,12 @@ describe('Relationship', () => {
       models.modelAlpha[$addRelationshipAsField](
         relationships.sameModelManyToMany
       );
-      models.modelAlpha[$addRelationshipAsMethod](
+      models.modelAlpha[$addRelationshipAsProperty](
         relationships.sameModelManyToMany
       );
     });
 
-    // Indirectly checking correct arguments via methods
+    // Indirectly checking correct arguments via properties
     describe('$getField', () => {
       it('returns the correct relationship name', () => {
         expect(relationships.oneToOne[$getField]().name).toBe('modelBeta');
@@ -311,90 +315,96 @@ describe('Relationship', () => {
       });
     });
 
-    describe('$getMethod', () => {
+    describe('$getProperty', () => {
       it('returns the correct relationship name', () => {
-        expect(relationships.oneToOne[$getMethod]().name).toBe('modelBeta');
-        expect(relationships.oneToMany[$getMethod]().name).toBe(
+        expect(relationships.oneToOne[$getProperty]().name).toBe('modelBeta');
+        expect(relationships.oneToMany[$getProperty]().name).toBe(
           'modelGammaSet'
         );
-        expect(relationships.manyToOne[$getMethod]().name).toBe('modelDelta');
-        expect(relationships.manyToMany[$getMethod]().name).toBe(
+        expect(relationships.manyToOne[$getProperty]().name).toBe('modelDelta');
+        expect(relationships.manyToMany[$getProperty]().name).toBe(
           'modelAlphaSet'
         );
-        expect(relationships.oneToOneNamed[$getMethod]().name).toBe('parent');
-        expect(relationships.oneToManyNamed[$getMethod]().name).toBe(
+        expect(relationships.oneToOneNamed[$getProperty]().name).toBe('parent');
+        expect(relationships.oneToManyNamed[$getProperty]().name).toBe(
           'children'
         );
-        expect(relationships.manyToOneNamed[$getMethod]().name).toBe('parent2');
-        expect(relationships.manyToManyNamed[$getMethod]().name).toBe(
+        expect(relationships.manyToOneNamed[$getProperty]().name).toBe(
+          'parent2'
+        );
+        expect(relationships.manyToManyNamed[$getProperty]().name).toBe(
           'friends'
         );
-        expect(relationships.sameModelOneToOne[$getMethod]().name).toBe(
+        expect(relationships.sameModelOneToOne[$getProperty]().name).toBe(
           'friend'
         );
-        expect(relationships.sameModelManyToMany[$getMethod]().name).toBe(
+        expect(relationships.sameModelManyToMany[$getProperty]().name).toBe(
           'friends2'
         );
       });
 
       it('returns the correct relationship type', () => {
-        expect(relationships.oneToOne[$getMethod]().type).toBe('oneToOne');
-        expect(relationships.oneToMany[$getMethod]().type).toBe('oneToMany');
-        expect(relationships.manyToOne[$getMethod]().type).toBe('manyToOne');
-        expect(relationships.manyToMany[$getMethod]().type).toBe('manyToMany');
-        expect(relationships.oneToOneNamed[$getMethod]().type).toBe('oneToOne');
-        expect(relationships.oneToManyNamed[$getMethod]().type).toBe(
-          'oneToMany'
-        );
-        expect(relationships.manyToOneNamed[$getMethod]().type).toBe(
-          'manyToOne'
-        );
-        expect(relationships.manyToManyNamed[$getMethod]().type).toBe(
+        expect(relationships.oneToOne[$getProperty]().type).toBe('oneToOne');
+        expect(relationships.oneToMany[$getProperty]().type).toBe('oneToMany');
+        expect(relationships.manyToOne[$getProperty]().type).toBe('manyToOne');
+        expect(relationships.manyToMany[$getProperty]().type).toBe(
           'manyToMany'
         );
-        expect(relationships.sameModelOneToOne[$getMethod]().type).toBe(
+        expect(relationships.oneToOneNamed[$getProperty]().type).toBe(
           'oneToOne'
         );
-        expect(relationships.sameModelManyToMany[$getMethod]().type).toBe(
+        expect(relationships.oneToManyNamed[$getProperty]().type).toBe(
+          'oneToMany'
+        );
+        expect(relationships.manyToOneNamed[$getProperty]().type).toBe(
+          'manyToOne'
+        );
+        expect(relationships.manyToManyNamed[$getProperty]().type).toBe(
+          'manyToMany'
+        );
+        expect(relationships.sameModelOneToOne[$getProperty]().type).toBe(
+          'oneToOne'
+        );
+        expect(relationships.sameModelManyToMany[$getProperty]().type).toBe(
           'manyToMany'
         );
       });
 
-      it('returns the correct relationship method name', () => {
-        expect(relationships.oneToOne[$getMethod]().methodName).toBe(
+      it('returns the correct relationship property name', () => {
+        expect(relationships.oneToOne[$getProperty]().propertyName).toBe(
           'modelAlpha'
         );
-        expect(relationships.oneToMany[$getMethod]().methodName).toBe(
+        expect(relationships.oneToMany[$getProperty]().propertyName).toBe(
           'modelBeta'
         );
-        expect(relationships.manyToOne[$getMethod]().methodName).toBe(
+        expect(relationships.manyToOne[$getProperty]().propertyName).toBe(
           'modelGammaSet'
         );
-        expect(relationships.manyToMany[$getMethod]().methodName).toBe(
+        expect(relationships.manyToMany[$getProperty]().propertyName).toBe(
           'modelDeltaSet'
         );
-        expect(relationships.oneToOneNamed[$getMethod]().methodName).toBe(
+        expect(relationships.oneToOneNamed[$getProperty]().propertyName).toBe(
           'child'
         );
-        expect(relationships.oneToManyNamed[$getMethod]().methodName).toBe(
+        expect(relationships.oneToManyNamed[$getProperty]().propertyName).toBe(
           'parent'
         );
-        expect(relationships.manyToOneNamed[$getMethod]().methodName).toBe(
+        expect(relationships.manyToOneNamed[$getProperty]().propertyName).toBe(
           'children2'
         );
-        expect(relationships.manyToManyNamed[$getMethod]().methodName).toBe(
+        expect(relationships.manyToManyNamed[$getProperty]().propertyName).toBe(
           'friends'
         );
-        expect(relationships.sameModelOneToOne[$getMethod]().methodName).toBe(
-          'colleague'
-        );
-        expect(relationships.sameModelManyToMany[$getMethod]().methodName).toBe(
-          'colleagues'
-        );
+        expect(
+          relationships.sameModelOneToOne[$getProperty]().propertyName
+        ).toBe('colleague');
+        expect(
+          relationships.sameModelManyToMany[$getProperty]().propertyName
+        ).toBe('colleagues');
       });
     });
 
-    // We also check the reverse via methods in this test suite.
+    // We also check the reverse via properties in this test suite.
     describe('$get', () => {
       let records = {};
 
@@ -435,7 +445,7 @@ describe('Relationship', () => {
         expect(records.a1.modelBeta.id).toBe(records.b1.id);
         expect(records.a1.parent.id).toBe(records.b2.id);
         expect(records.a1.friend.id).toBe(records.a2.id);
-        // Filled method
+        // Filled property
         expect(records.b1.modelAlpha.id).toBe(records.a1.id);
         expect(records.b2.child.id).toBe(records.a1.id);
         expect(records.a2.colleague.id).toBe(records.a1.id);
@@ -443,7 +453,7 @@ describe('Relationship', () => {
         expect(records.a2.modelBeta).toBe(undefined);
         expect(records.a2.parent).toBe(undefined);
         expect(records.a2.friend).toBe(undefined);
-        // Empty method
+        // Empty property
         expect(records.b2.modelAlpha).toBe(undefined);
         expect(records.b1.child).toBe(undefined);
         expect(records.a1.colleague).toBe(undefined);
@@ -459,7 +469,7 @@ describe('Relationship', () => {
           records.g2.id,
           records.g3.id,
         ]);
-        // Filled method
+        // Filled property
         expect(records.g1.modelBeta.id).toBe(records.b1.id);
         expect(records.g2.modelBeta.id).toBe(records.b1.id);
         expect(records.g2.parent.id).toBe(records.b1.id);
@@ -467,7 +477,7 @@ describe('Relationship', () => {
         // Empty field
         expect(records.b2.modelGammaSet.size).toBe(0);
         expect(records.b2.children.size).toBe(0);
-        // Empty method
+        // Empty property
         expect(records.g3.modelBeta).toBe(undefined);
         expect(records.g1.parent).toBe(undefined);
       });
@@ -478,7 +488,7 @@ describe('Relationship', () => {
         expect(records.g2.modelDelta.id).toBe(records.d1.id);
         expect(records.g1.parent2.id).toBe(records.d2.id);
         expect(records.g3.parent2.id).toBe(records.d2.id);
-        // Filled method
+        // Filled property
         expect(records.d1.modelGammaSet.flatPluck('id').flat()).toEqual([
           records.g1.id,
           records.g2.id,
@@ -490,7 +500,7 @@ describe('Relationship', () => {
         // Empty field
         expect(records.g3.modelDelta).toBe(undefined);
         expect(records.g2.parent2).toBe(undefined);
-        // Empty method
+        // Empty property
         expect(records.d2.modelGammaSet.size).toBe(0);
         expect(records.d1.children2.size).toBe(0);
       });
@@ -509,7 +519,7 @@ describe('Relationship', () => {
           records.a2.id,
           records.a3.id,
         ]);
-        // Filled method
+        // Filled property
         expect(records.a1.modelDeltaSet.flatPluck('id').flat()).toEqual([
           records.d1.id,
         ]);
@@ -523,7 +533,7 @@ describe('Relationship', () => {
         expect(records.d2.modelAlphaSet.size).toBe(0);
         expect(records.d2.friends.size).toBe(0);
         expect(records.a2.friends2.size).toBe(0);
-        // Empty method
+        // Empty property
         expect(records.a3.modelDeltaSet.size).toBe(0);
         expect(records.a1.friends.size).toBe(0);
         expect(records.a1.colleagues.size).toBe(0);

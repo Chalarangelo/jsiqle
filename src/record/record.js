@@ -31,8 +31,8 @@ class Record {
   }
 
   // This is used to get the record wrapped in the handler proxy. It's useful
-  // for method calls in records, so that they can access relationships and
-  // other methods via the handler proxy.
+  // for property calls in records, so that they can access relationships and
+  // other properties via the handler proxy.
   /* istanbul ignore next */
   get [$wrappedRecordValue]() {
     return this.#proxiedRecord;

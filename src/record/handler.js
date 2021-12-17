@@ -9,6 +9,7 @@ const {
   $defaultValue,
   $key,
   $keyType,
+  $properties,
   $methods,
   $relationships,
   $validators,
@@ -88,7 +89,9 @@ class RecordHandler {
     // Key or field, return as-is
     if (this.#isModelKey(property) || this.#hasField(property))
       return this.#getFieldValue(record, property);
-    // Method, get and call, this also matches relationship reverses (methods)
+    // Property, get and call, this also matches relationship reverses (properties)
+    if (this.#hasProperty(property)) return this.#getProperty(record, property);
+    // Method, get and call
     if (this.#hasMethod(property)) return this.#getMethod(record, property);
     // Serialize method, call and return
     if (this.#isCallToSerialize(property))
@@ -107,8 +110,13 @@ class RecordHandler {
     const recordValue = record[$recordValue];
     const recordKey = this.#getKeyValue(record);
     const otherRecords = this.#model.records.except(recordKey);
-    // Throw an error when trying to set a method, also catches
+    // Throw an error when trying to set a property, also catches
     // relationship reverses, safeguarding against issues there.
+    if (this.#hasProperty(property))
+      throw new TypeError(
+        `${this.#getModelName()} record ${recordKey} cannot set property ${property}.`
+      );
+    // Throw an error when trying to set a method.
     if (this.#hasMethod(property))
       throw new TypeError(
         `${this.#getModelName()} record ${recordKey} cannot set method ${property}.`
@@ -168,7 +176,7 @@ class RecordHandler {
   static #recordToObject(record, model, handler) {
     const recordValue = record[$recordValue];
     const fields = model[$fields];
-    const methods = model[$methods];
+    const properties = model[$properties];
     const key = model[$key].name;
     const object = {
       [key]: recordValue[key],
@@ -205,7 +213,7 @@ class RecordHandler {
               .get(record, includedField)
               .toObject({ include: [props] });
           }
-        } else if (methods.has(includedField)) {
+        } else if (properties.has(includedField)) {
           object[includedField] = handler.get(record, includedField);
         }
       });
@@ -269,19 +277,28 @@ class RecordHandler {
     return record[$recordValue][property];
   }
 
-  #hasMethod(property) {
-    return this.#model[$methods].has(property);
+  #hasProperty(property) {
+    return this.#model[$properties].has(property);
   }
 
-  #getMethod(record, property) {
-    return this.#model[$methods].get(property)(record[$wrappedRecordValue]);
+  #getProperty(record, property) {
+    return this.#model[$properties].get(property)(record[$wrappedRecordValue]);
+  }
+
+  #hasMethod(method) {
+    return this.#model[$methods].has(method);
+  }
+
+  #getMethod(record, method) {
+    const methodFn = this.#model[$methods].get(method);
+    return (...args) => methodFn(record[$wrappedRecordValue], ...args);
   }
 
   #hasRelationshipField(property) {
     // A relationship field exists if a field with the same name exists and
     // a relationship exists named `${property}.${property}`. This is due to
     // relationships being stored as a `.`-delimited tuple of the relationship
-    // name and the field/method name. In the case of the field name, it's the
+    // name and the field/property name. In the case of the field name, it's the
     // same as the actual relationship name.
     if (!this.#hasField(property)) return false;
     return this.#model[$relationships].has(`${property}.${property}`);

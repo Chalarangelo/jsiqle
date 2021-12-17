@@ -565,7 +565,7 @@ class RecordSet extends Map {
   // Protected (package internal-use only)
 
   [$addScope](name, scope) {
-    RecordSet.#validateMethod('Scope', name, scope, this.#scopes);
+    RecordSet.#validateProperty('Scope', name, scope, this.#scopes);
     if (
       this[name] ||
       Object.getOwnPropertyNames(RecordSet.prototype).includes(name)
@@ -600,7 +600,7 @@ class RecordSet extends Map {
 
   // Private
 
-  static #validateMethod(callbackType, callbackName, callback, callbacks) {
+  static #validateProperty(callbackType, callbackName, callback, callbacks) {
     if (typeof callback !== 'function')
       throw new TypeError(`${callbackType} ${callbackName} is not a function.`);
 

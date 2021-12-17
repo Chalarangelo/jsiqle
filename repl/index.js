@@ -40,6 +40,13 @@ const schema = jsiqle.create({
       ],
     },
   ],
+  relationships: [
+    {
+      from: { model: 'snippet', name: 'children' },
+      to: { model: 'snippet', name: 'parent' },
+      type: 'oneToMany',
+    },
+  ],
   config: {
     experimentalAPIMessages: 'off',
   },
@@ -108,7 +115,7 @@ snippet.addField(
   }
 );
 
-snippet.addMethod('isCool', record => {
+snippet.addProperty('isCool', record => {
   return record.tags.includes('cool');
 });
 
@@ -120,12 +127,6 @@ schema.createRelationship({
   from: 'snippet',
   to: 'category',
   type: 'manyToMany',
-});
-
-schema.createRelationship({
-  from: { model: 'snippet', name: 'children' },
-  to: { model: 'snippet', name: 'parent' },
-  type: 'oneToMany',
 });
 
 const snippetC = snippet.createRecord({

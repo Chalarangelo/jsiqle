@@ -548,6 +548,7 @@ const records = MyModel.records;
 
 Record sets can be filtered, mapped and sorted much like regular arrays. Here's a list of operations:
 
+- `RecordSet.prototype.forEach()`: Executes a provided function once for every element in the calling record set. This method takes a callback function as an argument that expects three arguments (`record`, `key`, `recordSet`), similar to `Array.prototype.forEach()`. The method does not return a result.
 - `RecordSet.prototype.map()`: Creates an object populated with the results of calling a provided mapping function on every element in the calling record set. This method takes a mapping callback function as an argument that expects three arguments (`record`, `key`, `recordSet`), similar to `Array.prototype.map()`. The result is an object with each key mapped to the result of the mapping function.
 - `RecordSet.prototype.flatMap()`: Same as `RecordSet.prototype.map()` except that the resulting value is an array instead of an object.
 - `RecordSet.prototype.reduce()`: Executes a user-supplied reducer callback function on each element of the record set, passing in the return value from the calculation on the preceding element. This method takes a reducer callback function as an argument that expects four arguments (`accumulator`, `record`, `key`, `recordSet`) and an initial value, similar to `Array.prototype.reduce()`. The final result of running the reducer across all elements of the record set is a single value.

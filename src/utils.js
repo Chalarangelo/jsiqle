@@ -5,6 +5,8 @@ import { DuplicationError, NameError } from 'src/errors';
 const restrictedNames = {
   Model: ['toString', 'toObject', 'toJSON'],
   Field: ['toString', 'toObject', 'toJSON'],
+  Property: ['toString', 'toObject', 'toJSON'],
+  Method: ['toString', 'toObject', 'toJSON'],
   Relationship: ['toString', 'toObject', 'toJSON'],
 };
 

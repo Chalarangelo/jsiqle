@@ -179,6 +179,42 @@ describe('Schema', () => {
     });
   });
 
+  describe('createSerializer', () => {
+    let schema, serializer;
+
+    beforeEach(() => {
+      schema = Schema.create({
+        name: 'test',
+        models: [{ name: 'aModel' }],
+      });
+      serializer = schema.createSerializer({ name: 'aSerializer' });
+    });
+
+    it('creates the appropriate serializer', () => {
+      expect(schema.getSerializer('aSerializer')).toBe(serializer);
+    });
+  });
+
+  describe('getSerializer', () => {
+    let schema;
+
+    beforeEach(() => {
+      schema = Schema.create({
+        name: 'test',
+        models: [{ name: 'aModel' }],
+        serializers: [{ name: 'aSerializer' }],
+      });
+    });
+
+    it('returns the model if it exists', () => {
+      expect(schema.getSerializer('aSerializer').name).toBe('aSerializer');
+    });
+
+    it('returns undefined if the serializer does not exist', () => {
+      expect(schema.getSerializer('bSerializer')).toBeUndefined();
+    });
+  });
+
   describe('get', () => {
     let schema;
 

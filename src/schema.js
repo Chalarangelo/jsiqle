@@ -1,6 +1,7 @@
 import EventEmitter from 'events';
 import { Model } from 'src/model';
 import { Relationship } from 'src/relationship';
+import { Serializer } from 'src/serializer';
 import { ExperimentalAPIUsageError } from 'src/errors';
 import {
   capitalize,
@@ -28,6 +29,7 @@ const {
 export class Schema extends EventEmitter {
   #name;
   #models;
+  #serializers;
 
   static defaultConfig = {
     experimentalAPIMessages: 'warn',
@@ -39,10 +41,17 @@ export class Schema extends EventEmitter {
 
   static #schemas = new Map();
 
-  constructor({ name, models = [], relationships = [], config = {} } = {}) {
+  constructor({
+    name,
+    models = [],
+    relationships = [],
+    serializers = [],
+    config = {},
+  } = {}) {
     super();
     this.#name = validateName('Schema', name);
     this.#models = new Map();
+    this.#serializers = new Map();
     Schema.#parseConfig(config);
     Schema.#schemas.set(this.#name, this);
 
@@ -50,6 +59,7 @@ export class Schema extends EventEmitter {
     relationships.forEach(relationship =>
       this.createRelationship(relationship)
     );
+    serializers.forEach(serializer => this.createSerializer(serializer));
   }
 
   /**
@@ -130,6 +140,42 @@ export class Schema extends EventEmitter {
       schema: this,
     });
     return relationship;
+  }
+
+  /**
+   * Creates a serializer and adds it to the schema.
+   * @param {Object} serializerData Data for the serializer to be added.
+   * @returns The newly created serializer.
+   */
+  createSerializer(serializerData) {
+    this.emit('beforeCreateSerializer', {
+      serializer: serializerData,
+      schema: this,
+    });
+    const serializer = Schema.#parseSerializer(
+      this.#name,
+      serializerData,
+      this.#serializers
+    );
+
+    this.#serializers.set(serializer.name, serializer);
+
+    this.emit('serializerCreated', { serializer, schema: this });
+    this.emit('change', {
+      type: 'serializerCreated',
+      serializer,
+      schema: this,
+    });
+    return serializer;
+  }
+
+  /**
+   * Retrieves a serializer from the schema.
+   * @param {String} name The name of the serializer to retrieve.
+   * @returns The serializer or `undefined` if it does not exist.
+   */
+  getSerializer(name) {
+    return this.#serializers.get(name);
   }
 
   /**
@@ -250,6 +296,19 @@ export class Schema extends EventEmitter {
     toModel[$addRelationshipAsProperty](relationship);
 
     return relationship;
+  }
+
+  static #parseSerializer(schemaName, serializerData, serializers) {
+    validateObjectWithUniqueName(
+      {
+        objectType: 'Serializer',
+        parentType: 'Schema',
+        parentName: schemaName,
+      },
+      serializerData,
+      [...serializers.keys()]
+    );
+    return new Serializer(serializerData);
   }
 
   static #parseConfig(config = {}) {

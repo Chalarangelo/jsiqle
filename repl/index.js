@@ -47,6 +47,25 @@ const schema = jsiqle.create({
       type: 'oneToMany',
     },
   ],
+  serializers: [
+    {
+      name: 'snippet',
+      attributes: [
+        'name',
+        ['description', 'regularDescription'],
+        ['specialDescription', 'description'],
+        'children',
+      ],
+      methods: {
+        specialDescription: snippet => {
+          return snippet.description + '!!';
+        },
+        children: snippet => {
+          return snippet.children.flatPluck('code');
+        },
+      },
+    },
+  ],
   config: {
     experimentalAPIMessages: 'off',
   },
@@ -153,6 +172,10 @@ replServer.context.snippetC = snippetC;
 replServer.context.category = category;
 replServer.context.categoryA = categoryA;
 replServer.context.categoryB = categoryB;
+
+const snippetSerializer = schema.getSerializer('snippet');
+
+replServer.context.snippetSerializer = snippetSerializer;
 
 // try {
 //   snippetA.snippetSet;

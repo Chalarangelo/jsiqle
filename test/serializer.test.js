@@ -31,6 +31,7 @@ describe('Serializer', () => {
           'name',
           ['description', 'regularDescription'],
           ['specialDescription', 'description'],
+          'customDescription',
           'children',
         ],
         methods: {
@@ -39,6 +40,9 @@ describe('Serializer', () => {
           },
           children: item => {
             return item.children.map(child => child.prettyName);
+          },
+          customDescription: (item, { prefix }) => {
+            return prefix + item.description;
           },
         },
       });
@@ -74,11 +78,12 @@ describe('Serializer', () => {
           ],
         };
 
-        const serialized = serializer.serialize(object);
+        const serialized = serializer.serialize(object, { prefix: 'prefix' });
         expect(serialized).toEqual({
           name: 'myItem',
           regularDescription: 'my description',
           description: 'my description!!',
+          customDescription: 'prefixmy description',
           children: ['my pretty child'],
         });
       });

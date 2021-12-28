@@ -278,6 +278,33 @@ Properties defined as part of the model definition are specified as key-value pa
 
 Properties expect one argument, the current record, and may return any type of value.
 
+Additionally, "lazy" properties can be defined as part of the model definition by passing an additional `lazyProperties` key structured as an object. Lazy properties are added to the model post schema initialization and are useful if you need access to other models or serializers. The value of each property must be a function that returns a function. The outer function will receive an object representing the schema (`{ models, serializers }`), allowing data from it to be passed to the property body.
+
+```js
+import jsiqle from '@jsiqle/core';
+const MySchema = jsiqle.create({
+  name: 'MySchema',
+  models: [
+    {
+      name: 'MyModel',
+      fields: [
+        { name: 'firstName', type: 'string' },
+        { name: 'lastName', type: 'string' },
+      ],
+      properties: {
+        fullName: record => `${record.firstName} ${record.lastName}`
+      }
+    },
+    {
+      name: 'AnotherModel',
+      lazyProperties: {
+        myModelName: ({ models: { myModel }}) => () => myModel.name
+      }
+    }
+  ]
+});
+```
+
 You can remove a property from a model using `Model.prototype.removeProperty()`:
 
 ```js
@@ -307,7 +334,7 @@ const MySchema = jsiqle.create({
 
 const MyModel = MySchema.getModel('MyModel');
 
-MyModel.addProperty(
+MyModel.addMethod(
   'suffixedName',
   (record, suffix) => `${record.firstName} ${suffix}`
 );
@@ -316,6 +343,34 @@ MyModel.addProperty(
 Methods defined as part of the model definition are specified as key-value pairs, whereas methods defined in `Model.prototype.addMethod()` are passed as two separate arguments, the name and the method body.
 
 Methods expect any number of arguments, the current record and any arguments passed to them when called, and may return any type of value.
+
+Additionally, "lazy" methods can be defined as part of the model definition by passing an additional `lazyMethods` key structured as an object. Lazy methods are added to the model post schema initialization and are useful if you need access to other models or serializers. The value of each method must be a function that returns a function. The outer function will receive an object representing the schema (`{ models, serializers }`), allowing data from it to be passed to the method body.
+
+```js
+import jsiqle from '@jsiqle/core';
+const MySchema = jsiqle.create({
+  name: 'MySchema',
+  models: [
+    {
+      name: 'MyModel',
+      fields: [
+        { name: 'firstName', type: 'string' },
+        { name: 'lastName', type: 'string' },
+      ],
+      methods: {
+        prefixedName: (record, prefix) => `${prefix} ${record.lastName}`
+      }
+    },
+    {
+      name: 'AnotherModel',
+      lazyMethods: {
+        isModelNameCorrect:
+          ({ models: { myModel }}) => (value) => value === myModel.name
+      }
+    }
+  ]
+});
+```
 
 You can remove a method from a model using `Model.prototype.removeMethod()`:
 

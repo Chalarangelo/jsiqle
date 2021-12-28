@@ -60,6 +60,59 @@ describe('Schema', () => {
     it('adds the schema to the dictionary', () => {
       expect(Schema.get('test')).toBe(schema);
     });
+
+    it('creates lazy properties and methods correctly', () => {
+      schema = Schema.create({
+        name: 'test',
+        models: [
+          { name: 'cModel' },
+          {
+            name: 'dModel',
+            lazyProperties: {
+              prop:
+                ({ models: { cModel } }) =>
+                rec =>
+                  rec.id + cModel.name,
+            },
+            lazyMethods: {
+              method:
+                ({ models: { cModel } }) =>
+                (rec, value) =>
+                  value + rec.id + cModel.name,
+            },
+          },
+        ],
+      });
+      const record = schema.models.get('dModel').createRecord({ id: 'x' });
+      expect(record.prop).toBe('xcModel');
+      expect(record.method('y')).toBe('yxcModel');
+    });
+
+    it('creates lazy serializer methods correctly', () => {
+      schema = Schema.create({
+        name: 'test',
+        models: [{ name: 'cModel' }],
+        serializers: [
+          {
+            name: 'cSerializer',
+            attributes: ['id', 'lazy', 'normal'],
+            methods: {
+              normal: rec => rec.id + '!',
+            },
+            lazyMethods: {
+              lazy:
+                ({ models: { cModel } }) =>
+                rec =>
+                  rec.id + cModel.name,
+            },
+          },
+        ],
+      });
+      const record = schema.getModel('cModel').createRecord({ id: 'x' });
+      const serialized = schema.getSerializer('cSerializer').serialize(record);
+      expect(serialized.normal).toBe('x!');
+      expect(serialized.lazy).toBe('xcModel');
+    });
   });
 
   describe('createModel', () => {

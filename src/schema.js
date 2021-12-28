@@ -61,6 +61,47 @@ export class Schema extends EventEmitter {
       this.createRelationship(relationship)
     );
     serializers.forEach(serializer => this.createSerializer(serializer));
+
+    // Kind of experimental
+    // Lazy properties, models and serializers require initial set up as they
+    // depend on other models or serializers.
+    const schemaData = {
+      models: Object.fromEntries([...this.#models.entries()]),
+      serializers: Object.fromEntries([...this.#serializers.entries()]),
+    };
+    models.forEach(model => {
+      const modelRecord = this.getModel(model.name);
+      if (model.lazyProperties)
+        Object.entries(model.lazyProperties).forEach(
+          ([propertyName, propertyInitializer]) => {
+            modelRecord.addProperty(
+              propertyName,
+              propertyInitializer(schemaData)
+            );
+          }
+        );
+
+      if (model.lazyMethods)
+        Object.entries(model.lazyMethods).forEach(
+          ([methodName, methodInitializer]) => {
+            modelRecord.addMethod(methodName, methodInitializer(schemaData));
+          }
+        );
+    });
+
+    serializers.forEach(serializer => {
+      const serializerRecord = this.getSerializer(serializer.name);
+      if (serializer.lazyMethods) {
+        Object.entries(serializer.lazyMethods).forEach(
+          ([methodName, methodInitializer]) => {
+            serializerRecord.addMethod(
+              methodName,
+              methodInitializer(schemaData)
+            );
+          }
+        );
+      }
+    });
   }
 
   /**

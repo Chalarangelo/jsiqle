@@ -16,6 +16,7 @@ const {
   $handleExperimentalAPIMessage,
   $key,
   $keyType,
+  $instances,
 } = symbols;
 
 /**
@@ -108,6 +109,7 @@ export class Schema extends EventEmitter {
         `Model ${name} does not exist in schema ${this.#name}.`
       );
     this.#models.delete(name);
+    Model[$instances].delete(name);
 
     // TODO: V2 enhancements
     // Figure out a way to add cascade for relationships

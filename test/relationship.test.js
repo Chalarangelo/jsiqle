@@ -427,7 +427,7 @@ describe('Relationship', () => {
         records.a1.parent = records.b2.id;
         records.a1.friend = records.a2.id;
         // One to Many
-        records.b1.modelGammaSet = [records.g1.id, records.g2.id];
+        records.b1.modelGammaSet = [records.g2.id, records.g1.id];
         records.b1.children = [records.g2.id, records.g3.id];
         // Many to One
         records.g1.modelDelta = records.d1.id;
@@ -462,8 +462,8 @@ describe('Relationship', () => {
       it('returns the correct result for one to many relationships', () => {
         // Filled field
         expect(records.b1.modelGammaSet.flatPluck('id').flat()).toEqual([
-          records.g1.id,
           records.g2.id,
+          records.g1.id,
         ]);
         expect(records.b1.children.flatPluck('id').flat()).toEqual([
           records.g2.id,

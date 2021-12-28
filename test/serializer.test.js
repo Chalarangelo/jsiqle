@@ -91,5 +91,51 @@ describe('Serializer', () => {
         });
       });
     });
+
+    // Indirectly check that the constructor sets the correct properties.
+    describe('serializeArray', () => {
+      it('returns a valid array of objects', () => {
+        const object1 = {
+          name: 'myItem1',
+          description: 'my description',
+          children: [
+            {
+              name: 'myChild',
+              prettyName: 'my pretty child',
+            },
+          ],
+        };
+        const object2 = {
+          name: 'myItem2',
+          description: 'my description',
+          children: [
+            {
+              name: 'myChild',
+              prettyName: 'my pretty child',
+            },
+          ],
+        };
+
+        const serialized = serializer.serializeArray([object1, object2], {
+          prefix: 'prefix',
+        });
+        expect(serialized).toEqual([
+          {
+            name: 'myItem1',
+            regularDescription: 'my description',
+            description: 'my description!!',
+            customDescription: 'prefixmy description',
+            children: ['my pretty child'],
+          },
+          {
+            name: 'myItem2',
+            regularDescription: 'my description',
+            description: 'my description!!',
+            customDescription: 'prefixmy description',
+            children: ['my pretty child'],
+          },
+        ]);
+      });
+    });
   });
 });

@@ -49,6 +49,10 @@ export class Serializer {
     return serialized;
   }
 
+  serializeArray(objects, options) {
+    return objects.map(object => this.serialize(object, options));
+  }
+
   get name() {
     return this.#name;
   }

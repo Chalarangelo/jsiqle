@@ -44,7 +44,7 @@ export class Serializer {
       const value = this.#methods.has(attributeValue)
         ? this.#methods.get(attributeValue)(object, options)
         : object[attributeValue];
-      serialized[attributeName] = value;
+      if (value !== undefined) serialized[attributeName] = value;
     });
     return serialized;
   }

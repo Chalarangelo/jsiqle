@@ -44,6 +44,9 @@ describe('Serializer', () => {
           customDescription: (item, { prefix }) => {
             return prefix + item.description;
           },
+          conditionalProp: (item, { withConditional } = {}) => {
+            return withConditional ? item.conditionalProp : undefined;
+          },
         },
       });
     });

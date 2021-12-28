@@ -1,6 +1,6 @@
 {
   "name": "@jsiqle/core",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "JavaScript In-memory Query Language with Events.",
   "main": "./dist/main.js",
   "scripts": {

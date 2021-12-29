@@ -76,7 +76,8 @@ export class Schema extends EventEmitter {
           ([propertyName, propertyInitializer]) => {
             modelRecord.addProperty(
               propertyName,
-              propertyInitializer(schemaData)
+              propertyInitializer(schemaData),
+              model.cacheProperties.includes(propertyName)
             );
           }
         );

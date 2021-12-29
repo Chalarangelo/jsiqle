@@ -62,6 +62,7 @@ describe('Schema', () => {
     });
 
     it('creates lazy properties and methods correctly', () => {
+      let count = 0;
       schema = Schema.create({
         name: 'test',
         models: [
@@ -73,7 +74,14 @@ describe('Schema', () => {
                 ({ models: { cModel } }) =>
                 rec =>
                   rec.id + cModel.name,
+              other:
+                ({ models: { cModel } }) =>
+                rec => {
+                  count++;
+                  return rec.id + cModel.name;
+                },
             },
+            cacheProperties: ['other'],
             lazyMethods: {
               method:
                 ({ models: { cModel } }) =>
@@ -86,6 +94,10 @@ describe('Schema', () => {
       const record = schema.models.get('dModel').createRecord({ id: 'x' });
       expect(record.prop).toBe('xcModel');
       expect(record.method('y')).toBe('yxcModel');
+      expect(record.other).toBe('xcModel');
+      expect(count).toBe(1);
+      expect(record.other).toBe('xcModel');
+      expect(count).toBe(1);
     });
 
     it('creates lazy serializer methods correctly', () => {

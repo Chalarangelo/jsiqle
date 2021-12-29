@@ -419,11 +419,11 @@ class RecordSet extends Map {
   }
 
   /**
-   * Iterates over the record set in batches of the specified size.
+   * Iterates over the record set in array batches of the specified size.
    * @param {Number} batchSize The size of each batch.
-   * @returns {Iterator} An iterator that yields batches of the specified size.
+   * @returns {Iterator} An iterator that yields array batches of the specified size.
    */
-  *batchIterator(batchSize) {
+  *flatBatchIterator(batchSize) {
     let batch = [];
     for (const [, value] of this) {
       batch.push(value);
@@ -433,6 +433,24 @@ class RecordSet extends Map {
       }
     }
     if (batch.length) yield batch;
+  }
+
+  /**
+   * Iterates over the record set in batches of the specified size.
+   * @param {Number} batchSize The size of each batch.
+   * @returns {Iterator} An iterator that yields batches of the specified size.
+   */
+  *batchIterator(batchSize) {
+    let batch = [];
+    for (const [key, value] of this) {
+      batch.push([key, value]);
+      if (batch.length === batchSize) {
+        yield new RecordSet({ copyScopesFrom: this, iterable: batch }).freeze();
+        batch = [];
+      }
+    }
+    if (batch.length)
+      yield new RecordSet({ copyScopesFrom: this, iterable: batch }).freeze();
   }
 
   /**

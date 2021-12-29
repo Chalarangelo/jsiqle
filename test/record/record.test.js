@@ -123,4 +123,44 @@ describe('Record', () => {
     const record = model.createRecord({ id: 'jd', name: 'John Doe', age: 42 });
     expect(record.toString()).toBe('jd');
   });
+
+  describe('with property caches', () => {
+    let propertyCalls = 0;
+    let record;
+
+    beforeEach(() => {
+      model = schema.createModel({
+        name: 'bModel',
+        key: 'id',
+        fields: [
+          { name: 'name', type: 'string' },
+          { name: 'age', type: 'number' },
+        ],
+        properties: {
+          firstName: rec => {
+            propertyCalls++;
+            return rec.name.split(' ')[0];
+          },
+        },
+        cacheProperties: ['firstName'],
+      });
+      record = model.createRecord({ id: 'jd', name: 'John Doe', age: 42 });
+      propertyCalls = 0;
+    });
+
+    it('calculates the property value only the first time', () => {
+      expect(record.firstName).toBe('John');
+      expect(propertyCalls).toBe(1);
+      expect(record.firstName).toBe('John');
+      expect(propertyCalls).toBe(1);
+    });
+
+    it('recalculates the propertyvalue if any field changes', () => {
+      expect(record.firstName).toBe('John');
+      expect(propertyCalls).toBe(1);
+      record.name = 'Jane Doe';
+      expect(record.firstName).toBe('Jane');
+      expect(propertyCalls).toBe(2);
+    });
+  });
 });

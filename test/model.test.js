@@ -8,6 +8,7 @@ const {
   $keyType,
   $fields,
   $properties,
+  $cachedProperties,
   $methods,
   $scopes,
   $validators,
@@ -324,6 +325,12 @@ describe('Model', () => {
       model.addProperty('aProperty', () => null);
       expect(model[$properties].has('aProperty')).toEqual(true);
     });
+
+    it('creates a cached property if "cache" is true', () => {
+      model.addProperty('aProperty', () => null, true);
+      expect(model[$properties].has('aProperty')).toEqual(true);
+      expect(model[$cachedProperties].has('aProperty')).toEqual(true);
+    });
   });
 
   describe('removeProperty', () => {
@@ -341,9 +348,16 @@ describe('Model', () => {
       expect(model.removeProperty('bProperty')).toEqual(false);
     });
 
-    it('removes the appropriate field and returns true', () => {
+    it('removes the appropriate property and returns true', () => {
       expect(model.removeProperty('aProperty')).toEqual(true);
       expect(model[$properties].has('aProperty')).toEqual(false);
+    });
+
+    it('removes the appropriate property and cache and returns true', () => {
+      model.addProperty('bProperty', () => null, true);
+      expect(model.removeProperty('bProperty')).toEqual(true);
+      expect(model[$properties].has('bProperty')).toEqual(false);
+      expect(model[$cachedProperties].has('bProperty')).toEqual(false);
     });
   });
 

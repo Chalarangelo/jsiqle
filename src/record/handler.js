@@ -10,6 +10,7 @@ const {
   $key,
   $keyType,
   $properties,
+  $cachedProperties,
   $methods,
   $relationships,
   $validators,
@@ -125,12 +126,7 @@ class RecordHandler {
     /* istanbul ignore else*/
     if (this.#hasField(property)) {
       const field = this.#getField(property);
-      RecordHandler.#setRecordField(
-        this.#model.name,
-        recordValue,
-        field,
-        value
-      );
+      RecordHandler.#setRecordField(this.#model.name, record, field, value);
       // Never skip individual field validation
       field[$validators].forEach((validator, validatorName) => {
         if (
@@ -170,7 +166,10 @@ class RecordHandler {
       throw new TypeError(
         `${modelName} record has invalid value for field ${field.name}.`
       );
-    record[field.name] = recordValue;
+    // We check for $wrappedRecordValue to ensure the record is wrapped in a
+    // handler (i.e. initialized) and not a plain object (i.e. initializing).
+    if (record[$wrappedRecordValue]) record[$cachedProperties].clear();
+    record[$recordValue][field.name] = recordValue;
   }
 
   static #recordToObject(record, model, handler) {
@@ -282,6 +281,15 @@ class RecordHandler {
   }
 
   #getProperty(record, property) {
+    if (this.#model[$cachedProperties].has(property)) {
+      if (record[$cachedProperties] && record[$cachedProperties].has(property))
+        return record[$cachedProperties].get(property);
+      const value = this.#model[$properties].get(property)(
+        record[$wrappedRecordValue]
+      );
+      record[$cachedProperties].set(property, value);
+      return value;
+    }
     return this.#model[$properties].get(property)(record[$wrappedRecordValue]);
   }
 

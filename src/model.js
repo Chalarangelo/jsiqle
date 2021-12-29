@@ -13,6 +13,7 @@ const {
   $key,
   $keyType,
   $properties,
+  $cachedProperties,
   $methods,
   $scopes,
   $relationships,
@@ -46,6 +47,7 @@ export class Model extends EventEmitter {
   #relationships;
   #validators;
   #updatingField = false;
+  #cachedProperties;
 
   static #instances = new Map();
 
@@ -57,6 +59,7 @@ export class Model extends EventEmitter {
     methods = {},
     scopes = {},
     validators = {},
+    cacheProperties = [],
     // TODO: V2 Enhancements
     // Adding a hooks parameter would be an interesting idea. There's a blind
     // spot currently where we can't listen for events on model creation.
@@ -81,13 +84,18 @@ export class Model extends EventEmitter {
     this.#methods = new Map();
     this.#relationships = new Map();
     this.#validators = new Map();
+    this.#cachedProperties = new Set();
 
     // Add fields, checking for duplicates and invalids
     fields.forEach(field => this.addField(field));
 
     // Add properties, checking for duplicates and invalids
     Object.entries(properties).forEach(([propertyName, property]) => {
-      this.addProperty(propertyName, property);
+      this.addProperty(
+        propertyName,
+        property,
+        cacheProperties.includes(propertyName)
+      );
     });
 
     // Add methods, checking for duplicates and invalids
@@ -162,7 +170,7 @@ export class Model extends EventEmitter {
     this.emit('change', { type: 'fieldUpdated', field: newField, model: this });
   }
 
-  addProperty(name, property) {
+  addProperty(name, property, cache = false) {
     this.emit('beforeAddProperty', {
       property: { name, body: property },
       model: this,
@@ -177,6 +185,7 @@ export class Model extends EventEmitter {
         ...this.#methods.keys(),
       ])
     );
+    if (cache) this.#cachedProperties.add(propertyName);
     this.emit('propertyAdded', {
       property: { name: propertyName, body: property },
       model: this,
@@ -197,6 +206,7 @@ export class Model extends EventEmitter {
       model: this,
     });
     this.#properties.delete(name);
+    if (this.#cachedProperties.has(name)) this.#cachedProperties.delete(name);
     this.emit('propertyRemoved', {
       property: { name },
       model: this,
@@ -417,6 +427,14 @@ export class Model extends EventEmitter {
 
   get [$properties]() {
     return this.#properties;
+  }
+
+  // TODO: V2 Enhancements
+  // Add a method to the model, so that it's possible to reset caches for all
+  // records. This removes some uncertainty and allows for recalculation without
+  // hacks. Also update the docs to reflect this.
+  get [$cachedProperties]() {
+    return this.#cachedProperties;
   }
 
   get [$methods]() {

@@ -6,6 +6,7 @@ const {
   $recordHandler,
   $recordModel,
   $recordTag,
+  $cachedProperties,
   $key,
 } = symbols;
 
@@ -13,12 +14,18 @@ class Record {
   #recordValue;
   #recordHandler;
   #proxiedRecord;
+  #cachedProperties;
 
   constructor(value, handler) {
     this.#recordValue = value;
     this.#recordHandler = handler;
+    this.#cachedProperties = new Map();
     this.#proxiedRecord = new Proxy(this, this.#recordHandler);
     return this.#proxiedRecord;
+  }
+
+  get [$cachedProperties]() {
+    return this.#cachedProperties;
   }
 
   /* istanbul ignore next */

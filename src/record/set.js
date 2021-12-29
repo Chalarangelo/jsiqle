@@ -494,6 +494,13 @@ class RecordSet extends Map {
   }
 
   /**
+   * Returns the number of elements in the record set.
+   */
+  get length() {
+    return this.size;
+  }
+
+  /**
    * Returns an array of the records contained in the record set.
    * @returns {Array<Record>} An array of the values contained in the record set.
    */

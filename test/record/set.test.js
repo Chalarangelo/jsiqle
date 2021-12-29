@@ -95,6 +95,17 @@ describe('RecordSet', () => {
     });
   });
 
+  describe('length', () => {
+    it('should return the number of records', () => {
+      expect(model.records.length).toBe(4);
+    });
+
+    it('should return 0 if no records', () => {
+      model.records.clear();
+      expect(model.records.length).toBe(0);
+    });
+  });
+
   describe('freeze', () => {
     it('should throw when mutating the record set', () => {
       model.records.freeze();

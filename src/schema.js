@@ -71,13 +71,14 @@ export class Schema extends EventEmitter {
     };
     models.forEach(model => {
       const modelRecord = this.getModel(model.name);
+      const cachedProperties = model.cacheProperties || [];
       if (model.lazyProperties)
         Object.entries(model.lazyProperties).forEach(
           ([propertyName, propertyInitializer]) => {
             modelRecord.addProperty(
               propertyName,
               propertyInitializer(schemaData),
-              model.cacheProperties.includes(propertyName)
+              cachedProperties.includes(propertyName)
             );
           }
         );

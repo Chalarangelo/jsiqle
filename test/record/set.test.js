@@ -233,6 +233,13 @@ describe('RecordSet', () => {
       expect(result.last.name).toBe('Jane Doe');
     });
 
+    it('should return a record set with only the given keys in the correct order', () => {
+      const result = model.records.only(1, 0);
+      expect(result.count).toBe(2);
+      expect(result.first.name).toBe('Jane Doe');
+      expect(result.last.name).toBe('John Doe');
+    });
+
     it('should return an empty record set if no records', () => {
       model.records.clear();
       expect(model.records.except(0, 1).count).toBe(0);

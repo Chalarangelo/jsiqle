@@ -114,13 +114,7 @@ export class Relationship {
     }
     // Use a where query for toMany relationships, safeguard against empty value
     const associationValues = record[this.#name] || [];
-    const associatedRecordsKeyName = this.#to[$key].name;
-    return this.#to.records.only(...associationValues).sort((a, b) => {
-      return (
-        associationValues.indexOf(a[associatedRecordsKeyName]) -
-        associationValues.indexOf(b[associatedRecordsKeyName])
-      );
-    });
+    return this.#to.records.only(...associationValues);
   }
 
   #getAssociatedRecordsReverse(record) {

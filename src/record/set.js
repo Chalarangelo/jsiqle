@@ -391,6 +391,57 @@ class RecordSet extends Map {
   }
 
   /**
+   * Duplicates the current record set.
+   * @returns {RecordSet} A new record set with the same elements as the original.
+   */
+  duplicate() {
+    return new RecordSet({
+      iterable: [...this.entries()],
+      copyScopesFrom: this,
+    }).freeze();
+  }
+
+  /**
+   * Merges one or more record sets into the current record set.
+   * @param {...any} recordSets One or more record sets to merge.
+   * @returns {RecordSet} A new record set with the elements of the original
+   * record sets merged into it.
+   */
+  merge(...recordSets) {
+    const res = new Map([...this.entries()]);
+    for (const recordSet of recordSets) {
+      for (const [key, value] of recordSet.entries()) {
+        if (res.has(key))
+          throw new DuplicationError(
+            `Key ${key} already exists in the record set.`
+          );
+        res.set(key, value);
+      }
+    }
+    return new RecordSet({
+      iterable: [...res.entries()],
+      copyScopesFrom: this,
+    }).freeze();
+  }
+
+  /**
+   * Merges one or more records into the current record set.
+   * @param  {...any} records One or more records to merge.
+   * @returns {RecordSet} A new record set with the elements of the original
+   * record set and any given records merged into it.
+   */
+  append(...records) {
+    const res = new RecordSet({
+      iterable: [...this.entries()],
+      copyScopesFrom: this,
+    });
+    for (const record of records) {
+      res.set(record[$key], record);
+    }
+    return res.freeze();
+  }
+
+  /**
    * Creates a new record set with all elements that pass the test implemented
    * by the provided function.
    * @param {Function} callbackFn Function that is called for every element of
@@ -484,6 +535,21 @@ class RecordSet extends Map {
     }
     return new RecordSet({
       iterable: records,
+      copyScopesFrom: this,
+    }).freeze();
+  }
+
+  /**
+   * Returns a new record set with the elements contained in a portion of the
+   * record set.
+   * @param {Number} start The index of the first element to include.
+   * @param {Number} end The index after the last element to include.
+   * @returns {RecordSet} A new record set with the elements contained in a
+   * portion of the record set.
+   */
+  slice(start, end) {
+    return new RecordSet({
+      iterable: [...this.entries()].slice(start, end),
       copyScopesFrom: this,
     }).freeze();
   }

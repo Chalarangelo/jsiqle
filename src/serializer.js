@@ -49,8 +49,21 @@ export class Serializer {
     return serialized;
   }
 
+  // ΝΟΤE: This also handles RecordSets (not by design).
+  // The result is an object with each key mapped to a serialized object.
+  // Hidden feature I guess?
   serializeArray(objects, options) {
     return objects.map(object => this.serialize(object, options));
+  }
+
+  serializeRecordSet(objects, options, keyMapFn) {
+    const serialized = {};
+    objects.forEach((value, key) => {
+      const mappedKey = keyMapFn(key, value);
+      if (mappedKey === undefined) return;
+      serialized[mappedKey] = this.serialize(value, options);
+    });
+    return serialized;
   }
 
   get name() {

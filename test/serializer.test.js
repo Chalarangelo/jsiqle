@@ -1,4 +1,5 @@
 import { Serializer } from 'src/serializer';
+import { Model } from 'src/model';
 
 describe('Serializer', () => {
   it('throws if "name" is invalid', () => {
@@ -135,6 +136,59 @@ describe('Serializer', () => {
             children: ['my pretty child'],
           },
         ]);
+      });
+    });
+
+    describe('serializeRecordSet', () => {
+      it('returns a valid object of objects', () => {
+        const model = new Model({
+          name: 'myModel',
+          fields: [
+            {
+              name: 'name',
+              type: 'string',
+            },
+            {
+              name: 'description',
+              type: 'string',
+            },
+            {
+              name: 'children',
+              type: 'objectArrayRequired',
+            },
+          ],
+        });
+        model.createRecord({
+          id: 'item_1',
+          name: 'myItem1',
+          description: 'description of myItem1',
+        });
+        model.createRecord({
+          id: 'item_2',
+          name: 'myItem2',
+          description: 'description of myItem2',
+        });
+
+        const serialized = serializer.serializeRecordSet(
+          model.records,
+          {
+            prefix: 'prefix',
+          },
+          (key, value) => {
+            if (value.name === 'myItem2') return undefined;
+            return `${key.split('_')[0]}/${value.name}`;
+          }
+        );
+
+        expect(serialized).toEqual({
+          'item/myItem1': {
+            name: 'myItem1',
+            regularDescription: 'description of myItem1',
+            description: 'description of myItem1!!',
+            customDescription: 'prefixdescription of myItem1',
+            children: [],
+          },
+        });
       });
     });
   });

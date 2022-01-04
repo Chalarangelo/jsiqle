@@ -691,6 +691,12 @@ class RecordSet extends Map {
       // No need to verify that the scope is valid, it must be verified by the
       // other record set already.
       this.#scopes.set(name, scope);
+      Object.defineProperty(this, name, {
+        configurable: true, // Allows deletion in $removeScope
+        get: () => {
+          return this.#scopedWhere(name);
+        },
+      });
     });
   }
 

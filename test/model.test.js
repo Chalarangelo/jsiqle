@@ -698,6 +698,8 @@ describe('Model', () => {
           { name: 'name', type: 'string', validators: { minLength: 1 } },
         ],
         scopes: {
+          nonExistentRecords: record => record.name === '',
+          namedRecords: record => record.name.length > 2,
           sortedNamedRecords: {
             matcher: record => record.name.length > 2,
             sorter: (a, b) => b.name.localeCompare(a.name),
@@ -721,7 +723,30 @@ describe('Model', () => {
       expect(model.records.size).toEqual(2);
     });
 
-    it('returns the correct records in the correct order for a given scope', () => {
+    it('returns an empty set for a given scope with no matches', () => {
+      [
+        { id: 'a', name: 'aName' },
+        { id: 'b', name: 'bName' },
+        { id: 'c', name: 'c' },
+      ].forEach(record => model.createRecord(record));
+      expect(
+        model.records.nonExistentRecords.flatMap(record => record.id)
+      ).toEqual([]);
+    });
+
+    it('returns the correct records unordered for a given scope', () => {
+      [
+        { id: 'a', name: 'aName' },
+        { id: 'b', name: 'bName' },
+        { id: 'c', name: 'c' },
+      ].forEach(record => model.createRecord(record));
+      expect(model.records.namedRecords.flatMap(record => record.id)).toEqual([
+        'a',
+        'b',
+      ]);
+    });
+
+    it('returns the correct records in the correct order for a given ordered scope', () => {
       [
         { id: 'a', name: 'aName' },
         { id: 'b', name: 'bName' },

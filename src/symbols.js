@@ -32,7 +32,6 @@ export default symbolizeAll(
   'getField',
   'getProperty',
   'removeScope',
-  'copyScopes',
   'instances',
   'isRecord',
   'groupTag',

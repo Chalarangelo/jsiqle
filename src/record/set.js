@@ -11,7 +11,6 @@ const {
   $scopes,
   $addScope,
   $removeScope,
-  $copyScopes,
   $isRecord,
   $key,
 } = symbols;
@@ -33,7 +32,7 @@ class RecordSet extends Map {
     for (const [key, value] of iterable) this.set(key, value);
 
     this.#scopes = new Map();
-    if (copyScopesFrom) this[$copyScopes](copyScopesFrom);
+    if (copyScopesFrom) this.#copyScopes(copyScopesFrom);
 
     this.#frozen = false;
   }
@@ -680,17 +679,19 @@ class RecordSet extends Map {
     delete this[name];
   }
 
-  [$copyScopes](otherRecordSet) {
-    otherRecordSet[$scopes].forEach((scope, name) => {
-      this[$addScope](name, scope);
-    });
-  }
-
   get [$scopes]() {
     return this.#scopes;
   }
 
   // Private
+
+  #copyScopes(otherRecordSet) {
+    otherRecordSet[$scopes].forEach((scope, name) => {
+      // No need to verify that the scope is valid, it must be verified by the
+      // other record set already.
+      this.#scopes.set(name, scope);
+    });
+  }
 
   static #validateProperty(callbackType, callbackName, callback, callbacks) {
     if (typeof callback !== 'function')

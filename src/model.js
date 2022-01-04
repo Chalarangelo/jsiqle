@@ -105,7 +105,7 @@ export class Model extends EventEmitter {
 
     // Add scopes, checking for duplicates and invalids
     Object.entries(scopes).forEach(([scopeName, scope]) => {
-      this.addScope(scopeName, scope);
+      this.addScope(scopeName, ...Model.#parseScope(scope));
     });
 
     // Add validators, checking for duplicates and invalids
@@ -266,13 +266,13 @@ export class Model extends EventEmitter {
     return true;
   }
 
-  addScope(name, scope) {
+  addScope(name, scope, sortFn) {
     this.emit('beforeAddScope', {
       scope: { name, body: scope },
       model: this,
     });
     const scopeName = validateName('Scope', name);
-    this.#records[$addScope](scopeName, scope);
+    this.#records[$addScope](scopeName, scope, sortFn);
     this.emit('scopeAdded', {
       scope: { name: scopeName, body: scope },
       model: this,
@@ -603,6 +603,25 @@ export class Model extends EventEmitter {
       );
     }
     return new Field(field);
+  }
+
+  static #parseScope(scope) {
+    if (typeof scope === 'function') return [scope];
+    if (typeof scope === 'object') {
+      const { matcher, sorter } = scope;
+      if (typeof matcher !== 'function')
+        throw new TypeError(
+          `The provided matcher for the scope is not a function.`
+        );
+      if (sorter && typeof sorter !== 'function')
+        throw new TypeError(
+          `The provided sorter for the scope is not a function.`
+        );
+      return [matcher, sorter];
+    }
+    throw new TypeError(
+      `The provided scope is not a function or valid object.`
+    );
   }
 
   static #validateFunction(

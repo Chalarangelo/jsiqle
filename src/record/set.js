@@ -655,19 +655,20 @@ class RecordSet extends Map {
 
   // Protected (package internal-use only)
 
-  [$addScope](name, scope) {
+  [$addScope](name, scope, sortFn) {
     RecordSet.#validateProperty('Scope', name, scope, this.#scopes);
+    if (sortFn) RecordSet.#validateFunction('Scope comparator', name, sortFn);
     if (
       this[name] ||
       Object.getOwnPropertyNames(RecordSet.prototype).includes(name)
     )
       throw new NameError(`Scope name ${name} is already in use.`);
 
-    this.#scopes.set(name, scope);
+    this.#scopes.set(name, [scope, sortFn]);
     Object.defineProperty(this, name, {
       configurable: true, // Allows deletion in $removeScope
       get: () => {
-        return this.where(this.#scopes.get(name));
+        return this.#scopedWhere(name);
       },
     });
   }
@@ -693,6 +694,18 @@ class RecordSet extends Map {
     });
   }
 
+  #scopedWhere(scopeName) {
+    const [matcherFn, comparatorFn] = this.#scopes.get(scopeName);
+    let matches = [];
+    for (const [key, value] of this.entries())
+      if (matcherFn(value, key, this)) matches.push([key, value]);
+    if (comparatorFn)
+      matches.sort(([key1, value1], [key2, value2]) =>
+        comparatorFn(value1, value2, key1, key2)
+      );
+    return new RecordSet({ iterable: matches, copyScopesFrom: this }).freeze();
+  }
+
   static #validateProperty(callbackType, callbackName, callback, callbacks) {
     if (typeof callback !== 'function')
       throw new TypeError(`${callbackType} ${callbackName} is not a function.`);
@@ -702,6 +715,12 @@ class RecordSet extends Map {
         `${callbackType} ${callbackName} already exists.`
       );
 
+    return callback;
+  }
+
+  static #validateFunction(callbackType, callbackName, callback) {
+    if (typeof callback !== 'function')
+      throw new TypeError(`${callbackType} ${callbackName} is not a function.`);
     return callback;
   }
 

@@ -174,11 +174,16 @@ describe('Model', () => {
       const scopes = {
         aScope: () => null,
         bScope: () => null,
+        cScope: {
+          matcher: () => null,
+          sorter: (a, b) => a - b,
+        },
       };
 
       const model = new Model({ name: 'aModel', scopes });
       expect(model.records[$scopes].has('aScope')).toEqual(true);
       expect(model.records[$scopes].has('bScope')).toEqual(true);
+      expect(model.records[$scopes].has('cScope')).toEqual(true);
     });
 
     it('has the correct validators', () => {
@@ -427,6 +432,15 @@ describe('Model', () => {
 
     it('creates the appropriate scope', () => {
       model.addScope('aScope', () => null);
+      expect(model.records[$scopes].has('aScope')).toEqual(true);
+    });
+
+    it('creates an appropriate scope with a sorter', () => {
+      model.addScope(
+        'aScope',
+        () => null,
+        (a, b) => a.id - b.id
+      );
       expect(model.records[$scopes].has('aScope')).toEqual(true);
     });
   });
@@ -683,6 +697,12 @@ describe('Model', () => {
         fields: [
           { name: 'name', type: 'string', validators: { minLength: 1 } },
         ],
+        scopes: {
+          sortedNamedRecords: {
+            matcher: record => record.name.length > 2,
+            sorter: (a, b) => b.name.localeCompare(a.name),
+          },
+        },
       });
     });
 
@@ -699,6 +719,17 @@ describe('Model', () => {
       expect(model.records.has('a')).toEqual(true);
       expect(model.records.has('b')).toEqual(true);
       expect(model.records.size).toEqual(2);
+    });
+
+    it('returns the correct records in the correct order for a given scope', () => {
+      [
+        { id: 'a', name: 'aName' },
+        { id: 'b', name: 'bName' },
+        { id: 'c', name: 'c' },
+      ].forEach(record => model.createRecord(record));
+      expect(
+        model.records.sortedNamedRecords.flatMap(record => record.id)
+      ).toEqual(['b', 'a']);
     });
   });
 

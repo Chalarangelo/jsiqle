@@ -125,7 +125,7 @@ Both of these model definition options require an object argument with the follo
 - `key`: (Optional) Parameter to create a key field, not part of the `fields` themselves. Can either be a string with the name of the key or an object with a `name` (string) and a `type` (either `'string'` or `'auto'`) representing a string or auto-incrementing integer key. By default, a model's key is a string field named `'id'`.
 - `properties`: (Optional) An object containing key-value pairs for getter properties to be defined on the model. All properties expect a single argument representing a record of the given model. More information about property definitions can be found in one of the following sections.
 - `cacheProperties`: (Optional) An array containing property names that should be cached. Properties are cached as long as a record doesn't have any field changes. More information about property caching can be found in one of the following sections.
-- `scopes`: (Optional) An object containing key-value pairs for getter properties to be defined on the record set of the model. All scopes expect a single argument representing the record set or a subset of records from the current model. More information about scope definitions can be found in one of the following sections.
+- `scopes`: (Optional) An object containing key-value pairs for getter properties to be defined on the record set of the model. All scopes expect a single argument representing the record set or a subset of records from the current model. Alternatively, an object with a `matcher` and `sorter` key can be supplied for ordered scopes. More information about scope definitions can be found in one of the following sections.
 - `validators`: (Optional) An object containing key-value pairs for validation properties that return a boolean value depending on the validation's result. All validators expect two arguments, the current record and the record set of the current model. More information about validators and field validators can be found in one of the following sections.
 
 You can retrieve an already defined model by calling `Schema.prototype.getModel()` with the model name:
@@ -405,12 +405,12 @@ const MySchema = jsiqle.create({
 
 const MyModel = MySchema.getModel('MyModel');
 
-MyModel.addSchema('does', record => record.lastName === 'Doe');
+MyModel.addScope('does', record => record.lastName === 'Doe');
 ```
 
-Scopes defined as part of the model definition as specified as key-value pairs, whereas scopes defined in `Model.prototype.addscope()` are passed as two separate arguments, the name and the scope body.
+Scopes defined as part of the model definition as specified as key-value pairs, whereas scopes defined in `Model.prototype.addScope()` are passed as two separate arguments, the name and the scope body.
 
-Scopes expect one argument, the current record, and must return a boolean indicating if the scope should include the record or not.
+Scopes expect one argument, the current record, and must return a boolean indicating if the scope should include the record or not. Alternatively, scopes can be specified as objects when defined as part of the model definition with a `matcher` function and a `sorter` function. This will create an ordered scope that will always apply the `sorter` to matched records before returning them. Ordered scopes can also be created by supplying a third argument to `Model.prototype.addScope()` which will act as the `sorter` function.
 
 You can remove a scope from a model using `Model.prototype.removeScope()`:
 

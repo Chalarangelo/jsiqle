@@ -25,6 +25,7 @@ export default symbolizeAll(
   'wrappedRecordValue',
   'recordHandler',
   'recordTag',
+  'setRecordKey',
   'defaultValue',
   'addScope',
   'addRelationshipAsField',

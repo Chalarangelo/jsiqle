@@ -13,6 +13,7 @@ const {
   $removeScope,
   $isRecord,
   $key,
+  $setRecordKey,
 } = symbols;
 
 /**
@@ -22,6 +23,7 @@ const {
 class RecordSet extends Map {
   #frozen;
   #scopes;
+  #keyName;
 
   // TODO: V2 enhancements
   // Add some way to pass the handler to the record set to prevent adding new
@@ -350,9 +352,12 @@ class RecordSet extends Map {
    */
   flatPluck(...keys) {
     const isSingleKey = keys.length === 1;
-    return [...this.values()].map(value =>
-      isSingleKey ? value[keys[0]] : keys.map(key => value[key])
-    );
+    if (isSingleKey) {
+      const key = keys[0];
+      if (this.#keyName === key) return [...this.keys()];
+      return [...this.values()].map(value => value[key]);
+    }
+    return [...this.values()].map(value => keys.map(key => value[key]));
   }
 
   /**
@@ -693,6 +698,10 @@ class RecordSet extends Map {
       RecordSet.#validateContains('Scope', name, this.#scopes)
     );
     delete this[name];
+  }
+
+  [$setRecordKey](keyName) {
+    this.#keyName = keyName;
   }
 
   get [$scopes]() {

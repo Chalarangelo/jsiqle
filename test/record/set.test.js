@@ -449,6 +449,22 @@ describe('RecordSet', () => {
     });
   });
 
+  describe('flatBatchKeysIterator', () => {
+    it('should iterate over the records', () => {
+      const result = model.records.flatBatchKeysIterator(2);
+      expect(result.next().value).toEqual([0, 1]);
+      expect(result.next().value).toEqual([2, 3]);
+      expect(result.next().value).toEqual(undefined);
+    });
+
+    it('should return the last batch with however many elements are left', () => {
+      const result = model.records.flatBatchKeysIterator(3);
+      expect(result.next().value).toEqual([0, 1, 2]);
+      expect(result.next().value).toEqual([3]);
+      expect(result.next().value).toEqual(undefined);
+    });
+  });
+
   describe('batchIterator', () => {
     it('should iterate over the records', () => {
       const result = model.records.batchIterator(2);

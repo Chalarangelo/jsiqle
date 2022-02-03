@@ -467,6 +467,23 @@ class RecordSet extends Map {
   }
 
   /**
+   * Iterates over the record set's keys in array batches of the specified size.
+   * @param {Number} batchSize The size of each batch.
+   * @returns {Iterator} An iterator that yields array batches of the specified size.
+   */
+  *flatBatchKeysIterator(batchSize) {
+    let batch = [];
+    for (const key of this.keys()) {
+      batch.push(key);
+      if (batch.length === batchSize) {
+        yield batch;
+        batch = [];
+      }
+    }
+    if (batch.length) yield batch;
+  }
+
+  /**
    * Iterates over the record set in array batches of the specified size.
    * @param {Number} batchSize The size of each batch.
    * @returns {Iterator} An iterator that yields array batches of the specified size.

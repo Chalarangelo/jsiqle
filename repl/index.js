@@ -158,6 +158,16 @@ const snippetC = snippet.createRecord({
   children: ['snippetA', 'snippetB'],
 });
 
+Array.from({ length: 1000 }).forEach(() => {
+  snippet.createRecord({
+    name: `snippet${i}`,
+    description: `description of snippet${i}`,
+    code: `console.log("Hello World!");`,
+    language: 'javascript',
+    tags: ['hello', 'world'],
+  });
+});
+
 snippetA.categorySet = ['categoryB', 'categoryA'];
 
 // categoryA.snippetSet = ['snippetC'];
@@ -176,6 +186,12 @@ replServer.context.categoryB = categoryB;
 const snippetSerializer = schema.getSerializer('snippet');
 
 replServer.context.snippetSerializer = snippetSerializer;
+
+replServer.context.traceFn = (name, fn) => {
+  console.time(`traceFn: ${name}`);
+  fn();
+  console.timeEnd(`traceFn: ${name}`);
+};
 
 // try {
 //   snippetA.snippetSet;

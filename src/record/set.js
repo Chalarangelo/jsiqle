@@ -184,10 +184,9 @@ class RecordSet extends Map {
    * satisfies the provided testing function or `undefined`.
    */
   find(callbackFn) {
-    const match = [...this.entries()].find(([key, value]) =>
-      callbackFn(value, key, this)
-    );
-    if (match) return match[1];
+    for (const [key, value] of this.entries()) {
+      if (callbackFn(value, key, this)) return value;
+    }
     return undefined;
   }
 
@@ -203,10 +202,9 @@ class RecordSet extends Map {
    * the provided testing function or `undefined`.
    */
   findKey(callbackFn) {
-    const match = [...this.entries()].find(([key, value]) =>
-      callbackFn(value, key, this)
-    );
-    if (match) return match[0];
+    for (const [key, value] of this.entries()) {
+      if (callbackFn(value, key, this)) return key;
+    }
     return undefined;
   }
 

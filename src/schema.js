@@ -69,7 +69,7 @@ export class Schema extends EventEmitter {
     );
     serializers.forEach(serializer => this.createSerializer(serializer));
 
-    // Kind of experimental
+    // V2 enhancements: Replace with the getter for `#schemaObject` entirely
     // Lazy properties, models and serializers require initial set up as they
     // depend on other models or serializers.
     const schemaData = {
@@ -308,6 +308,13 @@ export class Schema extends EventEmitter {
   }
 
   // Private
+
+  get #schemaObject() {
+    return {
+      models: Object.fromEntries([...this.#models.entries()]),
+      serializers: Object.fromEntries([...this.#serializers.entries()]),
+    };
+  }
 
   static #parseModel(schemaName, modelData, models) {
     validateObjectWithUniqueName(

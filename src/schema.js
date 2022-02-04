@@ -85,12 +85,14 @@ export class Schema extends EventEmitter {
           ([propertyName, propertyInitializer]) => {
             modelRecord.addProperty(
               propertyName,
-              value => propertyInitializer(value, schemaData),
+              value => propertyInitializer(value, this.#schemaObject),
               cachedProperties.includes(propertyName)
             );
           }
         );
 
+      // TODO: V2 enhancements
+      // Replace `schemaData` with the getter for `#schemaObject`
       if (model.lazyMethods)
         Object.entries(model.lazyMethods).forEach(
           ([methodName, methodInitializer]) => {
@@ -99,6 +101,8 @@ export class Schema extends EventEmitter {
         );
     });
 
+    // TODO: V2 enhancements
+    // Replace `schemaData` with the getter for `#schemaObject`
     serializers.forEach(serializer => {
       const serializerRecord = this.getSerializer(serializer.name);
       if (serializer.lazyMethods) {

@@ -56,7 +56,14 @@ export class Schema extends EventEmitter {
     Schema.#parseConfig(config);
     Schema.#schemas.set(this.#name, this);
 
-    models.forEach(model => this.createModel(model));
+    const lazyPropertyMap = {};
+    models.forEach(model => {
+      const { lazyProperties, ...modelData } =
+        Schema.#separateModelProperties(model);
+      if (Object.keys(lazyProperties).length)
+        lazyPropertyMap[modelData.name] = lazyProperties;
+      this.createModel(modelData);
+    });
     relationships.forEach(relationship =>
       this.createRelationship(relationship)
     );
@@ -72,12 +79,13 @@ export class Schema extends EventEmitter {
     models.forEach(model => {
       const modelRecord = this.getModel(model.name);
       const cachedProperties = model.cacheProperties || [];
-      if (model.lazyProperties)
-        Object.entries(model.lazyProperties).forEach(
+      const lazyProperties = lazyPropertyMap[model.name] || {};
+      if (lazyProperties)
+        Object.entries(lazyProperties).forEach(
           ([propertyName, propertyInitializer]) => {
             modelRecord.addProperty(
               propertyName,
-              propertyInitializer(schemaData),
+              value => propertyInitializer(value, schemaData),
               cachedProperties.includes(propertyName)
             );
           }
@@ -312,6 +320,25 @@ export class Schema extends EventEmitter {
       [...models.keys()]
     );
     return new Model(modelData);
+  }
+
+  static #separateModelProperties(modelData) {
+    const { properties: modelProperties = {}, ...model } = modelData;
+
+    const [properties, lazyProperties] = Object.entries(modelProperties).reduce(
+      (acc, [propertyName, propertyFn]) => {
+        const isLazy = propertyFn.length === 2;
+        acc[isLazy ? 1 : 0][propertyName] = propertyFn;
+        return acc;
+      },
+      [{}, {}]
+    );
+
+    return {
+      ...model,
+      properties,
+      lazyProperties,
+    };
   }
 
   static #applyRelationship(schemName, relationshipData, models) {

@@ -69,17 +69,12 @@ describe('Schema', () => {
           { name: 'cModel' },
           {
             name: 'dModel',
-            lazyProperties: {
-              prop:
-                ({ models: { cModel } }) =>
-                rec =>
-                  rec.id + cModel.name,
-              other:
-                ({ models: { cModel } }) =>
-                rec => {
-                  count++;
-                  return rec.id + cModel.name;
-                },
+            properties: {
+              prop: (rec, { models: { cModel } }) => rec.id + cModel.name,
+              other: (rec, { models: { cModel } }) => {
+                count++;
+                return rec.id + cModel.name;
+              },
             },
             cacheProperties: ['other'],
             lazyMethods: {

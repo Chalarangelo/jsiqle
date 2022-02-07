@@ -321,18 +321,20 @@ describe('Model', () => {
       expect(() => model.addProperty('id')).toThrow();
     });
 
-    it('throws if "property" is not a function', () => {
-      expect(() => model.addProperty('aProperty', null)).toThrow();
-      expect(() => model.addProperty('aProperty', 2)).toThrow();
+    it('throws if "body" is not a function', () => {
+      expect(() =>
+        model.addProperty({ name: 'aProperty', body: null })
+      ).toThrow();
+      expect(() => model.addProperty({ name: 'aProperty', body: 2 })).toThrow();
     });
 
     it('creates the appropriate property', () => {
-      model.addProperty('aProperty', () => null);
+      model.addProperty({ name: 'aProperty', body: () => null });
       expect(model[$properties].has('aProperty')).toEqual(true);
     });
 
     it('creates a cached property if "cache" is true', () => {
-      model.addProperty('aProperty', () => null, true);
+      model.addProperty({ name: 'aProperty', body: () => null, cache: true });
       expect(model[$properties].has('aProperty')).toEqual(true);
       expect(model[$cachedProperties].has('aProperty')).toEqual(true);
     });
@@ -359,7 +361,7 @@ describe('Model', () => {
     });
 
     it('removes the appropriate property and cache and returns true', () => {
-      model.addProperty('bProperty', () => null, true);
+      model.addProperty({ name: 'bProperty', body: () => null, cache: true });
       expect(model.removeProperty('bProperty')).toEqual(true);
       expect(model[$properties].has('bProperty')).toEqual(false);
       expect(model[$cachedProperties].has('bProperty')).toEqual(false);
@@ -806,7 +808,7 @@ describe('Model', () => {
       it('when a property is added', () => {
         const spy = jest.fn();
         model.on('change', spy);
-        model.addProperty('nameAndId', () => 'aName_a');
+        model.addProperty({ name: 'nameAndId', body: () => 'aName_a' });
         expect(spy).toHaveBeenCalledWith(
           expect.objectContaining({ type: 'propertyAdded' })
         );
@@ -814,7 +816,7 @@ describe('Model', () => {
 
       it('when a property is removed', () => {
         const spy = jest.fn();
-        model.addProperty('nameAndId', () => 'aName_a');
+        model.addProperty({ name: 'nameAndId', body: () => 'aName_a' });
         model.on('change', spy);
         model.removeProperty('nameAndId');
         expect(spy).toHaveBeenCalledWith(

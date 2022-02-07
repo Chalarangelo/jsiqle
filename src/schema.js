@@ -83,11 +83,11 @@ export class Schema extends EventEmitter {
       if (lazyProperties)
         Object.entries(lazyProperties).forEach(
           ([propertyName, propertyInitializer]) => {
-            modelRecord.addProperty(
-              propertyName,
-              value => propertyInitializer(value, this.#schemaObject),
-              cachedProperties.includes(propertyName)
-            );
+            modelRecord.addProperty({
+              name: propertyName,
+              body: value => propertyInitializer(value, this.#schemaObject),
+              cache: cachedProperties.includes(propertyName),
+            });
           }
         );
 

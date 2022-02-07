@@ -269,17 +269,17 @@ const MySchema = jsiqle.create({
 
 const MyModel = MySchema.getModel('MyModel');
 
-MyModel.addProperty(
-  'formalName',
-  record => `${record.lastName} ${record.firstName}`
-);
+MyModel.addProperty({
+  name: 'formalName',
+  body: record => `${record.lastName} ${record.firstName}`
+});
 ```
 
-Properties defined as part of the model definition are specified as key-value pairs, whereas properties defined in `Model.prototype.addProperty()` are passed as two separate arguments, the name and the property body.
+Properties defined as part of the model definition are specified as key-value pairs, whereas properties defined in `Model.prototype.addProperty()` are passed as objects with a `name` and `body` key.
 
 Properties expect one argument, the current record, and may return any type of value.
 
-`Model.prototype.addProperty()` can receive an additional boolean argument indicating if the property should be cached. Property caches are persisted as long as there are no field changes for a given record and cannot be specified for relationships. This means that properties that depend on other properties, methods or external values are not good candidates for caching. If a cached property is stale, the only way to force a recalculation is via updating any field on the record manually.
+`Model.prototype.addProperty()` can receive an additional boolean key, `cache`, indicating if the property should be cached. Property caches are persisted as long as there are no field changes for a given record and cannot be specified for relationships. This means that properties that depend on other properties, methods or external values are not good candidates for caching. If a cached property is stale, the only way to force a recalculation is via updating any field on the record manually.
 
 Additionally, "lazy" properties can be defined only as part of the model definition. Lazy properties are added to the model post schema initialization and are useful if you need access to other models or serializers. These properties will automatically bind their second argument to the current schema object representation (`{ models, serializers }`) and can be distinguished due to them expecting a second argument for it.
 

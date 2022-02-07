@@ -137,12 +137,14 @@ describe('Record', () => {
           { name: 'age', type: 'number' },
         ],
         properties: {
-          firstName: rec => {
-            propertyCalls++;
-            return rec.name.split(' ')[0];
+          firstName: {
+            body: rec => {
+              propertyCalls++;
+              return rec.name.split(' ')[0];
+            },
+            cache: true,
           },
         },
-        cacheProperties: ['firstName'],
       });
       record = model.createRecord({ id: 'jd', name: 'John Doe', age: 42 });
       propertyCalls = 0;

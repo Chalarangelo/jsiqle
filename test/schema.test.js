@@ -70,15 +70,15 @@ describe('Schema', () => {
           {
             name: 'dModel',
             properties: {
-              prop: {
-                body: (rec, { models: { cModel } }) => rec.id + cModel.name,
-              },
-              other: (rec, { models: { cModel } }) => {
-                count++;
-                return rec.id + cModel.name;
+              prop: (rec, { models: { cModel } }) => rec.id + cModel.name,
+              other: {
+                body: (rec, { models: { cModel } }) => {
+                  count++;
+                  return rec.id + cModel.name;
+                },
+                cache: true,
               },
             },
-            cacheProperties: ['other'],
             lazyMethods: {
               method:
                 ({ models: { cModel } }) =>
@@ -94,7 +94,7 @@ describe('Schema', () => {
       expect(record.other).toBe('xcModel');
       expect(count).toBe(1);
       expect(record.other).toBe('xcModel');
-      expect(count).toBe(2);
+      expect(count).toBe(1);
     });
 
     it('creates lazy serializer methods correctly', () => {

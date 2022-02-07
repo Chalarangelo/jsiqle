@@ -78,15 +78,14 @@ export class Schema extends EventEmitter {
     };
     models.forEach(model => {
       const modelRecord = this.getModel(model.name);
-      const cachedProperties = model.cacheProperties || [];
       const lazyProperties = lazyPropertyMap[model.name] || {};
       if (lazyProperties)
         Object.entries(lazyProperties).forEach(
-          ([propertyName, propertyInitializer]) => {
+          ([propertyName, { body: propertyInitializer, cache }]) => {
             modelRecord.addProperty({
               name: propertyName,
               body: value => propertyInitializer(value, this.#schemaObject),
-              cache: cachedProperties.includes(propertyName),
+              cache,
             });
           }
         );
@@ -337,9 +336,14 @@ export class Schema extends EventEmitter {
     const { properties: modelProperties = {}, ...model } = modelData;
 
     const [properties, lazyProperties] = Object.entries(modelProperties).reduce(
-      (acc, [propertyName, propertyFn]) => {
+      (acc, [propertyName, property]) => {
+        const isObject = typeof property === 'object';
+        const propertyFn = isObject ? property.body : property;
         const isLazy = propertyFn.length === 2;
-        acc[isLazy ? 1 : 0][propertyName] = propertyFn;
+        acc[isLazy ? 1 : 0][propertyName] = {
+          body: propertyFn,
+          cache: isObject ? Boolean(property.cache) : false,
+        };
         return acc;
       },
       [{}, {}]

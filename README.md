@@ -124,7 +124,6 @@ Both of these model definition options require an object argument with the follo
 - `fields`: (Optional) An array of fields that make up the model. More information about field definitions can be found in the next section.
 - `key`: (Optional) Parameter to create a key field, not part of the `fields` themselves. Can either be a string with the name of the key or an object with a `name` (string) and a `type` (either `'string'` or `'auto'`) representing a string or auto-incrementing integer key. By default, a model's key is a string field named `'id'`.
 - `properties`: (Optional) An object containing key-value pairs for getter properties to be defined on the model. All properties expect a single argument representing a record of the given model. More information about property definitions can be found in one of the following sections.
-- `cacheProperties`: (Optional) An array containing property names that should be cached. Properties are cached as long as a record doesn't have any field changes. More information about property caching can be found in one of the following sections.
 - `scopes`: (Optional) An object containing key-value pairs for getter properties to be defined on the record set of the model. All scopes expect a single argument representing the record set or a subset of records from the current model. Alternatively, an object with a `matcher` and `sorter` key can be supplied for ordered scopes. More information about scope definitions can be found in one of the following sections.
 - `validators`: (Optional) An object containing key-value pairs for validation properties that return a boolean value depending on the validation's result. All validators expect two arguments, the current record and the record set of the current model. More information about validators and field validators can be found in one of the following sections.
 
@@ -275,13 +274,11 @@ MyModel.addProperty({
 });
 ```
 
-Properties defined as part of the model definition are specified as key-value pairs, whereas properties defined in `Model.prototype.addProperty()` are passed as objects with a `name` and `body` key.
+Properties defined as part of the model definition are specified as key-value pairs, whereas properties defined in `Model.prototype.addProperty()` are passed as objects with a `name` and `body` key. Property values in the model definition can either be a function or an object containing a `body` and optional `cache`.
 
-Properties expect one argument, the current record, and may return any type of value.
+Property functions can expect up to two arguments. If they do not expect any arguments or only expect a single argument, they are called with the current record as their sole argument. If they expect two arguments, they are considered "lazy" properties and their second argument is automatically bound to the current schema object representation (`{ models, serializers }`). These can only be defined as part of the model definition, are added to the model post initialization and are useful if you need access to other models or serializers.
 
-`Model.prototype.addProperty()` can receive an additional boolean key, `cache`, indicating if the property should be cached. Property caches are persisted as long as there are no field changes for a given record and cannot be specified for relationships. This means that properties that depend on other properties, methods or external values are not good candidates for caching. If a cached property is stale, the only way to force a recalculation is via updating any field on the record manually.
-
-Additionally, "lazy" properties can be defined only as part of the model definition. Lazy properties are added to the model post schema initialization and are useful if you need access to other models or serializers. These properties will automatically bind their second argument to the current schema object representation (`{ models, serializers }`) and can be distinguished due to them expecting a second argument for it.
+`Model.prototype.addProperty()` and properties defined as objects in the model defintion can receive an additional boolean key, `cache`, indicating if the property should be cached. Property caches are persisted as long as there are no field changes for a given record and cannot be specified for relationships. This means that properties that depend on other properties, methods or external values are not good candidates for caching. If a cached property is stale, the only way to force a recalculation is via updating any field on the record manually.
 
 ```js
 import jsiqle from '@jsiqle/core';
@@ -295,7 +292,11 @@ const MySchema = jsiqle.create({
         { name: 'lastName', type: 'string' },
       ],
       properties: {
-        fullName: record => `${record.firstName} ${record.lastName}`
+        fullName: record => `${record.firstName} ${record.lastName}`,
+        formalName: {
+          body: record => `${record.lastName} ${record.firstName}`,
+          cache: true
+        }
       }
     },
     {

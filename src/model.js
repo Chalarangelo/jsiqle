@@ -60,7 +60,6 @@ export class Model extends EventEmitter {
     methods = {},
     scopes = {},
     validators = {},
-    cacheProperties = [],
     // TODO: V2 Enhancements
     // Adding a hooks parameter would be an interesting idea. There's a blind
     // spot currently where we can't listen for events on model creation.
@@ -99,7 +98,6 @@ export class Model extends EventEmitter {
         this.addProperty({
           name: propertyName,
           body: property,
-          cache: cacheProperties.includes(propertyName),
         });
     });
 

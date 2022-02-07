@@ -93,11 +93,14 @@ export class Model extends EventEmitter {
 
     // Add properties, checking for duplicates and invalids
     Object.entries(properties).forEach(([propertyName, property]) => {
-      this.addProperty(
-        propertyName,
-        property,
-        cacheProperties.includes(propertyName)
-      );
+      if (typeof property === 'object')
+        this.addProperty({ name: propertyName, ...property });
+      else
+        this.addProperty({
+          name: propertyName,
+          body: property,
+          cache: cacheProperties.includes(propertyName),
+        });
     });
 
     // Add methods, checking for duplicates and invalids
@@ -172,15 +175,15 @@ export class Model extends EventEmitter {
     this.emit('change', { type: 'fieldUpdated', field: newField, model: this });
   }
 
-  addProperty(name, property, cache = false) {
+  addProperty({ name, body, cache = false }) {
     this.emit('beforeAddProperty', {
-      property: { name, body: property },
+      property: { name, body },
       model: this,
     });
     const propertyName = validateName('Property', name);
     this.#properties.set(
       propertyName,
-      Model.#validateFunction('Property', name, property, [
+      Model.#validateFunction('Property', name, body, [
         ...this.#fields.keys(),
         this.#key.name,
         ...this.#properties.keys(),
@@ -189,12 +192,12 @@ export class Model extends EventEmitter {
     );
     if (cache) this.#cachedProperties.add(propertyName);
     this.emit('propertyAdded', {
-      property: { name: propertyName, body: property },
+      property: { name: propertyName, body },
       model: this,
     });
     this.emit('change', {
       type: 'propertyAdded',
-      property: { name: propertyName, body: property },
+      property: { name: propertyName, body },
       model: this,
     });
   }

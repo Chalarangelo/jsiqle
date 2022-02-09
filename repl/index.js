@@ -17,7 +17,7 @@ const schema = jsiqle.create({
       fields: [
         {
           name: 'description',
-          type: 'stringRequired',
+          type: 'string',
           // Refactor to flatten validators in the definition?
           validators: {
             unique: true,
@@ -27,7 +27,7 @@ const schema = jsiqle.create({
         },
         {
           name: 'code',
-          type: 'stringRequired',
+          type: 'string',
         },
         {
           name: 'language',
@@ -91,7 +91,7 @@ const category = schema.createModel({
   fields: [
     {
       name: 'description',
-      type: 'stringRequired',
+      type: 'string',
     },
   ],
 });
@@ -125,7 +125,7 @@ const categoryB = category.createRecord({
 snippet.addField(
   {
     name: 'special',
-    type: 'stringRequired',
+    type: 'string',
   },
   record => {
     if (record.name === 'snippetA') {

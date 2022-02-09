@@ -30,13 +30,7 @@ const {
   $setRecordKey,
 } = symbols;
 
-const allStandardTypes = [
-  ...Object.keys(standardTypes),
-  ...Object.keys(standardTypes).map(type => `${type}Required`),
-  'enum',
-  'enumRequired',
-  'auto',
-];
+const allStandardTypes = [...Object.keys(standardTypes), 'enum', 'auto'];
 
 export class Model extends EventEmitter {
   #records;
@@ -547,7 +541,6 @@ export class Model extends EventEmitter {
       keyField = new Field({
         name,
         type: key,
-        required: true,
         defaultValue: '__emptyKey__',
       });
       // Override the default value to throw an error
@@ -655,7 +648,7 @@ export class Model extends EventEmitter {
   }
 
   static #applyFieldRetrofill(field, records, retrofill) {
-    if (!field.required && retrofill === undefined) return;
+    if (retrofill === undefined) return;
 
     const retrofillFunction =
       retrofill !== undefined

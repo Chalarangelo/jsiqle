@@ -1,6 +1,6 @@
 import Record from './record';
 import { DuplicationError } from 'src/errors';
-import types from 'src/types';
+import types, { key } from 'src/types';
 import symbols from 'src/symbols';
 import { deepClone } from 'src/utils';
 
@@ -126,7 +126,13 @@ class RecordHandler {
     /* istanbul ignore else*/
     if (this.#hasField(property)) {
       const field = this.#getField(property);
-      RecordHandler.#setRecordField(this.#model.name, record, field, value);
+      RecordHandler.#setRecordField(
+        this.#model.name,
+        record,
+        field,
+        value,
+        this.#hasRelationshipField(property)
+      );
       // Never skip individual field validation
       field[$validators].forEach((validator, validatorName) => {
         if (
@@ -157,11 +163,11 @@ class RecordHandler {
 
   // Private methods
 
-  static #setRecordField(modelName, record, field, value) {
+  static #setRecordField(modelName, record, field, value, isRelationship) {
     // Set the default value if the field is null or undefined
     const recordValue =
-      field.required && types.nil(value) ? field[$defaultValue] : value;
-    if (!field.typeCheck(recordValue))
+      !isRelationship && types.undefined(value) ? field[$defaultValue] : value;
+    if (!isRelationship && !field.typeCheck(recordValue))
       // Throw an error if the field value is invalid
       throw new TypeError(
         `${modelName} record has invalid value for field ${field.name}.`
@@ -225,7 +231,7 @@ class RecordHandler {
   static #validateNewRecordKey = (modelName, modelKey, recordKey, records) => {
     let newRecordKey = recordKey;
 
-    if (modelKey[$keyType] === 'string' && !modelKey.typeCheck(newRecordKey))
+    if (modelKey[$keyType] === 'string' && !key(newRecordKey))
       throw new TypeError(
         `${modelName} record has invalid value for key ${modelKey.name}.`
       );

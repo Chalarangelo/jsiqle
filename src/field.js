@@ -9,25 +9,13 @@ const { $defaultValue, $validators } = symbols;
 class Field {
   #name;
   #defaultValue;
-  #required;
   #type;
   #validators;
 
-  constructor({
-    name,
-    type,
-    required = false,
-    defaultValue = null,
-    validators = {},
-  }) {
+  constructor({ name, type, defaultValue = null, validators = {} }) {
     this.#name = validateName('Field', name);
-    this.#required = Field.#validateRequired(required);
-    this.#type = Field.#validateType(type, required);
-    this.#defaultValue = Field.#validateDefaultValue(
-      defaultValue,
-      this.#type,
-      this.#required
-    );
+    this.#type = Field.#validateType(type);
+    this.#defaultValue = Field.#validateDefaultValue(defaultValue, this.#type);
     this.#validators = new Map();
     Object.entries(validators).forEach(([validatorName, validator]) => {
       this.addValidator(validatorName, validator);
@@ -42,10 +30,6 @@ class Field {
 
   get name() {
     return this.#name;
-  }
-
-  get required() {
-    return this.#required;
   }
 
   typeCheck(value) {
@@ -64,23 +48,14 @@ class Field {
 
   // Private
 
-  static #validateType(type, required) {
-    if (typeof type !== 'function') {
+  static #validateType(type) {
+    if (typeof type !== 'function')
       throw new TypeError('Field type must be a function.');
-    }
-    return required ? type : types.optional(type);
+    return types.optional(type);
   }
 
-  static #validateRequired(required) {
-    if (typeof required !== 'boolean') {
-      throw new TypeError('Field required must be a boolean.');
-    }
-    return required;
-  }
-
-  static #validateDefaultValue(defaultValue, type, required) {
-    if (required && types.nil(defaultValue))
-      throw new ValidationError('Default value cannot be null or undefined.');
+  static #validateDefaultValue(defaultValue, type) {
+    if (types.undefined(defaultValue)) return null;
     if (!type(defaultValue))
       throw new ValidationError('Default value must be valid.');
     return defaultValue;
@@ -103,35 +78,17 @@ class Field {
 
 // Create convenience static methods on the Field class
 Object.entries(standardTypes).forEach(([typeName, standardType]) => {
-  const { type, defaultValue: typeDefaultValue } = standardType;
+  const { type } = standardType;
 
   Field[typeName] = options => {
     if (typeof options === 'string') return new Field({ name: options, type });
     return new Field({ ...options, type });
-  };
-  Field[`${typeName}Required`] = options => {
-    if (typeof options === 'string')
-      return new Field({
-        name: options,
-        type,
-        required: true,
-        defaultValue: typeDefaultValue,
-      });
-    const defaultValue = options.defaultValue || typeDefaultValue;
-    return new Field({ ...options, type, required: true, defaultValue });
   };
 });
 
 // Enum is special, handle it separately
 Field.enum = ({ name, values }) =>
   new Field({ name, type: types.enum(...values) });
-Field.enumRequired = ({ name, values, defaultValue = values[0] }) =>
-  new Field({
-    name,
-    type: types.enum(...values),
-    required: true,
-    defaultValue,
-  });
 
 // Auto-field is special, handle it separately
 Field.auto = options => {
@@ -147,7 +104,6 @@ Field.auto = options => {
   const autoField = new Field({
     name,
     type: value => value === currentValue,
-    required: true,
     defaultValue: currentValue,
   });
   // Override the default value to be the next value in the sequence

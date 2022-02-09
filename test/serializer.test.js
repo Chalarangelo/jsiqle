@@ -154,7 +154,8 @@ describe('Serializer', () => {
             },
             {
               name: 'children',
-              type: 'objectArrayRequired',
+              type: 'objectArray',
+              defaultValue: [],
             },
           ],
         });

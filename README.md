@@ -152,10 +152,10 @@ const MySchema = jsiqle.create({
       name: 'MyModel',
       fields: [
         { name: 'firstName', type: 'string' },
-        { name: 'age', type: 'numberRequired', defaultValue: 18 },
+        { name: 'age', type: 'number', defaultValue: 18 },
         {
           name: 'username',
-          type: 'stringRequired',
+          type: 'string',
           defaultValue: '',
           validators: {
             unique: true,
@@ -172,7 +172,7 @@ const MyModel = MySchema.getModel('MyModel');
 MyModel.addField(
   {
     name: 'role',
-    type: 'enumRequired',
+    type: 'enum',
     values: ['user', 'admin'],
     defaultValue: 'user'
   },
@@ -184,10 +184,8 @@ Both of these field definition options require an object argument with the follo
 
 - `name`: The name of the field. By convention, field names should be camel-cased (i.e. `myField`). Field names must be unique for each model.
 - `type`: The type of the field. Read below for more information on types and validation.
-- `required`: (Optional) Boolean value that determines if a field can be empty (`null` or `undefined`). If specified, `defaultValue` also needs to be specified.
-- `defaultValue`: (Optional) A value that will be used as the default for records with an empty value in this field if the field is required. The `defaultValue` must be a valid value for the given type.
-- `validators`: (Optional) An object that defines what validations the field needs
-to pass. More information can be found below.
+- `defaultValue`: (Optional) A value that will be used as the default for records with an empty value in this field. The `defaultValue` must be either `null` (default) or a valid value for the given type.
+- `validators`: (Optional) An object that defines what validations the field needs to pass. More information can be found below.
 
 Fields added via `Model.prototype.addField()` can specify a retrofill function as a second argument. This function takes one argument, the existing record, and is used to determine the value of the new field added to the record.
 
@@ -196,7 +194,7 @@ Fields can be updated by calling `Model.prototype.updateField()` with the field 
 ```js
 MyModel.updateField('firstName', {
   name: 'firstName',
-  type: 'stringRequired'
+  type: 'string'
 });
 ```
 
@@ -218,8 +216,6 @@ object booleanObject numberObject
 stringObject dateObject objectArray
 enum
 ```
-
-Each of these types can be specified as is or suffixed with `Required` (e.g. `stringRequired`) to specify the `required` flag of the field as well. Required field types have a preset default value corresponding to an "empty" value of the type.
 
 For `enum` types, the `values` key must also be specified as an array of distinct values.
 
@@ -549,7 +545,7 @@ MyModel.createRecord({ id: 'jsmith', firstName: 'John', lastName: 'Smith' });
 MyModel.createRecord({ id: 'jdoe', firstName: 'John', lastName: 'Doe' });
 ```
 
-Each record definition consists of an object with the appropriate key-value pairs. Required fields without a value will be automatically set to the respective field's `defaultValue`. Key-value pairs that do not match a field definition will be stored in the record. This can be useful for fields that might be added in later operations (e.g. adding relationships to a populated model).
+Each record definition consists of an object with the appropriate key-value pairs. Fields without a value will be automatically set to the respective field's `defaultValue` (`null` by default). Key-value pairs that do not match a field definition will be stored in the record. This can be useful for fields that might be added in later operations (e.g. adding relationships to a populated model).
 
 #### Updating records
 

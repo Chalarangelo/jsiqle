@@ -51,7 +51,7 @@ const isUndefined = val => val === undefined;
 
 const isNil = or(isNull, isUndefined);
 
-const isOptional = type => val => or(isNil, type)(val);
+const isOptional = type => val => or(isNull, type)(val);
 
 export default {
   // Primitive types
@@ -82,23 +82,22 @@ export default {
 };
 
 export const standardTypes = {
-  boolean: { type: isBoolean, defaultValue: false },
-  number: { type: isNumber, defaultValue: 0 },
-  positiveNumber: { type: and(isNumber, isPositive), defaultValue: 0 },
-  string: { type: isString, defaultValue: '' },
-  date: { type: isDate, defaultValue: new Date() },
-  stringOrNumber: { type: or(isString, isNumber), defaultValue: '' },
-  numberOrString: { type: or(isString, isNumber), defaultValue: 0 },
-  booleanArray: { type: isArrayOf(isBoolean), defaultValue: [] },
-  numberArray: { type: isArrayOf(isNumber), defaultValue: [] },
-  stringArray: { type: isArrayOf(isString), defaultValue: [] },
-  dateArray: { type: isArrayOf(isDate), defaultValue: [] },
-  object: { type: isObject({}), defaultValue: {} },
-  booleanObject: { type: isObjectOf(isBoolean), defaultValue: { a: true } },
-  numberObject: { type: isObjectOf(isNumber), defaultValue: {} },
-  stringObject: { type: isObjectOf(isString), defaultValue: {} },
-  dateObject: { type: isObjectOf(isDate), defaultValue: {} },
-  objectArray: { type: isArrayOf(isObject({})), defaultValue: [] },
+  boolean: { type: isBoolean },
+  number: { type: isNumber },
+  positiveNumber: { type: and(isNumber, isPositive) },
+  string: { type: isString },
+  date: { type: isDate },
+  stringOrNumber: { type: or(isString, isNumber) },
+  booleanArray: { type: isArrayOf(isBoolean) },
+  numberArray: { type: isArrayOf(isNumber) },
+  stringArray: { type: isArrayOf(isString) },
+  dateArray: { type: isArrayOf(isDate) },
+  object: { type: isObject({}) },
+  booleanObject: { type: isObjectOf(isBoolean) },
+  numberObject: { type: isObjectOf(isNumber) },
+  stringObject: { type: isObjectOf(isString) },
+  dateObject: { type: isObjectOf(isDate) },
+  objectArray: { type: isArrayOf(isObject({})) },
 };
 
 // Internal types

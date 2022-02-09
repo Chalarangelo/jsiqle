@@ -185,7 +185,6 @@ export class Relationship {
     const relationshipField = new Field({
       name,
       type,
-      required: false,
       defaultValue: isMultiple ? [] : null,
       validators,
     });

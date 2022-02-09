@@ -233,25 +233,11 @@ describe('Model', () => {
       expect(model.records.first.aField).toEqual('x');
     });
 
-    it('does not apply "retrofill" if undefined and the field is not required', () => {
+    it('does not apply "retrofill" if undefined', () => {
       model.createRecord({ id: 'a' });
       model.addField({ name: 'aField', type: 'string' });
       expect(model[$fields].has('aField')).toEqual(true);
       expect(model.records.first.aField).toEqual(undefined);
-    });
-
-    it('applies the default or existing value if "retrofill" is undefined and the field is required', () => {
-      model.createRecord({ id: 'a' });
-      model.createRecord({ id: 'b', aField: 'y' });
-      model.addField({
-        name: 'aField',
-        type: 'string',
-        required: true,
-        defaultValue: 'x',
-      });
-      expect(model[$fields].has('aField')).toEqual(true);
-      expect(model.records.first.aField).toEqual('x');
-      expect(model.records.last.aField).toEqual('y');
     });
   });
 
@@ -528,7 +514,7 @@ describe('Model', () => {
               unique: true,
             },
           },
-          { name: 'age', type: 'numberRequired', defaultValue: 18 },
+          { name: 'age', type: 'number', defaultValue: 18 },
         ],
         scopes: {
           adult: ({ age }) => age >= 18,

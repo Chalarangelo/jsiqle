@@ -169,15 +169,12 @@ const MySchema = jsiqle.create({
 
 const MyModel = MySchema.getModel('MyModel');
 
-MyModel.addField(
-  {
-    name: 'role',
-    type: 'enum',
-    values: ['user', 'admin'],
-    defaultValue: 'user'
-  },
-  record => record.username === 'admin' ? 'admin' : 'user'
-);
+MyModel.addField({
+  name: 'role',
+  type: 'enum',
+  values: ['user', 'admin'],
+  defaultValue: 'user'
+});
 ```
 
 Both of these field definition options require an object argument with the following attributes:
@@ -186,8 +183,6 @@ Both of these field definition options require an object argument with the follo
 - `type`: The type of the field. Read below for more information on types and validation.
 - `defaultValue`: (Optional) A value that will be used as the default for records with an empty value in this field. The `defaultValue` must be either `null` (default) or a valid value for the given type.
 - `validators`: (Optional) An object that defines what validations the field needs to pass. More information can be found below.
-
-Fields added via `Model.prototype.addField()` can specify a retrofill function as a second argument. This function takes one argument, the existing record, and is used to determine the value of the new field added to the record.
 
 Fields can be updated by calling `Model.prototype.updateField()` with the field name and a new field definition. The new field definition's name must match the existing one:
 
@@ -745,7 +740,6 @@ Model objects emit the following events:
 
 ```
 beforeAddField fieldAdded
-beforeRetrofillField fieldRetrofilled
 beforeUpdateField fieldUpdated
 beforeAddProperty propertyAdded
 beforeRemoveProperty propertyRemoved

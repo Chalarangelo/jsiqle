@@ -40,8 +40,7 @@ class RecordHandler {
     // Validate record key
     const newRecordKey = RecordHandler.#validateNewRecordKey(
       modelName,
-      this.#getKey(),
-      recordData[this.#getKey().name],
+      recordData.id,
       this.#model.records
     );
     // Clone record data, check for extra properties
@@ -57,7 +56,7 @@ class RecordHandler {
     // Create record with key and extra properties only
     const newRecord = new Record(
       {
-        [this.#getKey().name]: newRecordKey,
+        id: newRecordKey,
         ...extraProperties.reduce(
           (obj, property) => ({ ...obj, [property]: clonedRecord[property] }),
           {}
@@ -180,9 +179,8 @@ class RecordHandler {
   static #recordToObject(record, model) {
     const recordValue = record[$recordValue];
     const fields = model[$fields];
-    const key = model[$key].name;
     const object = {
-      [key]: recordValue[key],
+      id: recordValue.id,
     };
 
     fields.forEach(field => {
@@ -193,13 +191,11 @@ class RecordHandler {
     return () => object;
   }
 
-  static #validateNewRecordKey = (modelName, modelKey, recordKey, records) => {
+  static #validateNewRecordKey = (modelName, recordKey, records) => {
     let newRecordKey = recordKey;
 
     if (!key(newRecordKey))
-      throw new TypeError(
-        `${modelName} record has invalid value for key ${modelKey.name}.`
-      );
+      throw new TypeError(`${modelName} record has invalid id.`);
 
     if (records.has(newRecordKey))
       throw new DuplicationError(
@@ -223,7 +219,7 @@ class RecordHandler {
   }
 
   #isModelKey(property) {
-    return this.#model[$key].name === property;
+    return property === 'id';
   }
 
   #getKey() {
@@ -231,7 +227,7 @@ class RecordHandler {
   }
 
   #getKeyValue(record) {
-    return record[$recordValue][this.#model[$key].name];
+    return record[$recordValue].id;
   }
 
   #hasField(property) {

@@ -7,7 +7,6 @@ const {
   $recordModel,
   $recordTag,
   $cachedProperties,
-  $key,
 } = symbols;
 
 class Record {
@@ -53,8 +52,7 @@ class Record {
   /* istanbul ignore next */
   get [$recordTag]() {
     const model = this[$recordModel];
-    const key = model[$key].name;
-    return `${model.name}#${this[$recordValue][key]}`;
+    return `${model.name}#${this[$recordValue].id}`;
   }
 
   /* istanbul ignore next */

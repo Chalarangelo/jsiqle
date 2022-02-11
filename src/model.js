@@ -49,7 +49,6 @@ export class Model extends EventEmitter {
   constructor({
     name,
     fields = [],
-    key = 'id',
     properties = {},
     methods = {},
     scopes = {},
@@ -69,7 +68,7 @@ export class Model extends EventEmitter {
     this.#recordHandler = new RecordHandler(this);
 
     // Check and create the key field, no need to check for duplicate fields
-    this.#key = Model.#parseKey(this.name, key);
+    this.#key = Model.#parseKey(this.name, 'id');
     this.#records[$setRecordKey](key);
 
     // Initialize private fields

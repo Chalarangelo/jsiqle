@@ -10,7 +10,6 @@ import { validateObjectWithUniqueName, validateName } from 'src/utils';
 const {
   $fields,
   $defaultValue,
-  $key,
   $properties,
   $cachedProperties,
   $methods,
@@ -407,10 +406,6 @@ export class Model extends EventEmitter {
 
   get [$fields]() {
     return this.#fields;
-  }
-
-  get [$key]() {
-    return this.#key;
   }
 
   get [$properties]() {

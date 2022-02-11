@@ -27,7 +27,6 @@ describe('Record', () => {
     schema = new Schema({ name: 'test' });
     model = schema.createModel({
       name: 'aModel',
-      key: 'id',
       fields: [
         { name: 'name', type: 'string' },
         { name: 'age', type: 'number' },
@@ -98,7 +97,6 @@ describe('Record', () => {
     beforeEach(() => {
       model = schema.createModel({
         name: 'bModel',
-        key: 'id',
         fields: [
           { name: 'name', type: 'string' },
           { name: 'age', type: 'number' },

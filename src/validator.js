@@ -3,6 +3,10 @@ export class Validator {
     return (value, data) => data.every(item => item[field] !== value[field]);
   }
 
+  static notNull(field) {
+    return value => value[field] !== null;
+  }
+
   static length(field, [min, max]) {
     return value => value[field].length >= min && value[field].length <= max;
   }

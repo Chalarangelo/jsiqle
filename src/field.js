@@ -90,31 +90,4 @@ Object.entries(standardTypes).forEach(([typeName, standardType]) => {
 Field.enum = ({ name, values }) =>
   new Field({ name, type: types.enum(...values) });
 
-// Auto-field is special, handle it separately
-Field.auto = options => {
-  const name = typeof options === 'string' ? options : options.name;
-  // Generator function to generate a new value each time
-  function* autoGenerator() {
-    let i = 0;
-    while (true) yield i++;
-  }
-  const generator = autoGenerator();
-  let currentValue = 0;
-  // Create the field
-  const autoField = new Field({
-    name,
-    type: value => value === currentValue,
-    defaultValue: currentValue,
-  });
-  // Override the default value to be the next value in the sequence
-  Object.defineProperty(autoField, $defaultValue, {
-    get() {
-      const value = generator.next().value;
-      currentValue = value;
-      return value;
-    },
-  });
-  return autoField;
-};
-
 export { Field };

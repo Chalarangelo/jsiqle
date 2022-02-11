@@ -27,7 +27,7 @@ const {
   $handleExperimentalAPIMessage,
 } = symbols;
 
-const allStandardTypes = [...Object.keys(standardTypes), 'enum', 'auto'];
+const allStandardTypes = [...Object.keys(standardTypes), 'enum'];
 
 export class Model extends EventEmitter {
   #records;
@@ -334,11 +334,6 @@ export class Model extends EventEmitter {
     return true;
   }
 
-  // TODO: V2 Enhancements
-  // If loading records from a storage, the key is already populated. This will
-  // cause problems when validating auto-incrementing key values and could
-  // result in random keys for the same object between runs.
-  //
   // Record operations do not emit 'change' events by design
   createRecord(record) {
     this.emit('beforeCreateRecord', { record, model: this });

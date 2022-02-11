@@ -8,7 +8,6 @@ const {
   $fields,
   $defaultValue,
   $key,
-  $keyType,
   $properties,
   $cachedProperties,
   $methods,
@@ -197,11 +196,10 @@ class RecordHandler {
   static #validateNewRecordKey = (modelName, modelKey, recordKey, records) => {
     let newRecordKey = recordKey;
 
-    if (modelKey[$keyType] === 'string' && !key(newRecordKey))
+    if (!key(newRecordKey))
       throw new TypeError(
         `${modelName} record has invalid value for key ${modelKey.name}.`
       );
-    if (modelKey[$keyType] === 'auto') newRecordKey = modelKey[$defaultValue];
 
     if (records.has(newRecordKey))
       throw new DuplicationError(

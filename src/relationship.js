@@ -3,11 +3,10 @@ import { Schema } from 'src/schema';
 import { DefaultValueError, DuplicationError } from 'src/errors';
 import { Model } from 'src/model';
 import { validateName, reverseCapitalize } from 'src/utils';
-import types from 'src/types';
+import { key, keyArray } from 'src/types';
 import symbols from 'src/symbols';
 
 const {
-  $key,
   $recordValue,
   $fields,
   $getField,
@@ -58,11 +57,7 @@ export class Relationship {
         'Relationship cannot be symmetric if the from and to models are the same and no name is provided for either one.'
       );
 
-    this.#relationshipField = Relationship.#createField(
-      this.#name,
-      this.#type,
-      this.#to[$key]
-    );
+    this.#relationshipField = Relationship.#createField(this.#name, this.#type);
 
     this.#relationshipProperty = record => {
       return this.#getAssociatedRecordsReverse(record);
@@ -118,7 +113,7 @@ export class Relationship {
   }
 
   #getAssociatedRecordsReverse(record) {
-    const associationValue = record[this.#to[$key].name];
+    const associationValue = record.id;
     const matcher = Relationship.#isToOne(this.#type)
       ? associatedRecord =>
           associatedRecord[$recordValue][this.#name] === associationValue
@@ -164,14 +159,12 @@ export class Relationship {
     );
   }
 
-  static #createField(name, relationshipType, foreignField) {
+  static #createField(name, relationshipType) {
     // TODO: V2 enhancements
     // Potentially add a check if the other model contains the key(s)?
     const isSingleSource = Relationship.#isFromOne(relationshipType);
     const isMultiple = Relationship.#isToMany(relationshipType);
-    const type = isMultiple
-      ? types.arrayOf(value => foreignField.typeCheck(value))
-      : value => foreignField.typeCheck(value);
+    const type = isMultiple ? keyArray : key;
     // TODO: V2 enhancements
     // Add a custom validator for symmetric relationships to ensure that a
     // record does not reference itself in the relationship, creating a loop.

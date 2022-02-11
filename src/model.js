@@ -65,7 +65,6 @@ export class Model extends EventEmitter {
       throw new DuplicationError(`A model named ${name} already exists.`);
 
     // Create the record storage and handler
-    // This needs to be initialized before fields to allow for retrofilling
     this.#records = new RecordSet();
     this.#recordHandler = new RecordHandler(this);
 
@@ -114,7 +113,7 @@ export class Model extends EventEmitter {
     Model.#instances.set(this.name, this);
   }
 
-  addField(fieldOptions, retrofill) {
+  addField(fieldOptions) {
     if (!this.#updatingField)
       this.emit('beforeAddField', { field: fieldOptions, model: this });
     const field = Model.#parseField(this.name, fieldOptions, [
@@ -124,16 +123,10 @@ export class Model extends EventEmitter {
       ...this.#methods.keys(),
     ]);
     this.#fields.set(fieldOptions.name, field);
-    if (!this.#updatingField) this.emit('fieldAdded', { field, model: this });
-    // Retrofill records with new fields
-    // TODO: V2 enhancements
-    // This before might be erroneous if the retrofill is non-existent. We could
-    // check for that and skip emitting the event if it's not there.
-    this.emit('beforeRetrofillField', { field, retrofill, model: this });
-    Model.#applyFieldRetrofill(field, this.#records, retrofill);
-    this.emit('fieldRetrofilled', { field, retrofill, model: this });
-    if (!this.#updatingField)
+    if (!this.#updatingField) {
+      this.emit('fieldAdded', { field, model: this });
       this.emit('change', { type: 'fieldAdded', field, model: this });
+    }
     return field;
   }
 
@@ -151,7 +144,7 @@ export class Model extends EventEmitter {
     return true;
   }
 
-  updateField(name, field, retrofill) {
+  updateField(name, field) {
     if (field.name !== name)
       throw new NameError(`Field name ${field.name} does not match ${name}.`);
     if (!Model.#validateContains(this.name, 'Field', name, this.#fields))
@@ -161,7 +154,7 @@ export class Model extends EventEmitter {
     this.#updatingField = true;
     this.emit('beforeUpdateField', { prevField, field, model: this });
     this.removeField(name);
-    const newField = this.addField(field, retrofill);
+    const newField = this.addField(field);
     this.emit('fieldUpdated', { field: newField, model: this });
     this.#updatingField = false;
     this.emit('change', { type: 'fieldUpdated', field: newField, model: this });
@@ -645,21 +638,5 @@ export class Model extends EventEmitter {
       return false;
     }
     return true;
-  }
-
-  static #applyFieldRetrofill(field, records, retrofill) {
-    if (retrofill === undefined) return;
-
-    const retrofillFunction =
-      retrofill !== undefined
-        ? typeof retrofill === 'function'
-          ? retrofill
-          : () => retrofill
-        : record =>
-            record[field.name] ? record[field.name] : field[$defaultValue];
-
-    records.forEach(record => {
-      record[field.name] = retrofillFunction(record);
-    });
   }
 }

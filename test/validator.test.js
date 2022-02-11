@@ -17,6 +17,22 @@ describe('Validator', () => {
     });
   });
 
+  describe('notNull', () => {
+    const validator = Validator.notNull('id');
+    const collection = [
+      { id: 1, name: 'John' },
+      { id: 2, name: 'Jane' },
+    ];
+
+    it('returns false for invalid values', () => {
+      expect(validator({ id: null, name: 'John' }, collection)).toBe(false);
+    });
+
+    it('returns true for valid values', () => {
+      expect(validator({ id: 3, name: 'John' }, collection)).toBe(true);
+    });
+  });
+
   describe('length', () => {
     const validator = Validator.length('name', [3, 10]);
     const arrayValidator = Validator.length('tags', [1, 5]);

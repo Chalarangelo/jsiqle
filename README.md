@@ -22,7 +22,6 @@ const Ledger = jsiqle.create({
   models: [
     {
       name: 'Person',
-      key: { name: 'id', type: 'auto' },
       fields: [
         {
           name: 'username',
@@ -48,7 +47,6 @@ const Ledger = jsiqle.create({
     },
     {
       name: 'Transaction',
-      key: { name: 'id', type: 'auto' },
       fields: [
         { name: 'time', type: 'date' }
         { name: 'amount', type: 'number' }
@@ -122,7 +120,6 @@ Both of these model definition options require an object argument with the follo
 
 - `name`: The name of the model. By convention, model names and variables should be title-cased (i.e. `MyModel` instead of `myModel`). Model names must be globally unique.
 - `fields`: (Optional) An array of fields that make up the model. More information about field definitions can be found in the next section.
-- `key`: (Optional) Parameter to create a key field, not part of the `fields` themselves. Can either be a string with the name of the key or an object with a `name` (string) and a `type` (either `'string'` or `'auto'`) representing a string or auto-incrementing integer key. By default, a model's key is a string field named `'id'`.
 - `properties`: (Optional) An object containing key-value pairs for getter properties to be defined on the model. All properties expect a single argument representing a record of the given model. More information about property definitions can be found in one of the following sections.
 - `scopes`: (Optional) An object containing key-value pairs for getter properties to be defined on the record set of the model. All scopes expect a single argument representing the record set or a subset of records from the current model. Alternatively, an object with a `matcher` and `sorter` key can be supplied for ordered scopes. More information about scope definitions can be found in one of the following sections.
 - `validators`: (Optional) An object containing key-value pairs for validation properties that return a boolean value depending on the validation's result. All validators expect two arguments, the current record and the record set of the current model. More information about validators and field validators can be found in one of the following sections.
@@ -540,7 +537,7 @@ MyModel.createRecord({ id: 'jsmith', firstName: 'John', lastName: 'Smith' });
 MyModel.createRecord({ id: 'jdoe', firstName: 'John', lastName: 'Doe' });
 ```
 
-Each record definition consists of an object with the appropriate key-value pairs. Fields without a value will be automatically set to the respective field's `defaultValue` (`null` by default). Key-value pairs that do not match a field definition will be stored in the record. This can be useful for fields that might be added in later operations (e.g. adding relationships to a populated model).
+Each record definition consists of an object with the appropriate key-value pairs. Fields without a value will be automatically set to the respective field's `defaultValue` (`null` by default). All records must contain an `id` key with a string value that is unique within the model. Key-value pairs that do not match a field definition will be stored in the record. This can be useful for fields that might be added in later operations (e.g. adding relationships to a populated model).
 
 #### Updating records
 

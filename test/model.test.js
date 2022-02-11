@@ -4,8 +4,6 @@ import symbols from 'src/symbols';
 
 const {
   $instances,
-  $key,
-  $keyType,
   $fields,
   $properties,
   $cachedProperties,
@@ -47,21 +45,8 @@ describe('Model', () => {
     expect(() => new Model({ name: 'aModel' })).toThrow();
   });
 
-  it('throws if "key" is invalid', () => {
-    expect(() => new Model({ name: 'aModel', key: null })).toThrow();
-    expect(() => new Model({ name: 'aModel', key: 2 })).toThrow();
-    expect(() => new Model({ name: 'aModel', key: {} })).toThrow();
-    expect(
-      () => new Model({ name: 'aModel', key: { name: 'id', type: 'test' } })
-    ).toThrow();
-    expect(() => new Model({ name: 'aModel', key: '2' })).toThrow();
-    expect(
-      () => new Model({ name: 'aModel', key: { name: '2', type: 'auto' } })
-    ).toThrow();
-  });
-
   it('throws if "fields" contain invalid values', () => {
-    const modelParams = { name: 'aModel', key: 'id' };
+    const modelParams = { name: 'aModel' };
 
     expect(() => new Model({ ...modelParams, fields: null })).toThrow();
     expect(() => new Model({ ...modelParams, fields: [2] })).toThrow();
@@ -79,7 +64,7 @@ describe('Model', () => {
   });
 
   it('throws if "properties" contain invalid values', () => {
-    const modelParams = { name: 'aModel', key: 'id' };
+    const modelParams = { name: 'aModel' };
 
     expect(() => new Model({ ...modelParams, properties: null })).toThrow();
     expect(() => new Model({ ...modelParams, properties: [2] })).toThrow();
@@ -95,7 +80,7 @@ describe('Model', () => {
   });
 
   it('throws if "scopes" contain invalid values', () => {
-    const modelParams = { name: 'aModel', key: 'id' };
+    const modelParams = { name: 'aModel' };
 
     expect(() => new Model({ ...modelParams, scopes: null })).toThrow();
     expect(() => new Model({ ...modelParams, scopes: [2] })).toThrow();
@@ -114,7 +99,7 @@ describe('Model', () => {
   });
 
   it('throws if "validators" contain invalid values', () => {
-    const modelParams = { name: 'aModel', key: 'id' };
+    const modelParams = { name: 'aModel' };
 
     expect(() => new Model({ ...modelParams, validators: null })).toThrow();
     expect(() => new Model({ ...modelParams, validators: [2] })).toThrow();
@@ -126,23 +111,6 @@ describe('Model', () => {
   describe('when arguments are valid', () => {
     it('has the appropriate name', () => {
       expect(new Model({ name: 'aModel' }).name).toBe('aModel');
-    });
-
-    it('has the appropriate key name and type', () => {
-      const defaultKeyModel = new Model({ name: 'aModel' });
-      expect(defaultKeyModel[$key].name).toBe('id');
-      expect(defaultKeyModel[$key][$keyType]).toBe('string');
-
-      const customKeyNameModel = new Model({ name: 'bModel', key: 'myKey' });
-      expect(customKeyNameModel[$key].name).toBe('myKey');
-      expect(customKeyNameModel[$key][$keyType]).toBe('string');
-
-      const customKeyNameTypeModel = new Model({
-        name: 'cModel',
-        key: { name: 'aKey', type: 'auto' },
-      });
-      expect(customKeyNameTypeModel[$key].name).toBe('aKey');
-      expect(customKeyNameTypeModel[$key][$keyType]).toBe('auto');
     });
 
     it('has the correct fields', () => {
@@ -202,7 +170,7 @@ describe('Model', () => {
     let model;
 
     beforeEach(() => {
-      model = new Model({ name: 'aModel', key: 'id' });
+      model = new Model({ name: 'aModel' });
     });
 
     it('throws if "fieldOptions" are invalid', () => {
@@ -226,7 +194,6 @@ describe('Model', () => {
     beforeEach(() => {
       model = new Model({
         name: 'aModel',
-        key: 'id',
         fields: [{ name: 'aField', type: 'string' }],
       });
     });
@@ -247,7 +214,6 @@ describe('Model', () => {
     beforeEach(() => {
       model = new Model({
         name: 'aModel',
-        key: 'id',
         fields: [{ name: 'aField', type: 'string' }],
       });
     });
@@ -276,7 +242,7 @@ describe('Model', () => {
     let model;
 
     beforeEach(() => {
-      model = new Model({ name: 'aModel', key: 'id' });
+      model = new Model({ name: 'aModel' });
     });
 
     it('throws if "name" is invalid', () => {
@@ -311,7 +277,6 @@ describe('Model', () => {
     beforeEach(() => {
       model = new Model({
         name: 'aModel',
-        key: 'id',
         properties: { aProperty: () => null },
       });
     });
@@ -337,7 +302,7 @@ describe('Model', () => {
     let model;
 
     beforeEach(() => {
-      model = new Model({ name: 'aModel', key: 'id' });
+      model = new Model({ name: 'aModel' });
     });
 
     it('throws if "name" is invalid', () => {
@@ -364,7 +329,6 @@ describe('Model', () => {
     beforeEach(() => {
       model = new Model({
         name: 'aModel',
-        key: 'id',
         methods: { aMethod: () => null },
       });
     });
@@ -383,7 +347,7 @@ describe('Model', () => {
     let model;
 
     beforeEach(() => {
-      model = new Model({ name: 'aModel', key: 'id' });
+      model = new Model({ name: 'aModel' });
     });
 
     it('throws if "name" is invalid', () => {
@@ -418,7 +382,6 @@ describe('Model', () => {
     beforeEach(() => {
       model = new Model({
         name: 'aModel',
-        key: 'id',
         scopes: { aScope: () => null },
       });
     });
@@ -437,7 +400,7 @@ describe('Model', () => {
     let model;
 
     beforeEach(() => {
-      model = new Model({ name: 'aModel', key: 'id' });
+      model = new Model({ name: 'aModel' });
     });
 
     it('throws if "name" is invalid', () => {
@@ -462,7 +425,6 @@ describe('Model', () => {
     beforeEach(() => {
       model = new Model({
         name: 'aModel',
-        key: 'id',
         validators: { aValidator: () => null },
       });
     });
@@ -479,12 +441,10 @@ describe('Model', () => {
 
   describe('createRecord', () => {
     let model;
-    let autoIncrementModel;
 
     beforeEach(() => {
       model = new Model({
         name: 'aModel',
-        key: 'id',
         fields: [
           {
             name: 'name',
@@ -508,12 +468,6 @@ describe('Model', () => {
           nameNotEqualToId: record => record.id !== record.name,
         },
       });
-
-      autoIncrementModel = new Model({
-        name: 'bModel',
-        key: { name: 'id', type: 'auto' },
-        fields: [{ name: 'name', type: 'string' }],
-      });
     });
 
     it('throws if "data" is not an object', () => {
@@ -529,13 +483,6 @@ describe('Model', () => {
     it('throws if key is not unique', () => {
       model.createRecord({ id: 'a', name: 'aName' });
       expect(() => model.createRecord({ id: 'a', name: 'bName' })).toThrow();
-    });
-
-    it('auto-generates keys in auto-increment models', () => {
-      const record = autoIncrementModel.createRecord({ name: 'aName' });
-      expect(record.id).toEqual(0);
-      const otherRecord = autoIncrementModel.createRecord({ name: 'bName' });
-      expect(otherRecord.id).toEqual(1);
     });
 
     it('throws if a field value is not of the correct type', () => {
@@ -595,7 +542,6 @@ describe('Model', () => {
     beforeEach(() => {
       model = new Model({
         name: 'aModel',
-        key: 'id',
         fields: [
           { name: 'name', type: 'string', validators: { minLength: 1 } },
         ],
@@ -620,7 +566,6 @@ describe('Model', () => {
     beforeEach(() => {
       model = new Model({
         name: 'aModel',
-        key: 'id',
         fields: [
           { name: 'name', type: 'string', validators: { minLength: 1 } },
         ],
@@ -660,7 +605,6 @@ describe('Model', () => {
     beforeEach(() => {
       model = new Model({
         name: 'aModel',
-        key: 'id',
         fields: [
           { name: 'name', type: 'string', validators: { minLength: 1 } },
         ],
@@ -731,7 +675,6 @@ describe('Model', () => {
     beforeEach(() => {
       model = new Model({
         name: 'aModel',
-        key: 'id',
         fields: [
           { name: 'name', type: 'string', validators: { minLength: 1 } },
         ],

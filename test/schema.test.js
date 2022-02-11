@@ -283,16 +283,15 @@ describe('Schema', () => {
     beforeEach(() => {
       schema = Schema.create({
         name: 'test',
-        models: [
-          { name: 'aModel' },
-          { name: 'bModel', key: { name: 'id', type: 'auto' } },
-        ],
+        models: [{ name: 'aModel' }, { name: 'bModel' }],
       });
 
       schema.getModel('aModel').createRecord({
         id: 'a',
       });
-      schema.getModel('bModel').createRecord({});
+      schema.getModel('bModel').createRecord({
+        id: '0',
+      });
     });
 
     it('throws if queried with a model that does not exist', () => {
@@ -309,7 +308,7 @@ describe('Schema', () => {
 
     it('returns the record if it exists', () => {
       expect(schema.get('aModel.a').id).toBe('a');
-      expect(schema.get('bModel.0').id).toBe(0);
+      expect(schema.get('bModel.0').id).toBe('0');
     });
 
     it('throws if queried with a non-existent record followed by a field name', () => {
@@ -318,7 +317,7 @@ describe('Schema', () => {
 
     it('returns the field if it exists', () => {
       expect(schema.get('aModel.a.id')).toBe('a');
-      expect(schema.get('bModel.0.id')).toBe(0);
+      expect(schema.get('bModel.0.id')).toBe('0');
     });
   });
 });

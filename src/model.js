@@ -112,8 +112,8 @@ export class Model extends EventEmitter {
     if (!this.#updatingField)
       this.emit('beforeAddField', { field: fieldOptions, model: this });
     const field = Model.#parseField(this.name, fieldOptions, [
+      'id',
       ...this.#fields.keys(),
-      this.#key.name,
       ...this.#properties.keys(),
       ...this.#methods.keys(),
     ]);
@@ -164,8 +164,8 @@ export class Model extends EventEmitter {
     this.#properties.set(
       propertyName,
       Model.#validateFunction('Property', name, body, [
+        'id',
         ...this.#fields.keys(),
-        this.#key.name,
         ...this.#properties.keys(),
         ...this.#methods.keys(),
       ])
@@ -213,8 +213,8 @@ export class Model extends EventEmitter {
     this.#methods.set(
       methodName,
       Model.#validateFunction('Method', name, method, [
+        'id',
         ...this.#fields.keys(),
-        this.#key.name,
         ...this.#properties.keys(),
         ...this.#methods.keys(),
       ])
@@ -361,7 +361,7 @@ export class Model extends EventEmitter {
     this.emit('beforeRemoveRecord', { record, model: this });
     this.#records.delete(recordKey);
     this.emit('recordRemoved', {
-      record: { [this.#key.name]: recordKey },
+      record: { id: recordKey },
       model: this,
     });
     return true;
@@ -375,7 +375,7 @@ export class Model extends EventEmitter {
     const oldRecord = this.#records.get(recordKey);
     this.emit('beforeUpdateRecord', {
       record: oldRecord,
-      newRecord: { [this.#key.name]: recordKey, ...record },
+      newRecord: { id: recordKey, ...record },
       model: this,
     });
     Object.entries(record).forEach(([fieldName, fieldValue]) => {
@@ -439,8 +439,8 @@ export class Model extends EventEmitter {
     });
     if (
       [
+        'id',
         ...this.#fields.keys(),
-        this.#key.name,
         ...this.#properties.keys(),
         ...this.#methods.keys(),
       ].includes(fieldName)
@@ -477,8 +477,8 @@ export class Model extends EventEmitter {
     });
     if (
       [
+        'id',
         ...this.#fields.keys(),
-        this.#key.name,
         ...this.#properties.keys(),
         ...this.#methods.keys(),
       ].includes(propertyName)

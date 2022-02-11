@@ -218,27 +218,6 @@ describe('Model', () => {
       model.addField({ name: 'aField', type: 'string' });
       expect(model[$fields].has('aField')).toEqual(true);
     });
-
-    it('applies "retrofill" if it is a function', () => {
-      model.createRecord({ id: 'a' });
-      model.addField({ name: 'aField', type: 'string' }, () => 'x');
-      expect(model[$fields].has('aField')).toEqual(true);
-      expect(model.records.first.aField).toEqual('x');
-    });
-
-    it('applies "retrofill" if it is a value', () => {
-      model.createRecord({ id: 'a' });
-      model.addField({ name: 'aField', type: 'string' }, 'x');
-      expect(model[$fields].has('aField')).toEqual(true);
-      expect(model.records.first.aField).toEqual('x');
-    });
-
-    it('does not apply "retrofill" if undefined', () => {
-      model.createRecord({ id: 'a' });
-      model.addField({ name: 'aField', type: 'string' });
-      expect(model[$fields].has('aField')).toEqual(true);
-      expect(model.records.first.aField).toEqual(undefined);
-    });
   });
 
   describe('removeField', () => {

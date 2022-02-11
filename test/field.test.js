@@ -181,13 +181,12 @@ describe('Field', () => {
     );
   });
 
-  describe('special types', () => {
-    const specialTypes = ['enum', 'auto'];
-    test.each(specialTypes)('%s is defined', typeName => {
-      expect(Field[typeName]).toBeDefined();
+  describe('enum type', () => {
+    it('enum is defined', () => {
+      expect(Field.enum).toBeDefined();
     });
 
-    it('enum accepts a valid object and returns a Field of the appropriate type', () => {
+    it('accepts a valid object and returns a Field of the appropriate type', () => {
       const field = Field.enum({
         name: 'myField',
         values: ['a', 'b'],
@@ -196,22 +195,6 @@ describe('Field', () => {
       expect(field.name).toBe('myField');
       expect(field.typeCheck('a')).toBe(true);
       expect(field.typeCheck('c')).toBe(false);
-    });
-
-    it('auto accepts a string as a name and returns a Field of the appropriate type', () => {
-      const field = Field.auto('myField');
-      expect(field).toBeInstanceOf(Field);
-      expect(field.name).toBe('myField');
-      expect(field[$defaultValue]).toBe(0);
-      expect(field[$defaultValue]).toBe(1);
-    });
-
-    it('auto accepts a valid object and returns a Field of the appropriate type', () => {
-      const field = Field.auto({ name: 'myField' });
-      expect(field).toBeInstanceOf(Field);
-      expect(field.name).toBe('myField');
-      expect(field[$defaultValue]).toBe(0);
-      expect(field[$defaultValue]).toBe(1);
     });
   });
 });

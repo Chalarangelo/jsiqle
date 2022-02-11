@@ -33,7 +33,6 @@ export class Model extends EventEmitter {
   #records;
   #recordHandler;
   #fields;
-  #key;
   #properties;
   #methods;
   #relationships;
@@ -63,9 +62,6 @@ export class Model extends EventEmitter {
     // Create the record storage and handler
     this.#records = new RecordSet();
     this.#recordHandler = new RecordHandler(this);
-
-    // Check and create the key field, no need to check for duplicate fields
-    this.#key = Model.#createKey('id');
 
     // Initialize private fields
     this.#fields = new Map();

@@ -516,39 +516,23 @@ export class Model extends EventEmitter {
 
   // Private
 
-  static #createKey(options) {
-    let name = 'id';
-    let type = 'string';
-    if (typeof options === 'string') name = options;
-    else if (typeof options === 'object') {
-      // Don't worry about these two being uncovered, they are a safeguard
-      // that should never be reached under normal circumstances.
-      name = options.name || name;
-      type = options.type || type;
-    }
-
-    let keyField;
-
-    if (type === 'string') {
-      keyField = new Field({
-        name,
-        type: key,
-        defaultValue: '__emptyKey__',
-      });
-      // Override the default value to throw an error
-      Object.defineProperty(keyField, $defaultValue, {
-        /* istanbul ignore next */
-        get() {
-          throw new DefaultValueError(
-            `Key field ${name} does not have a default value.`
-          );
-        },
-      });
-    } else if (type === 'auto') keyField = Field.auto(name);
+  static #createKey() {
+    const keyField = new Field({
+      name: 'id',
+      type: key,
+      defaultValue: '__emptyKey__',
+    });
+    // Override the default value to throw an error
+    Object.defineProperty(keyField, $defaultValue, {
+      /* istanbul ignore next */
+      get() {
+        throw new DefaultValueError(`Key field does not have a default value.`);
+      },
+    });
     // Additional property to get the type from the model
     Object.defineProperty(keyField, $keyType, {
       get() {
-        return type;
+        return 'string';
       },
     });
 

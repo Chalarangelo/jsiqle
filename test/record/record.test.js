@@ -79,39 +79,6 @@ describe('Record', () => {
     });
   });
 
-  it('gets serialized correctly with custom includes', () => {
-    let otherModel = schema.createModel({
-      name: 'bModel',
-      fields: [{ name: 'data', type: 'string' }],
-    });
-    schema.createRelationship({
-      from: 'aModel',
-      to: 'bModel',
-      type: 'oneToOne',
-    });
-    const record = model.createRecord({ id: 'jd', name: 'John Doe', age: 42 });
-
-    expect(record.toObject({ include: ['firstName'] })).toEqual({
-      id: 'jd',
-      name: 'John Doe',
-      age: 42,
-      firstName: 'John',
-    });
-
-    const otherRecord = otherModel.createRecord({ id: 'b', data: 'b data' });
-    record.bModel = otherRecord.id;
-
-    expect(record.toObject({ include: ['bModel'] })).toEqual({
-      id: 'jd',
-      name: 'John Doe',
-      age: 42,
-      bModel: {
-        data: 'b data',
-        id: 'b',
-      },
-    });
-  });
-
   it('calling JSON.stringify() returns the correct result', () => {
     const record = model.createRecord({ id: 'jd', name: 'John Doe', age: 42 });
     expect(JSON.stringify(record)).toBe(

@@ -172,10 +172,9 @@ class RecordHandler {
     record[$recordValue][field.name] = recordValue;
   }
 
-  static #recordToObject(record, model, handler) {
+  static #recordToObject(record, model) {
     const recordValue = record[$recordValue];
     const fields = model[$fields];
-    const properties = model[$properties];
     const key = model[$key].name;
     const object = {
       [key]: recordValue[key],
@@ -186,40 +185,7 @@ class RecordHandler {
       if (value !== undefined) object[field.name] = recordValue[field.name];
     });
 
-    // TODO: V2 enhancements
-    // If we end up keeping this API, we might be interested in adding
-    // nesting that works correctly with relationships. Currently, you can
-    // only specify the relationship name, and it will serialize the
-    // full object. Examples like ['category', 'siblings.category'] should
-    // work eventually.
-    // We also need to account for nested arrays and objects etc.
-    const toObject = ({ include = [] } = {}) => {
-      let result = object;
-      const included = include.map(name => {
-        const [field, ...props] = name.split('.');
-        return [field, props.join('.')];
-      });
-
-      included.forEach(([includedField, props]) => {
-        if (object[includedField]) {
-          if (Array.isArray(object[includedField])) {
-            const records = handler.get(record, includedField);
-            object[includedField] = records.map(record =>
-              record.toObject({ include: [props] })
-            );
-          } else {
-            object[includedField] = handler
-              .get(record, includedField)
-              .toObject({ include: [props] });
-          }
-        } else if (properties.has(includedField)) {
-          object[includedField] = handler.get(record, includedField);
-        }
-      });
-      return result;
-    };
-
-    return toObject;
+    return () => object;
   }
 
   static #validateNewRecordKey = (modelName, modelKey, recordKey, records) => {

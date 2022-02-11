@@ -68,7 +68,7 @@ export class Model extends EventEmitter {
     this.#recordHandler = new RecordHandler(this);
 
     // Check and create the key field, no need to check for duplicate fields
-    this.#key = Model.#parseKey(this.name, 'id');
+    this.#key = Model.#createKey('id');
     this.#records[$setRecordKey](key);
 
     // Initialize private fields
@@ -553,22 +553,6 @@ export class Model extends EventEmitter {
     });
 
     return keyField;
-  }
-
-  static #parseKey(modelName, key) {
-    if (typeof key !== 'string' && typeof key !== 'object')
-      throw new TypeError(`${modelName} key ${key} is not a string or object.`);
-
-    if (typeof key === 'object' && !key.name)
-      throw new TypeError(`${modelName} key ${key} is missing a name.`);
-
-    if (typeof key === 'object' && !['auto', 'string'].includes(key.type))
-      throw new TypeError(
-        `${modelName} key ${key} type must be either "string" or "auto".`
-      );
-
-    const _key = Model.#createKey(key);
-    return _key;
   }
 
   static #parseField(modelName, field, restrictedNames) {

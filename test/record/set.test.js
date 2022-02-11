@@ -25,7 +25,6 @@ describe('RecordSet', () => {
     schema = new Schema({ name: 'test' });
     model = schema.createModel({
       name: 'person',
-      key: { name: 'id', type: 'auto' },
       fields: [
         { name: 'name', type: 'string' },
         { name: 'age', type: 'number' },
@@ -40,18 +39,22 @@ describe('RecordSet', () => {
     });
 
     model.createRecord({
+      id: '0',
       name: 'John Doe',
       age: 42,
     });
     model.createRecord({
+      id: '1',
       name: 'Jane Doe',
       age: 34,
     });
     model.createRecord({
+      id: '2',
       name: 'John Smith',
       age: 34,
     });
     model.createRecord({
+      id: '3',
       name: 'Jane Smith',
       age: 15,
     });
@@ -133,7 +136,7 @@ describe('RecordSet', () => {
   describe('delete', () => {
     it('should delete a record', () => {
       expect(model.records.count).toBe(4);
-      model.records.delete(1);
+      model.records.delete('1');
       expect(model.records.count).toBe(3);
     });
 
@@ -228,7 +231,7 @@ describe('RecordSet', () => {
 
   describe('findKey', () => {
     it('should find a record', () => {
-      expect(model.records.findKey(rec => rec.age === 42)).toBe(0);
+      expect(model.records.findKey(rec => rec.age === 42)).toBe('0');
     });
 
     it('should return undefined if no record found', () => {
@@ -238,14 +241,14 @@ describe('RecordSet', () => {
 
   describe('only', () => {
     it('should return a record set with only the given keys', () => {
-      const result = model.records.only(0, 1);
+      const result = model.records.only('0', '1');
       expect(result.count).toBe(2);
       expect(result.first.name).toBe('John Doe');
       expect(result.last.name).toBe('Jane Doe');
     });
 
     it('should return a record set with only the given keys in the correct order', () => {
-      const result = model.records.only(1, 0);
+      const result = model.records.only('1', '0');
       expect(result.count).toBe(2);
       expect(result.first.name).toBe('Jane Doe');
       expect(result.last.name).toBe('John Doe');
@@ -253,13 +256,13 @@ describe('RecordSet', () => {
 
     it('should return an empty record set if no records', () => {
       model.records.clear();
-      expect(model.records.except(0, 1).count).toBe(0);
+      expect(model.records.except('0', '1').count).toBe(0);
     });
   });
 
   describe('except', () => {
     it('should return a record set with the given keys removed', () => {
-      const result = model.records.except(0, 1);
+      const result = model.records.except('0', '1');
       expect(result.count).toBe(2);
       expect(result.first.name).toBe('John Smith');
       expect(result.last.name).toBe('Jane Smith');
@@ -267,7 +270,7 @@ describe('RecordSet', () => {
 
     it('should return an empty record set if no records', () => {
       model.records.clear();
-      expect(model.records.except(0, 1).count).toBe(0);
+      expect(model.records.except('0', '1').count).toBe(0);
     });
   });
 
@@ -357,12 +360,12 @@ describe('RecordSet', () => {
     it('should group the records by the given key', () => {
       const result = model.records.groupBy('age');
       expect(result.toFlatObject()).toEqual({
-        15: [{ id: 3, age: 15, name: 'Jane Smith' }],
+        15: [{ id: '3', age: 15, name: 'Jane Smith' }],
         34: [
-          { id: 1, age: 34, name: 'Jane Doe' },
-          { id: 2, age: 34, name: 'John Smith' },
+          { id: '1', age: 34, name: 'Jane Doe' },
+          { id: '2', age: 34, name: 'John Smith' },
         ],
-        42: [{ id: 0, age: 42, name: 'John Doe' }],
+        42: [{ id: '0', age: 42, name: 'John Doe' }],
       });
     });
   });
@@ -371,8 +374,8 @@ describe('RecordSet', () => {
     it('should duplicate the record set', () => {
       const result = model.records.duplicate();
       expect(result.count).toBe(4);
-      expect(result.first.id).toBe(0);
-      expect(result.last.id).toBe(3);
+      expect(result.first.id).toBe('0');
+      expect(result.last.id).toBe('3');
       expect(result).not.toBe(model.records);
     });
   });
@@ -383,8 +386,8 @@ describe('RecordSet', () => {
       const r2 = model.records.offset(2).limit(1);
       const result = r1.merge(r2);
       expect(result.count).toBe(3);
-      expect(result.first.id).toBe(0);
-      expect(result.last.id).toBe(2);
+      expect(result.first.id).toBe('0');
+      expect(result.last.id).toBe('2');
     });
   });
 
@@ -394,8 +397,8 @@ describe('RecordSet', () => {
       const r = model.records.last;
       const result = r1.append(r);
       expect(result.count).toBe(3);
-      expect(result.first.id).toBe(0);
-      expect(result.last.id).toBe(3);
+      expect(result.first.id).toBe('0');
+      expect(result.last.id).toBe('3');
     });
   });
 
@@ -452,15 +455,15 @@ describe('RecordSet', () => {
   describe('flatBatchKeysIterator', () => {
     it('should iterate over the records', () => {
       const result = model.records.flatBatchKeysIterator(2);
-      expect(result.next().value).toEqual([0, 1]);
-      expect(result.next().value).toEqual([2, 3]);
+      expect(result.next().value).toEqual(['0', '1']);
+      expect(result.next().value).toEqual(['2', '3']);
       expect(result.next().value).toEqual(undefined);
     });
 
     it('should return the last batch with however many elements are left', () => {
       const result = model.records.flatBatchKeysIterator(3);
-      expect(result.next().value).toEqual([0, 1, 2]);
-      expect(result.next().value).toEqual([3]);
+      expect(result.next().value).toEqual(['0', '1', '2']);
+      expect(result.next().value).toEqual(['3']);
       expect(result.next().value).toEqual(undefined);
     });
   });
@@ -568,10 +571,10 @@ describe('RecordSet', () => {
       const groupSet = model.records.groupBy('age');
 
       expect(model.records.toFlatArray()).toEqual([
-        { id: 0, name: 'John Doe', age: 42 },
-        { id: 1, name: 'Jane Doe', age: 34 },
-        { id: 2, name: 'John Smith', age: 34 },
-        { id: 3, name: 'Jane Smith', age: 15 },
+        { id: '0', name: 'John Doe', age: 42 },
+        { id: '1', name: 'Jane Doe', age: 34 },
+        { id: '2', name: 'John Smith', age: 34 },
+        { id: '3', name: 'Jane Smith', age: 15 },
       ]);
       expect(partialsSet.toFlatArray()).toEqual([
         { age: 42 },
@@ -581,12 +584,12 @@ describe('RecordSet', () => {
       ]);
       expect(fragmentsSet.toFlatArray()).toEqual([[42], [34], [34], [15]]);
       expect(groupSet.toFlatArray()).toEqual([
-        [{ id: 0, name: 'John Doe', age: 42 }],
+        [{ id: '0', name: 'John Doe', age: 42 }],
         [
-          { id: 1, name: 'Jane Doe', age: 34 },
-          { id: 2, name: 'John Smith', age: 34 },
+          { id: '1', name: 'Jane Doe', age: 34 },
+          { id: '2', name: 'John Smith', age: 34 },
         ],
-        [{ id: 3, name: 'Jane Smith', age: 15 }],
+        [{ id: '3', name: 'Jane Smith', age: 15 }],
       ]);
     });
   });
@@ -599,10 +602,10 @@ describe('RecordSet', () => {
 
       expect(JSON.stringify(model.records.toObject())).toEqual(
         JSON.stringify({
-          0: { id: 0, name: 'John Doe', age: 42 },
-          1: { id: 1, name: 'Jane Doe', age: 34 },
-          2: { id: 2, name: 'John Smith', age: 34 },
-          3: { id: 3, name: 'Jane Smith', age: 15 },
+          0: { id: '0', name: 'John Doe', age: 42 },
+          1: { id: '1', name: 'Jane Doe', age: 34 },
+          2: { id: '2', name: 'John Smith', age: 34 },
+          3: { id: '3', name: 'Jane Smith', age: 15 },
         })
       );
       expect(JSON.stringify(partialsSet.toObject())).toEqual(
@@ -618,12 +621,12 @@ describe('RecordSet', () => {
       );
       expect(JSON.stringify(groupSet.toObject())).toEqual(
         JSON.stringify({
-          42: { 0: { id: 0, name: 'John Doe', age: 42 } },
+          42: { 0: { id: '0', name: 'John Doe', age: 42 } },
           34: {
-            1: { id: 1, name: 'Jane Doe', age: 34 },
-            2: { id: 2, name: 'John Smith', age: 34 },
+            1: { id: '1', name: 'Jane Doe', age: 34 },
+            2: { id: '2', name: 'John Smith', age: 34 },
           },
-          15: { 3: { id: 3, name: 'Jane Smith', age: 15 } },
+          15: { 3: { id: '3', name: 'Jane Smith', age: 15 } },
         })
       );
     });
@@ -636,10 +639,10 @@ describe('RecordSet', () => {
       const groupSet = model.records.groupBy('age');
 
       expect(model.records.toFlatObject()).toEqual({
-        0: { id: 0, name: 'John Doe', age: 42 },
-        1: { id: 1, name: 'Jane Doe', age: 34 },
-        2: { id: 2, name: 'John Smith', age: 34 },
-        3: { id: 3, name: 'Jane Smith', age: 15 },
+        0: { id: '0', name: 'John Doe', age: 42 },
+        1: { id: '1', name: 'Jane Doe', age: 34 },
+        2: { id: '2', name: 'John Smith', age: 34 },
+        3: { id: '3', name: 'Jane Smith', age: 15 },
       });
       expect(partialsSet.toFlatObject()).toEqual({
         0: { age: 42 },
@@ -654,12 +657,12 @@ describe('RecordSet', () => {
         3: [15],
       });
       expect(groupSet.toFlatObject()).toEqual({
-        42: [{ id: 0, name: 'John Doe', age: 42 }],
+        42: [{ id: '0', name: 'John Doe', age: 42 }],
         34: [
-          { id: 1, name: 'Jane Doe', age: 34 },
-          { id: 2, name: 'John Smith', age: 34 },
+          { id: '1', name: 'Jane Doe', age: 34 },
+          { id: '2', name: 'John Smith', age: 34 },
         ],
-        15: [{ id: 3, name: 'Jane Smith', age: 15 }],
+        15: [{ id: '3', name: 'Jane Smith', age: 15 }],
       });
     });
   });
@@ -672,10 +675,10 @@ describe('RecordSet', () => {
 
       expect(JSON.stringify(model.records.toJSON())).toEqual(
         JSON.stringify({
-          0: { id: 0, name: 'John Doe', age: 42 },
-          1: { id: 1, name: 'Jane Doe', age: 34 },
-          2: { id: 2, name: 'John Smith', age: 34 },
-          3: { id: 3, name: 'Jane Smith', age: 15 },
+          0: { id: '0', name: 'John Doe', age: 42 },
+          1: { id: '1', name: 'Jane Doe', age: 34 },
+          2: { id: '2', name: 'John Smith', age: 34 },
+          3: { id: '3', name: 'Jane Smith', age: 15 },
         })
       );
       expect(JSON.stringify(partialsSet.toJSON())).toEqual(
@@ -691,12 +694,12 @@ describe('RecordSet', () => {
       );
       expect(JSON.stringify(groupSet.toJSON())).toEqual(
         JSON.stringify({
-          42: { 0: { id: 0, name: 'John Doe', age: 42 } },
+          42: { 0: { id: '0', name: 'John Doe', age: 42 } },
           34: {
-            1: { id: 1, name: 'Jane Doe', age: 34 },
-            2: { id: 2, name: 'John Smith', age: 34 },
+            1: { id: '1', name: 'Jane Doe', age: 34 },
+            2: { id: '2', name: 'John Smith', age: 34 },
           },
-          15: { 3: { id: 3, name: 'Jane Smith', age: 15 } },
+          15: { 3: { id: '3', name: 'Jane Smith', age: 15 } },
         })
       );
     });

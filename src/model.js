@@ -11,7 +11,6 @@ const {
   $fields,
   $defaultValue,
   $key,
-  $keyType,
   $properties,
   $cachedProperties,
   $methods,
@@ -527,12 +526,6 @@ export class Model extends EventEmitter {
       /* istanbul ignore next */
       get() {
         throw new DefaultValueError(`Key field does not have a default value.`);
-      },
-    });
-    // Additional property to get the type from the model
-    Object.defineProperty(keyField, $keyType, {
-      get() {
-        return 'string';
       },
     });
 

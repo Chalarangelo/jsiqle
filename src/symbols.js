@@ -12,7 +12,6 @@ const symbolizeAll = (...str) =>
 export default symbolizeAll(
   'fields',
   'key',
-  'keyType',
   'properties',
   'cachedProperties',
   'methods',

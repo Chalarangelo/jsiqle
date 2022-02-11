@@ -14,8 +14,6 @@ const {
   $addRelationshipAsField,
   $addRelationshipAsProperty,
   $handleExperimentalAPIMessage,
-  $key,
-  $keyType,
   $instances,
 } = symbols;
 
@@ -282,10 +280,7 @@ export class Schema extends EventEmitter {
       );
 
     if (recordKey === undefined) return model;
-    const keyType = model[$key][$keyType];
-    const record = model.records.get(
-      keyType === 'string' ? recordKey : Number.parseInt(recordKey)
-    );
+    const record = model.records.get(recordKey);
 
     if (!rest.length) return record;
 

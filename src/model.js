@@ -25,7 +25,6 @@ const {
   $removeScope,
   $instances,
   $handleExperimentalAPIMessage,
-  $setRecordKey,
 } = symbols;
 
 const allStandardTypes = [...Object.keys(standardTypes), 'enum', 'auto'];
@@ -67,7 +66,6 @@ export class Model extends EventEmitter {
 
     // Check and create the key field, no need to check for duplicate fields
     this.#key = Model.#createKey('id');
-    this.#records[$setRecordKey](key);
 
     // Initialize private fields
     this.#fields = new Map();

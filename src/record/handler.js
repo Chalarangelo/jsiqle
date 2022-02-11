@@ -7,7 +7,6 @@ import { deepClone } from 'src/utils';
 const {
   $fields,
   $defaultValue,
-  $key,
   $properties,
   $cachedProperties,
   $methods,
@@ -222,10 +221,6 @@ class RecordHandler {
     return property === 'id';
   }
 
-  #getKey() {
-    return this.#model[$key];
-  }
-
   #getKeyValue(record) {
     return record[$recordValue].id;
   }
@@ -295,14 +290,13 @@ class RecordHandler {
   }
 
   #isKnownSymbol(property) {
-    return [$recordModel, $recordTag, $recordValue, $isRecord, $key].includes(
+    return [$recordModel, $recordTag, $recordValue, $isRecord].includes(
       property
     );
   }
 
   #getKnownSymbol(record, property) {
     if (property === $isRecord) return true;
-    if (property === $key) this.#getKey();
     return record[property];
   }
 }

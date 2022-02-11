@@ -12,7 +12,6 @@ const {
   $addScope,
   $removeScope,
   $isRecord,
-  $key,
   $setRecordKey,
 } = symbols;
 
@@ -370,7 +369,7 @@ class RecordSet extends Map {
     for (const [recordKey, value] of this.entries()) {
       let keyValue = value[key];
       if (keyValue !== undefined && keyValue !== null && keyValue[$isRecord]) {
-        keyValue = value[key][$key];
+        keyValue = value[key].id;
       }
       if (!res.has(keyValue)) {
         res.set(
@@ -438,7 +437,7 @@ class RecordSet extends Map {
       copyScopesFrom: this,
     });
     for (const record of records) {
-      res.set(record[$key], record);
+      res.set(record.id, record);
     }
     return res.freeze();
   }

@@ -116,17 +116,6 @@ export class Model extends EventEmitter {
     return field;
   }
 
-  removeField(name) {
-    if (!Model.#validateContains(this.name, 'Field', name, this.#fields))
-      return false;
-    const field = this.#fields.get(name);
-    this.emit('beforeRemoveField', { field, model: this });
-    this.#fields.delete(name);
-    this.emit('fieldRemoved', { field: { name }, model: this });
-    this.emit('change', { type: 'fieldRemoved', field, model: this });
-    return true;
-  }
-
   addProperty({ name, body, cache = false }) {
     this.emit('beforeAddProperty', {
       property: { name, body },

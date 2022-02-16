@@ -16,8 +16,6 @@ const or =
   val =>
     types.some(type => type(val));
 
-const isPositive = val => val >= 0;
-
 const isArrayOf = type => val => Array.isArray(val) && val.every(type);
 
 const isOrIsArrayOf = type => val => or(isArrayOf(type), type)(val);
@@ -57,7 +55,6 @@ export default {
   // Primitive types
   bool: isBoolean,
   number: isNumber,
-  positiveNumber: and(isNumber, isPositive),
   string: isString,
   date: isDate,
   // Special types
@@ -84,7 +81,6 @@ export default {
 export const standardTypes = {
   boolean: { type: isBoolean },
   number: { type: isNumber },
-  positiveNumber: { type: and(isNumber, isPositive) },
   string: { type: isString },
   date: { type: isDate },
   stringOrNumber: { type: or(isString, isNumber) },

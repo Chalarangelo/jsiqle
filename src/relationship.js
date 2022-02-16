@@ -3,7 +3,7 @@ import { Schema } from 'src/schema';
 import { DefaultValueError, DuplicationError } from 'src/errors';
 import { Model } from 'src/model';
 import { validateName, reverseCapitalize } from 'src/utils';
-import { key, keyArray } from 'src/types';
+import { recordId, recordIdArray } from 'src/types';
 import symbols from 'src/symbols';
 
 const {
@@ -161,10 +161,10 @@ export class Relationship {
 
   static #createField(name, relationshipType) {
     // TODO: V2 enhancements
-    // Potentially add a check if the other model contains the key(s)?
+    // Potentially add a check if the other model contains the ids(s)?
     const isSingleSource = Relationship.#isFromOne(relationshipType);
     const isMultiple = Relationship.#isToMany(relationshipType);
-    const type = isMultiple ? keyArray : key;
+    const type = isMultiple ? recordIdArray : recordId;
     // TODO: V2 enhancements
     // Add a custom validator for symmetric relationships to ensure that a
     // record does not reference itself in the relationship, creating a loop.

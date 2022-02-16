@@ -181,15 +181,6 @@ Both of these field definition options require an object argument with the follo
 - `defaultValue`: (Optional) A value that will be used as the default for records with an empty value in this field. The `defaultValue` must be either `null` (default) or a valid value for the given type.
 - `validators`: (Optional) An object that defines what validations the field needs to pass. More information can be found below.
 
-Fields can be updated by calling `Model.prototype.updateField()` with the field name and a new field definition. The new field definition's name must match the existing one:
-
-```js
-MyModel.updateField('firstName', {
-  name: 'firstName',
-  type: 'string'
-});
-```
-
 Finally, fields can be removed by calling `Model.prototype.removeField()` with the field name:
 
 ```js

@@ -36,7 +36,6 @@ export class Model extends EventEmitter {
   #methods;
   #relationships;
   #validators;
-  #updatingField = false;
   #cachedProperties;
 
   static #instances = new Map();
@@ -104,8 +103,7 @@ export class Model extends EventEmitter {
   }
 
   addField(fieldOptions) {
-    if (!this.#updatingField)
-      this.emit('beforeAddField', { field: fieldOptions, model: this });
+    this.emit('beforeAddField', { field: fieldOptions, model: this });
     const field = Model.#parseField(this.name, fieldOptions, [
       'id',
       ...this.#fields.keys(),
@@ -113,10 +111,8 @@ export class Model extends EventEmitter {
       ...this.#methods.keys(),
     ]);
     this.#fields.set(fieldOptions.name, field);
-    if (!this.#updatingField) {
-      this.emit('fieldAdded', { field, model: this });
-      this.emit('change', { type: 'fieldAdded', field, model: this });
-    }
+    this.emit('fieldAdded', { field, model: this });
+    this.emit('change', { type: 'fieldAdded', field, model: this });
     return field;
   }
 
@@ -124,30 +120,11 @@ export class Model extends EventEmitter {
     if (!Model.#validateContains(this.name, 'Field', name, this.#fields))
       return false;
     const field = this.#fields.get(name);
-    if (!this.#updatingField)
-      this.emit('beforeRemoveField', { field, model: this });
+    this.emit('beforeRemoveField', { field, model: this });
     this.#fields.delete(name);
-    if (!this.#updatingField) {
-      this.emit('fieldRemoved', { field: { name }, model: this });
-      this.emit('change', { type: 'fieldRemoved', field, model: this });
-    }
+    this.emit('fieldRemoved', { field: { name }, model: this });
+    this.emit('change', { type: 'fieldRemoved', field, model: this });
     return true;
-  }
-
-  updateField(name, field) {
-    if (field.name !== name)
-      throw new NameError(`Field name ${field.name} does not match ${name}.`);
-    if (!Model.#validateContains(this.name, 'Field', name, this.#fields))
-      throw new ReferenceError(`Field ${name} does not exist.`);
-    const prevField = this.#fields.get(name);
-    // Ensure that only update events are emitted, not add/remove ones.
-    this.#updatingField = true;
-    this.emit('beforeUpdateField', { prevField, field, model: this });
-    this.removeField(name);
-    const newField = this.addField(field);
-    this.emit('fieldUpdated', { field: newField, model: this });
-    this.#updatingField = false;
-    this.emit('change', { type: 'fieldUpdated', field: newField, model: this });
   }
 
   addProperty({ name, body, cache = false }) {

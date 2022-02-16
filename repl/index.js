@@ -22,9 +22,9 @@ const schema = jsiqle.create({
             containsTheWordDescription: value => value.includes('description'),
           },
         },
-        code: { type: 'string' },
-        language: { type: 'string' },
-        tags: { type: 'stringArray' },
+        code: 'string',
+        language: 'string',
+        tags: 'stringArray',
       },
     },
   ],
@@ -63,7 +63,7 @@ const snippet = schema.getModel('snippet');
 
 const category = schema.createModel({
   name: 'category',
-  fields: { description: { type: 'string' } },
+  fields: { description: 'string' },
 });
 
 const snippetA = snippet.createRecord({

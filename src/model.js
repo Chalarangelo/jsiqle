@@ -71,7 +71,9 @@ export class Model extends EventEmitter {
 
     // Add fields, checking for duplicates and invalids
     Object.entries(fields).forEach(([fieldName, field]) => {
-      this.addField({ name: fieldName, ...field });
+      if (typeof field === 'object')
+        this.addField({ name: fieldName, ...field });
+      else this.addField({ name: fieldName, type: field });
     });
 
     // Add properties, checking for duplicates and invalids

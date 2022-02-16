@@ -2,14 +2,13 @@ import EventEmitter from 'events';
 import { Schema } from 'src/schema';
 import { Field } from 'src/field';
 import { RecordSet, RecordHandler } from 'src/record';
-import { NameError, DuplicationError, DefaultValueError } from 'src/errors';
+import { NameError, DuplicationError } from 'src/errors';
 import symbols from 'src/symbols';
-import { standardTypes, key } from 'src/types';
+import { standardTypes } from 'src/types';
 import { validateObjectWithUniqueName, validateName } from 'src/utils';
 
 const {
   $fields,
-  $defaultValue,
   $properties,
   $cachedProperties,
   $methods,
@@ -498,23 +497,6 @@ export class Model extends EventEmitter {
   }
 
   // Private
-
-  static #createKey() {
-    const keyField = new Field({
-      name: 'id',
-      type: key,
-      defaultValue: '__emptyKey__',
-    });
-    // Override the default value to throw an error
-    Object.defineProperty(keyField, $defaultValue, {
-      /* istanbul ignore next */
-      get() {
-        throw new DefaultValueError(`Key field does not have a default value.`);
-      },
-    });
-
-    return keyField;
-  }
 
   static #parseField(modelName, field, restrictedNames) {
     validateObjectWithUniqueName(

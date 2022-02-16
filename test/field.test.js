@@ -138,7 +138,6 @@ describe('Field', () => {
     const standardTypesTestValues = {
       boolean: false,
       number: 0,
-      positiveNumber: 0,
       string: '',
       date: new Date(),
       stringOrNumber: '',

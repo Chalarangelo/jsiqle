@@ -202,7 +202,6 @@ There are a few standard field types corresponding to primitives and certain com
 
 ```
 boolean string number date
-stringOrNumber numberOrString
 booleanArray numberArray stringArray dateArray
 object booleanObject numberObject
 stringObject dateObject objectArray

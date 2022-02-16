@@ -112,12 +112,12 @@ describe('Model', () => {
     });
 
     it('has the correct fields', () => {
-      const fields = [
-        { name: 'aField', type: 'string' },
-        { name: 'bField', type: 'number' },
-        { name: 'cField', type: 'boolean' },
-        { name: 'dField', type: () => true },
-      ];
+      const fields = {
+        aField: 'string',
+        bField: 'number',
+        cField: 'boolean',
+        dField: () => true,
+      };
       const model = new Model({ name: 'aModel', fields });
       expect(model[$fields].has('aField')).toEqual(true);
       expect(model[$fields].has('bField')).toEqual(true);

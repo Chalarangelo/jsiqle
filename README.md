@@ -201,7 +201,7 @@ MyModel.removeField('firstName');
 There are a few standard field types corresponding to primitives and certain common field type values:
 
 ```
-boolean string number date positiveNumber
+boolean string number date
 stringOrNumber numberOrString
 booleanArray numberArray stringArray dateArray
 object booleanObject numberObject

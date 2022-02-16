@@ -143,21 +143,15 @@ describe('Serializer', () => {
       it('returns a valid object of objects', () => {
         const model = new Model({
           name: 'myModel',
-          fields: [
-            {
-              name: 'name',
-              type: 'string',
-            },
-            {
-              name: 'description',
-              type: 'string',
-            },
-            {
-              name: 'children',
+          // TODO: When string field definitions land, update these
+          fields: {
+            name: { type: 'string' },
+            description: { type: 'string' },
+            children: {
               type: 'objectArray',
               defaultValue: [],
             },
-          ],
+          },
         });
         model.createRecord({
           id: 'item_1',

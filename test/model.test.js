@@ -49,17 +49,15 @@ describe('Model', () => {
     const modelParams = { name: 'aModel' };
 
     expect(() => new Model({ ...modelParams, fields: null })).toThrow();
-    expect(() => new Model({ ...modelParams, fields: [2] })).toThrow();
+    expect(() => new Model({ ...modelParams, fields: { a: 2 } })).toThrow();
     expect(
-      () => new Model({ ...modelParams, fields: [{ name: 'aField' }] })
+      () => new Model({ ...modelParams, fields: { name: 'aField' } })
     ).toThrow();
     expect(
-      () =>
-        new Model({ ...modelParams, fields: [{ name: 'id', type: 'test' }] })
+      () => new Model({ ...modelParams, fields: { id: { type: 'test' } } })
     ).toThrow();
     expect(
-      () =>
-        new Model({ ...modelParams, fields: [{ name: '2f', type: 'string' }] })
+      () => new Model({ ...modelParams, fields: { '2f': { type: 'string' } } })
     ).toThrow();
   });
 
@@ -348,16 +346,18 @@ describe('Model', () => {
     beforeEach(() => {
       model = new Model({
         name: 'aModel',
-        fields: [
-          {
-            name: 'name',
+        fields: {
+          name: {
             type: 'string',
             validators: {
               unique: true,
             },
           },
-          { name: 'age', type: 'number', defaultValue: 18 },
-        ],
+          age: {
+            type: 'number',
+            defaultValue: 18,
+          },
+        },
         scopes: {
           adult: ({ age }) => age >= 18,
         },
@@ -445,9 +445,7 @@ describe('Model', () => {
     beforeEach(() => {
       model = new Model({
         name: 'aModel',
-        fields: [
-          { name: 'name', type: 'string', validators: { minLength: 1 } },
-        ],
+        fields: { name: { type: 'string', validators: { minLength: 1 } } },
       });
     });
 
@@ -469,9 +467,7 @@ describe('Model', () => {
     beforeEach(() => {
       model = new Model({
         name: 'aModel',
-        fields: [
-          { name: 'name', type: 'string', validators: { minLength: 1 } },
-        ],
+        fields: { name: { type: 'string', validators: { minLength: 1 } } },
       });
     });
 
@@ -508,9 +504,7 @@ describe('Model', () => {
     beforeEach(() => {
       model = new Model({
         name: 'aModel',
-        fields: [
-          { name: 'name', type: 'string', validators: { minLength: 1 } },
-        ],
+        fields: { name: { type: 'string', validators: { minLength: 1 } } },
         scopes: {
           nonExistentRecords: record => record.name === '',
           namedRecords: record => record.name.length > 2,
@@ -578,9 +572,7 @@ describe('Model', () => {
     beforeEach(() => {
       model = new Model({
         name: 'aModel',
-        fields: [
-          { name: 'name', type: 'string', validators: { minLength: 1 } },
-        ],
+        fields: { name: { type: 'string', validators: { minLength: 1 } } },
       });
     });
 

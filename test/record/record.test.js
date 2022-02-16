@@ -27,10 +27,11 @@ describe('Record', () => {
     schema = new Schema({ name: 'test' });
     model = schema.createModel({
       name: 'aModel',
-      fields: [
-        { name: 'name', type: 'string' },
-        { name: 'age', type: 'number' },
-      ],
+      // TODO: When string field definitions land, update these
+      fields: {
+        name: { type: 'string' },
+        age: { type: 'number' },
+      },
       properties: {
         firstName: rec => rec.name.split(' ')[0],
       },
@@ -97,10 +98,11 @@ describe('Record', () => {
     beforeEach(() => {
       model = schema.createModel({
         name: 'bModel',
-        fields: [
-          { name: 'name', type: 'string' },
-          { name: 'age', type: 'number' },
-        ],
+        // TODO: When string field definitions land, update these
+        fields: {
+          name: { type: 'string' },
+          age: { type: 'number' },
+        },
         properties: {
           firstName: {
             body: rec => {

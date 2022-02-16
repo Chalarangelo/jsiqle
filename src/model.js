@@ -42,7 +42,7 @@ export class Model extends EventEmitter {
 
   constructor({
     name,
-    fields = [],
+    fields = {},
     properties = {},
     methods = {},
     scopes = {},
@@ -70,7 +70,9 @@ export class Model extends EventEmitter {
     this.#cachedProperties = new Set();
 
     // Add fields, checking for duplicates and invalids
-    fields.forEach(field => this.addField(field));
+    Object.entries(fields).forEach(([fieldName, field]) => {
+      this.addField({ name: fieldName, ...field });
+    });
 
     // Add properties, checking for duplicates and invalids
     Object.entries(properties).forEach(([propertyName, property]) => {

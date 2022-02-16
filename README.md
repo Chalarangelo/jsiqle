@@ -296,11 +296,6 @@ const MySchema = jsiqle.create({
 });
 ```
 
-You can remove a property from a model using `Model.prototype.removeProperty()`:
-
-```js
-MyModel.removeProperty('formalName');
-```
 #### Method definitions
 
 Methods can be defined as part of a model definition or added individually to a model by calling `Model.prototype.addMethod()`:
@@ -397,7 +392,7 @@ Scopes expect one argument, the current record, and must return a boolean indica
 You can remove a scope from a model using `Model.prototype.removeScope()`:
 
 ```js
-MyModel.removeProperty('does');
+MyModel.removeScope('does');
 ```
 
 #### Validator definitions

@@ -229,25 +229,25 @@ describe('RecordSet', () => {
     });
   });
 
-  describe('findKey', () => {
+  describe('findId', () => {
     it('should find a record', () => {
-      expect(model.records.findKey(rec => rec.age === 42)).toBe('0');
+      expect(model.records.findId(rec => rec.age === 42)).toBe('0');
     });
 
     it('should return undefined if no record found', () => {
-      expect(model.records.findKey(rec => rec.age === 0)).toBeUndefined();
+      expect(model.records.findId(rec => rec.age === 0)).toBeUndefined();
     });
   });
 
   describe('only', () => {
-    it('should return a record set with only the given keys', () => {
+    it('should return a record set with only the given ids', () => {
       const result = model.records.only('0', '1');
       expect(result.count).toBe(2);
       expect(result.first.name).toBe('John Doe');
       expect(result.last.name).toBe('Jane Doe');
     });
 
-    it('should return a record set with only the given keys in the correct order', () => {
+    it('should return a record set with only the given ids in the correct order', () => {
       const result = model.records.only('1', '0');
       expect(result.count).toBe(2);
       expect(result.first.name).toBe('Jane Doe');
@@ -261,7 +261,7 @@ describe('RecordSet', () => {
   });
 
   describe('except', () => {
-    it('should return a record set with the given keys removed', () => {
+    it('should return a record set with the given ids removed', () => {
       const result = model.records.except('0', '1');
       expect(result.count).toBe(2);
       expect(result.first.name).toBe('John Smith');
@@ -452,16 +452,16 @@ describe('RecordSet', () => {
     });
   });
 
-  describe('flatBatchKeysIterator', () => {
+  describe('flatBatchIdsIterator', () => {
     it('should iterate over the records', () => {
-      const result = model.records.flatBatchKeysIterator(2);
+      const result = model.records.flatBatchIdsIterator(2);
       expect(result.next().value).toEqual(['0', '1']);
       expect(result.next().value).toEqual(['2', '3']);
       expect(result.next().value).toEqual(undefined);
     });
 
     it('should return the last batch with however many elements are left', () => {
-      const result = model.records.flatBatchKeysIterator(3);
+      const result = model.records.flatBatchIdsIterator(3);
       expect(result.next().value).toEqual(['0', '1', '2']);
       expect(result.next().value).toEqual(['3']);
       expect(result.next().value).toEqual(undefined);

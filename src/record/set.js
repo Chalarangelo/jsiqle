@@ -28,7 +28,7 @@ class RecordSet extends Map {
   // set should probably be disabled.
   constructor({ iterable = [], copyScopesFrom = null } = {}) {
     super();
-    for (const [key, value] of iterable) this.set(key, value);
+    for (const [id, value] of iterable) this.set(id, value);
 
     this.#scopes = new Map();
     if (copyScopesFrom) this.#copyScopes(copyScopesFrom);
@@ -47,28 +47,28 @@ class RecordSet extends Map {
 
   /**
    *
-   * @param {*} key The key of the element to add to the record set.
+   * @param {*} id The id of the element to add to the record set.
    * @param {*} value The value of the element to add to the record set.
    * @returns {RecordSet} The record set itself.
    */
-  set(key, value) {
+  set(id, value) {
     // TODO: V2 Enhancements
     // Ensure this is only ever called internally (maybe symbolize it?)
     // Schema[$handleExperimentalAPIMessage](
     //   'Calling RecordSet.prototype.set() is discouraged as it may cause unexpected behavior. This method may be removed in a future version of the library.'
     // );
     if (this.#frozen) throw new TypeError('Cannot modify a frozen RecordSet.');
-    super.set(key, value);
+    super.set(id, value);
     return this;
   }
 
   /**
-   * @param {*} key The key of the element to remove from the record set.
+   * @param {*} id The id of the element to remove from the record set.
    * @returns {boolean} True if the element was removed, false otherwise.
    */
-  delete(key) {
+  delete(id) {
     if (this.#frozen) throw new TypeError('Cannot modify a frozen RecordSet.');
-    return super.delete(key);
+    return super.delete(id);
   }
 
   /**
@@ -85,14 +85,14 @@ class RecordSet extends Map {
    * @param {Function} callbackFn Function that is called for every element of
    * the record set. The callback is called with the following arguments:
    * - `value`: The value of the current element.
-   * - `key`: The key of the current element.
+   * - `id`: The id of the current element.
    * - `recordSet`: The record set itself.
-   * @returns {Object} An object with each key mapped to the result of the
+   * @returns {Object} An object with each id mapped to the result of the
    * callback function on the corresponding element.
    */
   map(callbackFn) {
-    return [...this.entries()].reduce((newMap, [key, value]) => {
-      newMap[key] = callbackFn(value, key, this);
+    return [...this.entries()].reduce((newMap, [id, value]) => {
+      newMap[id] = callbackFn(value, id, this);
       return newMap;
     }, {});
   }
@@ -103,14 +103,14 @@ class RecordSet extends Map {
    * @param {Function} callbackFn Function that is called for every element of
    * the record set. The callback is called with the following arguments:
    * - `value`: The value of the current element.
-   * - `key`: The key of the current element.
+   * - `id`: The id of the current element.
    * - `recordSet`: The record set itself.
    * @returns {Array} An array with each element being the result of the
    * callback function on the corresponding element.
    */
   flatMap(callbackFn) {
-    return [...this.entries()].map(([key, value]) => {
-      return callbackFn(value, key, this);
+    return [...this.entries()].map(([id, value]) => {
+      return callbackFn(value, id, this);
     });
   }
 
@@ -123,15 +123,15 @@ class RecordSet extends Map {
    * - `accumulator`: The value returned from the previous iteration of the
    * reducer.
    * - `value`: The value of the current element.
-   * - `key`: The key of the current element.
+   * - `id`: The id of the current element.
    * - `recordSet`: The record set itself.
    * @param {*} initialValue The initial value of the accumulator.
    * @returns {*} The value that results from running the “reducer” callback
    * function to completion over the entire record set.
    */
   reduce(callbackFn, initialValue) {
-    return [...this.entries()].reduce((acc, [key, value]) => {
-      return callbackFn(acc, value, key, this);
+    return [...this.entries()].reduce((acc, [id, value]) => {
+      return callbackFn(acc, value, id, this);
     }, initialValue);
   }
 
@@ -141,14 +141,14 @@ class RecordSet extends Map {
    * @param {Function} callbackFn Function that is called for every element of
    * the record set. The callback is called with the following arguments:
    * - `value`: The value of the current element.
-   * - `key`: The key of the current element.
+   * - `id`: The id of the current element.
    * - `recordSet`: The record set itself.
    * @returns {RecordSet} A new record set with all elements that pass the test.
    */
   filter(callbackFn) {
     return [...this.entries()]
-      .reduce((newMap, [key, value]) => {
-        if (callbackFn(value, key, this)) newMap.set(key, value);
+      .reduce((newMap, [id, value]) => {
+        if (callbackFn(value, id, this)) newMap.set(id, value);
         return newMap;
       }, new RecordSet({ copyScopesFrom: this }))
       .freeze();
@@ -160,13 +160,13 @@ class RecordSet extends Map {
    * @param {Function} callbackFn Function that is called for every element of
    * the record set. The callback is called with the following arguments:
    * - `value`: The value of the current element.
-   * - `key`: The key of the current element.
+   * - `id`: The id of the current element.
    * - `recordSet`: The record set itself.
    * @returns {Array} An array with all elements that pass the test.
    */
   flatFilter(callbackFn) {
-    return [...this.entries()].reduce((arr, [key, value]) => {
-      if (callbackFn(value, key, this)) arr.push(value);
+    return [...this.entries()].reduce((arr, [id, value]) => {
+      if (callbackFn(value, id, this)) arr.push(value);
       return arr;
     }, []);
   }
@@ -177,47 +177,47 @@ class RecordSet extends Map {
    * @param {Function} callbackFn Function that is called for every element of
    * the record set. The callback is called with the following arguments:
    * - `value`: The value of the current element.
-   * - `key`: The key of the current element.
+   * - `id`: The id of the current element.
    * - `recordSet`: The record set itself.
    * @returns {Record} The value of the first element in the record set that
    * satisfies the provided testing function or `undefined`.
    */
   find(callbackFn) {
-    for (const [key, value] of this.entries()) {
-      if (callbackFn(value, key, this)) return value;
+    for (const [id, value] of this.entries()) {
+      if (callbackFn(value, id, this)) return value;
     }
     return undefined;
   }
 
   /**
-   * Returns the key of the first element in the record set that satisfies the
+   * Returns the id of the first element in the record set that satisfies the
    * provided testing function.
    * @param {Function} callbackFn Function that is called for every element of
    * the record set. The callback is called with the following arguments:
    * - `value`: The value of the current element.
-   * - `key`: The key of the current element.
+   * - `id`: The id of the current element.
    * - `recordSet`: The record set itself.
-   * @returns {*} The key of the first element in the record set that satisfies
+   * @returns {*} The id of the first element in the record set that satisfies
    * the provided testing function or `undefined`.
    */
-  findKey(callbackFn) {
-    for (const [key, value] of this.entries()) {
-      if (callbackFn(value, key, this)) return key;
+  findId(callbackFn) {
+    for (const [id, value] of this.entries()) {
+      if (callbackFn(value, id, this)) return id;
     }
     return undefined;
   }
 
   /**
-   * Returns all elements in the record set whose keys  match the provided
-   * key/keys in order of appearance in the given keys.
-   * @param  {...any} keys A list of keys to exclude from the record set.
-   * @returns {RecordSet} A new record set with all elements whose keys
-   * match the provided key/keys.
+   * Returns all elements in the record set whose ids match the provided
+   * ids/ids in order of appearance in the given ids.
+   * @param  {...any} ids A list of ids to exclude from the record set.
+   * @returns {RecordSet} A new record set with all elements whose ids
+   * match the provided id/ids.
    */
-  only(...keys) {
+  only(...ids) {
     return new RecordSet({
-      iterable: keys.reduce((itr, key) => {
-        if (this.has(key)) itr.push([key, this.get(key)]);
+      iterable: ids.reduce((itr, id) => {
+        if (this.has(id)) itr.push([id, this.get(id)]);
         return itr;
       }, []),
       copyScopesFrom: this,
@@ -225,16 +225,16 @@ class RecordSet extends Map {
   }
 
   /**
-   * Returns all elements in the record set whose keys do not match the provided
-   * key/keys.
-   * @param  {...any} keys A list of keys to exclude from the record set.
-   * @returns {RecordSet} A new record set with all elements whose keys do not
-   * match the provided key/keys.
+   * Returns all elements in the record set whose ids do not match the provided
+   * id/ids.
+   * @param  {...any} ids A list of ids to exclude from the record set.
+   * @returns {RecordSet} A new record set with all elements whose ids do not
+   * match the provided id/ids.
    */
-  except(...keys) {
+  except(...ids) {
     return new RecordSet({
-      iterable: [...this.entries()].filter(([key]) => {
-        return !keys.includes(key);
+      iterable: [...this.entries()].filter(([id]) => {
+        return !ids.includes(id);
       }),
       copyScopesFrom: this,
     }).freeze();
@@ -246,14 +246,14 @@ class RecordSet extends Map {
    * callback is called with the following arguments:
    * - `firstValue`: The value of the first element for comparison.
    * - `secondValue`: The value of the second element for comparison.
-   * - `firstKey`: The key of the first element for comparison.
-   * - `secondKey`: The key of the second element for comparison.
+   * - `firstId`: The id of the first element for comparison.
+   * - `secondId`: The id of the second element for comparison.
    * @returns {RecordSet} A new record set with the elements of the original
    * record set sorted.
    */
   sort(comparatorFn) {
-    const sorted = [...this.entries()].sort(([key1, value1], [key2, value2]) =>
-      comparatorFn(value1, value2, key1, key2)
+    const sorted = [...this.entries()].sort(([id1, value1], [id2, value2]) =>
+      comparatorFn(value1, value2, id1, id2)
     );
     return new RecordSet({ iterable: sorted, copyScopesFrom: this }).freeze();
   }
@@ -264,15 +264,15 @@ class RecordSet extends Map {
    * @param {Function} callbackFn Function that is called for every element of
    * the record set. The callback is called with the following arguments:
    * - `value`: The value of the current element.
-   * - `key`: The key of the current element.
+   * - `id`: The id of the current element.
    * - `recordSet`: The record set itself.
    * @returns {Boolean} `true` if all elements in the record set pass the test,
    * `false` otherwise.
    */
   every(callbackFn) {
     if (this.size === 0) return true;
-    return [...this.entries()].every(([key, value]) =>
-      callbackFn(value, key, this)
+    return [...this.entries()].every(([id, value]) =>
+      callbackFn(value, id, this)
     );
   }
 
@@ -282,15 +282,15 @@ class RecordSet extends Map {
    * @param {Function} callbackFn Function that is called for every element of
    * the record set. The callback is called with the following arguments:
    * - `value`: The value of the current element.
-   * - `key`: The key of the current element.
+   * - `id`: The id of the current element.
    * - `recordSet`: The record set itself.
    * @returns {Boolean} `true` if any elements in the record set pass the test,
    * `false` otherwise.
    */
   some(callbackFn) {
     if (this.size === 0) return false;
-    return [...this.entries()].some(([key, value]) =>
-      callbackFn(value, key, this)
+    return [...this.entries()].some(([id, value]) =>
+      callbackFn(value, id, this)
     );
   }
 
@@ -351,7 +351,7 @@ class RecordSet extends Map {
     const isSingleKey = keys.length === 1;
     if (isSingleKey) {
       const key = keys[0];
-      if (key === 'id') return [...this.keys()];
+      if (key === 'id') return [...this.ids()];
       return [...this.values()].map(value => value[key]);
     }
     return [...this.values()].map(value => keys.map(key => value[key]));
@@ -409,12 +409,12 @@ class RecordSet extends Map {
   merge(...recordSets) {
     const res = new Map([...this.entries()]);
     for (const recordSet of recordSets) {
-      for (const [key, value] of recordSet.entries()) {
-        if (res.has(key))
+      for (const [id, value] of recordSet.entries()) {
+        if (res.has(id))
           throw new DuplicationError(
-            `Key ${key} already exists in the record set.`
+            `Id ${id} already exists in the record set.`
           );
-        res.set(key, value);
+        res.set(id, value);
       }
     }
     return new RecordSet({
@@ -446,7 +446,7 @@ class RecordSet extends Map {
    * @param {Function} callbackFn Function that is called for every element of
    * the record set. The callback is called with the following arguments:
    * - `value`: The value of the current element.
-   * - `key`: The key of the current element.
+   * - `id`: The id of the current element.
    * - `recordSet`: The record set itself.
    * @returns {RecordSet} A new record set with all elements that pass the test.
    */
@@ -460,23 +460,23 @@ class RecordSet extends Map {
    * @param {Function} callbackFn Function that is called for every element of
    * the record set. The callback is called with the following arguments:
    * - `value`: The value of the current element.
-   * - `key`: The key of the current element.
+   * - `id`: The id of the current element.
    * - `recordSet`: The record set itself.
    * @returns {RecordSet} A new record set with all elements that fail the test.
    */
   whereNot(callbackFn) {
-    return this.filter((value, key, map) => !callbackFn(value, key, map));
+    return this.filter((value, id, map) => !callbackFn(value, id, map));
   }
 
   /**
-   * Iterates over the record set's keys in array batches of the specified size.
+   * Iterates over the record set's ids in array batches of the specified size.
    * @param {Number} batchSize The size of each batch.
    * @returns {Iterator} An iterator that yields array batches of the specified size.
    */
-  *flatBatchKeysIterator(batchSize) {
+  *flatBatchIdsIterator(batchSize) {
     let batch = [];
-    for (const key of this.keys()) {
-      batch.push(key);
+    for (const id of this.ids()) {
+      batch.push(id);
       if (batch.length === batchSize) {
         yield batch;
         batch = [];
@@ -509,8 +509,8 @@ class RecordSet extends Map {
    */
   *batchIterator(batchSize) {
     let batch = [];
-    for (const [key, value] of this) {
-      batch.push([key, value]);
+    for (const [id, value] of this) {
+      batch.push([id, value]);
       if (batch.length === batchSize) {
         yield new RecordSet({ copyScopesFrom: this, iterable: batch }).freeze();
         batch = [];
@@ -527,8 +527,8 @@ class RecordSet extends Map {
    */
   limit(n) {
     let records = [];
-    for (const [key, value] of this) {
-      records.push([key, value]);
+    for (const [id, value] of this) {
+      records.push([id, value]);
       if (records.length === n) break;
     }
     return new RecordSet({
@@ -545,9 +545,9 @@ class RecordSet extends Map {
   offset(n) {
     let counter = 0;
     let records = [];
-    for (const [key, value] of this) {
+    for (const [id, value] of this) {
       if (counter < n) counter++;
-      else records.push([key, value]);
+      else records.push([id, value]);
     }
     return new RecordSet({
       iterable: records,
@@ -601,6 +601,14 @@ class RecordSet extends Map {
   }
 
   /**
+   * Returns a new Iterator object that contains the ids for each element in the
+   * record set.
+   */
+  get ids() {
+    return this.keys;
+  }
+
+  /**
    * Returns an array of the records contained in the record set.
    * @returns {Array<Record>} An array of the values contained in the record set.
    */
@@ -624,8 +632,8 @@ class RecordSet extends Map {
    * @returns {Object} An object representing the record set.
    */
   toObject() {
-    return [...this.entries()].reduce((obj, [key, value]) => {
-      obj[key] = value;
+    return [...this.entries()].reduce((obj, [id, value]) => {
+      obj[id] = value;
       return obj;
     }, {});
   }
@@ -636,8 +644,8 @@ class RecordSet extends Map {
    * @returns {Object} An object representing the records in the record set.
    */
   toFlatObject() {
-    return [...this.entries()].reduce((obj, [key, value]) => {
-      obj[key] =
+    return [...this.entries()].reduce((obj, [id, value]) => {
+      obj[id] =
         value instanceof RecordGroup ? value.toFlatArray() : value.toObject();
       return obj;
     }, {});
@@ -720,11 +728,11 @@ class RecordSet extends Map {
   #scopedWhere(scopeName) {
     const [matcherFn, comparatorFn] = this.#scopes.get(scopeName);
     let matches = [];
-    for (const [key, value] of this.entries())
-      if (matcherFn(value, key, this)) matches.push([key, value]);
+    for (const [id, value] of this.entries())
+      if (matcherFn(value, id, this)) matches.push([id, value]);
     if (comparatorFn)
-      matches.sort(([key1, value1], [key2, value2]) =>
-        comparatorFn(value1, value2, key1, key2)
+      matches.sort(([id1, value1], [id2, value2]) =>
+        comparatorFn(value1, value2, id1, id2)
       );
     return new RecordSet({ iterable: matches, copyScopesFrom: this }).freeze();
   }

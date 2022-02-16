@@ -188,26 +188,6 @@ describe('Model', () => {
     });
   });
 
-  describe('removeField', () => {
-    let model;
-
-    beforeEach(() => {
-      model = new Model({
-        name: 'aModel',
-        fields: [{ name: 'aField', type: 'string' }],
-      });
-    });
-
-    it('returns false if "fieldName" does not exist', () => {
-      expect(model.removeField('bField')).toEqual(false);
-    });
-
-    it('removes the appropriate field and returns true', () => {
-      expect(model.removeField('aField')).toEqual(true);
-      expect(model[$fields].has('aField')).toEqual(false);
-    });
-  });
-
   describe('addProperty', () => {
     let model;
 
@@ -615,15 +595,6 @@ describe('Model', () => {
         model.addField({ name: 'age', type: 'number' });
         expect(spy).toHaveBeenCalledWith(
           expect.objectContaining({ type: 'fieldAdded' })
-        );
-      });
-
-      it('when a field is removed', () => {
-        const spy = jest.fn();
-        model.on('change', spy);
-        model.removeField('name');
-        expect(spy).toHaveBeenCalledWith(
-          expect.objectContaining({ type: 'fieldRemoved' })
         );
       });
 

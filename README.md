@@ -181,12 +181,6 @@ Both of these field definition options require an object argument with the follo
 - `defaultValue`: (Optional) A value that will be used as the default for records with an empty value in this field. The `defaultValue` must be either `null` (default) or a valid value for the given type.
 - `validators`: (Optional) An object that defines what validations the field needs to pass. More information can be found below.
 
-Finally, fields can be removed by calling `Model.prototype.removeField()` with the field name:
-
-```js
-MyModel.removeField('firstName');
-```
-
 ##### Field types
 
 There are a few standard field types corresponding to primitives and certain common field type values:
@@ -716,9 +710,7 @@ Model objects emit the following events:
 
 ```
 beforeAddField fieldAdded
-beforeUpdateField fieldUpdated
 beforeAddProperty propertyAdded
-beforeRemoveProperty propertyRemoved
 beforeAddScope scopeAdded
 beforeRemoveScope scopeRemoved
 beforeAddValidator validatorAdded

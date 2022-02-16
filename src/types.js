@@ -102,5 +102,5 @@ export const standardTypes = {
 
 // Internal types
 const isNonEmptyString = val => val.trim().length !== 0;
-export const key = and(isString, isNonEmptyString);
-export const keyArray = isArrayOf(key);
+export const recordId = and(isString, isNonEmptyString);
+export const recordIdArray = isArrayOf(recordId);

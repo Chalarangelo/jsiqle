@@ -25,11 +25,7 @@ describe('RecordSet', () => {
     schema = new Schema({ name: 'test' });
     model = schema.createModel({
       name: 'person',
-      // TODO: When string field definitions land, update these
-      fields: {
-        name: { type: 'string' },
-        age: { type: 'number' },
-      },
+      fields: { name: 'string', age: 'number' },
       properties: {
         firstName: rec => rec.name.split(' ')[0],
         lastName: rec => rec.name.split(' ')[1],

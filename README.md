@@ -36,8 +36,8 @@ const Ledger = jsiqle.create({
           values: ['user', 'admin'],
           defaultValue: 'user'
         },
-        firstName: { type: 'string' },
-        lastName: { type: 'string' }
+        firstName: 'string',
+        lastName: 'string'
       },
       properties: {
         fullName: rec => `${rec.firstName} ${rec.lastName}`
@@ -46,8 +46,8 @@ const Ledger = jsiqle.create({
     {
       name: 'Transaction',
       fields: {
-        time: { type: 'date' },
-        amount: { type: 'number' }
+        time: 'date',
+        amount: 'number'
       }
     }
   ]
@@ -146,7 +146,7 @@ const MySchema = jsiqle.create({
     {
       name: 'MyModel',
       fields: {
-        firstName: { type: 'string' },
+        firstName: 'string',
         age: { type: 'number', defaultValue: 18 },
         username: {
           type: 'string',
@@ -178,7 +178,9 @@ Both of these field definition options require an object argument with the follo
 - `defaultValue`: (Optional) A value that will be used as the default for records with an empty value in this field. The `defaultValue` must be either `null` (default) or a valid value for the given type.
 - `validators`: (Optional) An object that defines what validations the field needs to pass. More information can be found below.
 
-In the case of defining the field in the model definition, the `name` should be defined as the key that the object corresponds to.
+In the case of defining the field in the model definition, the field `name` should be defined as the key that the object corresponds to. In case of defining the field individually, the field `name` should be defined as part of the field object definition.
+
+Additionally, in the case of simple fields that only need a `type` definition and are defined as part of the model definition, the model object can be replaced with the `type` string.
 
 ##### Field types
 
@@ -227,8 +229,8 @@ const MySchema = jsiqle.create({
     {
       name: 'MyModel',
       fields: {
-        firstName: { type: 'string' },
-        lastName: { type: 'string' }
+        firstName: 'string',
+        lastName: 'string'
       },
       properties: {
         fullName: record => `${record.firstName} ${record.lastName}`,
@@ -259,8 +261,8 @@ const MySchema = jsiqle.create({
     {
       name: 'MyModel',
       fields: {
-        firstName: { type: 'string' },
-        lastName: { type: 'string' }
+        firstName: 'string',
+        lastName: 'string'
       },
       properties: {
         fullName: record => `${record.firstName} ${record.lastName}`,
@@ -292,8 +294,8 @@ const MySchema = jsiqle.create({
     {
       name: 'MyModel',
       fields: {
-        firstName: { type: 'string' },
-        lastName: { type: 'string' }
+        firstName: 'string',
+        lastName: 'string'
       },
       methods: {
         prefixedName: (record, prefix) => `${prefix} ${record.lastName}`
@@ -324,8 +326,8 @@ const MySchema = jsiqle.create({
     {
       name: 'MyModel',
       fields: {
-        firstName: { type: 'string' },
-        lastName: { type: 'string' }
+        firstName: 'string',
+        lastName: 'string'
       },
       methods: {
         prefixedName: (record, prefix) => `${prefix} ${record.lastName}`
@@ -354,8 +356,8 @@ const MySchema = jsiqle.create({
     {
       name: 'MyModel',
       fields: {
-        firstName: { type: 'string' },
-        lastName: { type: 'string' }
+        firstName: 'string',
+        lastName: 'string'
       },
       scopes: {
         smiths: record => record.lastName === 'Smith'
@@ -391,8 +393,8 @@ const MySchema = jsiqle.create({
     {
       name: 'MyModel',
       fields: {
-        startDate: { type: 'date' },
-        endDate: { type: 'date' }
+        startDate: 'date',
+        endDate: 'date'
       },
       validators: {
         datesValid: record => record.startDate <= record.endDate
@@ -435,13 +437,13 @@ const MySchema = jsiqle.create({
     {
       name: 'Person',
       fields: {
-        username: { type: 'string' },
+        username: 'string',
       }
     },
     {
       name: 'Transaction',
       fields: {
-        amount: { type: 'number' },
+        amount: 'number',
       },
     }
   ],
@@ -491,8 +493,8 @@ const MySchema = jsiqle.create({
     {
       name: 'MyModel',
       fields: {
-        firstName: { type: 'string' },
-        lastName: { type: 'string' }
+        firstName: 'string',
+        lastName: 'string'
       },
       properties: {
         fullName: record => `${record.firstName} ${record.lastName}`
@@ -543,8 +545,8 @@ const MySchema = jsiqle.create({
     {
       name: 'MyModel',
       fields: {
-        firstName: { type: 'string' },
-        lastName: { type: 'string' }
+        firstName: 'string',
+        lastName: 'string'
       },
       properties: {
         fullName: record => `${record.firstName} ${record.lastName}`
@@ -618,8 +620,8 @@ const MySchema = jsiqle.create({
     {
       name: 'MyModel',
       fields: {
-        firstName: { type: 'string' },
-        lastName: { type: 'string' }
+        firstName: 'string',
+        lastName: 'string'
       },
       scopes: {
         smiths: record => record.lastName === 'Smith'
@@ -651,8 +653,8 @@ const MySchema = jsiqle.create({
     {
       name: 'MyModel',
       fields: {
-        firstName: { type: 'string' },
-        lastName: { type: 'string' }
+        firstName: 'string',
+        lastName: 'string'
       },
     }
   ]

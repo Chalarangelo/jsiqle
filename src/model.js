@@ -225,27 +225,6 @@ export class Model extends EventEmitter {
     });
   }
 
-  removeMethod(name) {
-    if (!Model.#validateContains(this.name, 'Method', name, this.#methods))
-      return false;
-    const method = this.#methods.get(name);
-    this.emit('beforeRemoveMethod', {
-      method: { name, body: method },
-      model: this,
-    });
-    this.#methods.delete(name);
-    this.emit('methodRemoved', {
-      method: { name },
-      model: this,
-    });
-    this.emit('change', {
-      type: 'methodRemoved',
-      method: { name, body: method },
-      model: this,
-    });
-    return true;
-  }
-
   addScope(name, scope, sortFn) {
     this.emit('beforeAddScope', {
       scope: { name, body: scope },

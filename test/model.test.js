@@ -323,26 +323,6 @@ describe('Model', () => {
     });
   });
 
-  describe('removeMethod', () => {
-    let model;
-
-    beforeEach(() => {
-      model = new Model({
-        name: 'aModel',
-        methods: { aMethod: () => null },
-      });
-    });
-
-    it('returns false if "propertyName" does not exist', () => {
-      expect(model.removeMethod('bMethod')).toEqual(false);
-    });
-
-    it('removes the appropriate field and returns true', () => {
-      expect(model.removeMethod('aMethod')).toEqual(true);
-      expect(model[$methods].has('aMethod')).toEqual(false);
-    });
-  });
-
   describe('addScope', () => {
     let model;
 

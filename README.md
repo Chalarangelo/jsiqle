@@ -363,12 +363,6 @@ const MySchema = jsiqle.create({
 });
 ```
 
-You can remove a method from a model using `Model.prototype.removeMethod()`:
-
-```js
-MyModel.removeMethod('prefixedName');
-```
-
 #### Scope definitions
 
 Scopes can be defined as part of a model definition or added individually to a model by calling `Model.prototype.addScope()`:

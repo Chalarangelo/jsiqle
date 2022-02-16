@@ -85,7 +85,7 @@ describe('Record', () => {
     );
   });
 
-  it('returns the key value when called with toString', () => {
+  it('returns the id when called with toString', () => {
     const record = model.createRecord({ id: 'jd', name: 'John Doe', age: 42 });
     expect(record.toString()).toBe('jd');
   });

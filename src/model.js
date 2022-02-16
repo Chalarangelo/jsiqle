@@ -177,28 +177,6 @@ export class Model extends EventEmitter {
     });
   }
 
-  removeProperty(name) {
-    if (!Model.#validateContains(this.name, 'Property', name, this.#properties))
-      return false;
-    const property = this.#properties.get(name);
-    this.emit('beforeRemoveProperty', {
-      property: { name, body: property },
-      model: this,
-    });
-    this.#properties.delete(name);
-    if (this.#cachedProperties.has(name)) this.#cachedProperties.delete(name);
-    this.emit('propertyRemoved', {
-      property: { name },
-      model: this,
-    });
-    this.emit('change', {
-      type: 'propertyRemoved',
-      property: { name, body: property },
-      model: this,
-    });
-    return true;
-  }
-
   addMethod(name, method) {
     this.emit('beforeAddMethod', {
       method: { name, body: method },

@@ -271,33 +271,6 @@ describe('Model', () => {
     });
   });
 
-  describe('removeProperty', () => {
-    let model;
-
-    beforeEach(() => {
-      model = new Model({
-        name: 'aModel',
-        properties: { aProperty: () => null },
-      });
-    });
-
-    it('returns false if "propertyName" does not exist', () => {
-      expect(model.removeProperty('bProperty')).toEqual(false);
-    });
-
-    it('removes the appropriate property and returns true', () => {
-      expect(model.removeProperty('aProperty')).toEqual(true);
-      expect(model[$properties].has('aProperty')).toEqual(false);
-    });
-
-    it('removes the appropriate property and cache and returns true', () => {
-      model.addProperty({ name: 'bProperty', body: () => null, cache: true });
-      expect(model.removeProperty('bProperty')).toEqual(true);
-      expect(model[$properties].has('bProperty')).toEqual(false);
-      expect(model[$cachedProperties].has('bProperty')).toEqual(false);
-    });
-  });
-
   describe('addMethod', () => {
     let model;
 
@@ -699,16 +672,6 @@ describe('Model', () => {
         model.addProperty({ name: 'nameAndId', body: () => 'aName_a' });
         expect(spy).toHaveBeenCalledWith(
           expect.objectContaining({ type: 'propertyAdded' })
-        );
-      });
-
-      it('when a property is removed', () => {
-        const spy = jest.fn();
-        model.addProperty({ name: 'nameAndId', body: () => 'aName_a' });
-        model.on('change', spy);
-        model.removeProperty('nameAndId');
-        expect(spy).toHaveBeenCalledWith(
-          expect.objectContaining({ type: 'propertyRemoved' })
         );
       });
 

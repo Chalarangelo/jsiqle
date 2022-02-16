@@ -13,31 +13,19 @@ const schema = jsiqle.create({
   models: [
     {
       name: 'snippet',
-      key: 'name',
-      fields: [
-        {
-          name: 'description',
+      fields: {
+        description: {
           type: 'string',
-          // Refactor to flatten validators in the definition?
           validators: {
             unique: true,
             minLength: 5,
             containsTheWordDescription: value => value.includes('description'),
           },
         },
-        {
-          name: 'code',
-          type: 'string',
-        },
-        {
-          name: 'language',
-          type: 'string',
-        },
-        {
-          name: 'tags',
-          type: 'stringArray',
-        },
-      ],
+        code: { type: 'string' },
+        language: { type: 'string' },
+        tags: { type: 'stringArray' },
+      },
     },
   ],
   relationships: [
@@ -71,33 +59,15 @@ const schema = jsiqle.create({
   },
 });
 
-schema.on('beforeCreateModel', ({ model }) => {
-  console.log(`Creating new model named ${model.name}...`);
-});
-
-schema.on('modelCreated', ({ model }) => {
-  console.log(`Model ${model.name} created!`);
-});
-
-schema.on('change', data => {
-  console.log(data.type);
-});
-
 const snippet = schema.getModel('snippet');
 
 const category = schema.createModel({
   name: 'category',
-  key: 'name',
-  fields: [
-    {
-      name: 'description',
-      type: 'string',
-    },
-  ],
+  fields: { description: { type: 'string' } },
 });
 
 const snippetA = snippet.createRecord({
-  name: 'snippetA',
+  id: 'snippetA',
   description: 'description of snippetA',
   code: 'console.log("Hello World!");',
   language: 'javascript',
@@ -105,7 +75,7 @@ const snippetA = snippet.createRecord({
 });
 
 const snippetB = snippet.createRecord({
-  name: 'snippetB',
+  id: 'snippetB',
   description: 'description of snippetB',
   code: 'console.log("Hello World!");',
   tags: ['cool'],
@@ -113,29 +83,25 @@ const snippetB = snippet.createRecord({
 });
 
 const categoryA = category.createRecord({
-  name: 'categoryA',
+  id: 'categoryA',
   description: 'description of categoryA',
 });
 
 const categoryB = category.createRecord({
-  name: 'categoryB',
+  id: 'categoryB',
   description: 'description of categoryB',
 });
 
-snippet.addField(
-  {
-    name: 'special',
-    type: 'string',
-  },
-  record => {
-    if (record.name === 'snippetA') {
-      return 'special value for snippetA';
-    } else return record.name;
-  }
-);
+snippet.addField({
+  name: 'special',
+  type: 'string',
+});
 
-snippet.addProperty('isCool', record => {
-  return record.tags.includes('cool');
+snippet.addProperty({
+  name: 'isCool',
+  body: record => {
+    return record.tags.includes('cool');
+  },
 });
 
 snippet.addScope('cool', record => {
@@ -149,7 +115,7 @@ schema.createRelationship({
 });
 
 const snippetC = snippet.createRecord({
-  name: 'snippetC',
+  id: 'snippetC',
   description: 'description of snippetC',
   code: 'console.log("Hello World!");',
   language: 'javascript',
@@ -158,9 +124,9 @@ const snippetC = snippet.createRecord({
   children: ['snippetA', 'snippetB'],
 });
 
-Array.from({ length: 1000 }).forEach(() => {
+Array.from({ length: 1000 }).forEach((_, i) => {
   snippet.createRecord({
-    name: `snippet${i}`,
+    id: `snippet${i}`,
     description: `description of snippet${i}`,
     code: `console.log("Hello World!");`,
     language: 'javascript',
@@ -169,8 +135,6 @@ Array.from({ length: 1000 }).forEach(() => {
 });
 
 snippetA.categorySet = ['categoryB', 'categoryA'];
-
-// categoryA.snippetSet = ['snippetC'];
 
 replServer.context.schema = schema;
 
@@ -192,9 +156,3 @@ replServer.context.traceFn = (name, fn) => {
   fn();
   console.timeEnd(`traceFn: ${name}`);
 };
-
-// try {
-//   snippetA.snippetSet;
-// } catch (e) {
-//   console.trace(e);
-// }

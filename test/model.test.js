@@ -208,36 +208,6 @@ describe('Model', () => {
     });
   });
 
-  describe('updateField', () => {
-    let model;
-
-    beforeEach(() => {
-      model = new Model({
-        name: 'aModel',
-        fields: [{ name: 'aField', type: 'string' }],
-      });
-    });
-
-    it('throws if fieldName does not match new field name', () => {
-      expect(() =>
-        model.updateField('aField', { name: 'bField', type: 'number' })
-      ).toThrow();
-    });
-
-    it('throws if "fieldName" does not exist', () => {
-      expect(() =>
-        model.updateField('bField', { name: 'bField', type: 'number' })
-      ).toThrow();
-    });
-
-    it('updates the appropriate field', () => {
-      const oldField = model[$fields].get('aField');
-      model.updateField('aField', { name: 'aField', type: 'number' });
-      expect(model[$fields].has('aField')).toEqual(true);
-      expect(model[$fields].get('aField')).not.toBe(oldField);
-    });
-  });
-
   describe('addProperty', () => {
     let model;
 
@@ -654,15 +624,6 @@ describe('Model', () => {
         model.removeField('name');
         expect(spy).toHaveBeenCalledWith(
           expect.objectContaining({ type: 'fieldRemoved' })
-        );
-      });
-
-      it('when a field is updated', () => {
-        const spy = jest.fn();
-        model.on('change', spy);
-        model.updateField('name', { name: 'name', type: 'string' });
-        expect(spy).toHaveBeenCalledWith(
-          expect.objectContaining({ type: 'fieldUpdated' })
         );
       });
 

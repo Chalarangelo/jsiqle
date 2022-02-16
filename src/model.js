@@ -336,36 +336,36 @@ export class Model extends EventEmitter {
   // Record operations do not emit 'change' events by design
   createRecord(record) {
     this.emit('beforeCreateRecord', { record, model: this });
-    const [newRecordKey, newRecord] = this.#recordHandler.createRecord(record);
-    this.#records.set(newRecordKey, newRecord);
+    const [newRecordId, newRecord] = this.#recordHandler.createRecord(record);
+    this.#records.set(newRecordId, newRecord);
     this.emit('recordCreated', { newRecord, model: this });
     return newRecord;
   }
 
-  removeRecord(recordKey) {
-    if (!this.#records.has(recordKey)) {
-      console.warn(`Record ${recordKey} does not exist.`);
+  removeRecord(recordId) {
+    if (!this.#records.has(recordId)) {
+      console.warn(`Record ${recordId} does not exist.`);
       return false;
     }
-    const record = this.#records.get(recordKey);
+    const record = this.#records.get(recordId);
     this.emit('beforeRemoveRecord', { record, model: this });
-    this.#records.delete(recordKey);
+    this.#records.delete(recordId);
     this.emit('recordRemoved', {
-      record: { id: recordKey },
+      record: { id: recordId },
       model: this,
     });
     return true;
   }
 
-  updateRecord(recordKey, record) {
+  updateRecord(recordId, record) {
     if (typeof record !== 'object')
       throw new TypeError('Record data must be an object.');
-    if (!this.#records.has(recordKey))
-      throw new ReferenceError(`Record ${recordKey} does not exist.`);
-    const oldRecord = this.#records.get(recordKey);
+    if (!this.#records.has(recordId))
+      throw new ReferenceError(`Record ${recordId} does not exist.`);
+    const oldRecord = this.#records.get(recordId);
     this.emit('beforeUpdateRecord', {
       record: oldRecord,
-      newRecord: { id: recordKey, ...record },
+      newRecord: { id: recordId, ...record },
       model: this,
     });
     Object.entries(record).forEach(([fieldName, fieldValue]) => {

@@ -271,7 +271,7 @@ export class Schema extends EventEmitter {
    */
   get(pathName) {
     this.emit('beforeGet', { pathName, schema: this });
-    const [modelName, recordKey, ...rest] = pathName.split('.');
+    const [modelName, recordId, ...rest] = pathName.split('.');
     const model = this.getModel(modelName);
 
     if (!model)
@@ -279,14 +279,14 @@ export class Schema extends EventEmitter {
         `Model ${modelName} does not exist in schema ${this.#name}.`
       );
 
-    if (recordKey === undefined) return model;
-    const record = model.records.get(recordKey);
+    if (recordId === undefined) return model;
+    const record = model.records.get(recordId);
 
     if (!rest.length) return record;
 
     if (!record)
       throw new ReferenceError(
-        `Record ${recordKey} does not exist in model ${modelName}.`
+        `Record ${recordId} does not exist in model ${modelName}.`
       );
 
     const result = rest.reduce((acc, key) => acc[key], record);

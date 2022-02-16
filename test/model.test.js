@@ -476,11 +476,11 @@ describe('Model', () => {
       expect(() => model.createRecord(2)).toThrow();
     });
 
-    it('throws if key is not present', () => {
+    it('throws if id is not present', () => {
       expect(() => model.createRecord({ name: 'aName' })).toThrow();
     });
 
-    it('throws if key is not unique', () => {
+    it('throws if id is not unique', () => {
       model.createRecord({ id: 'a', name: 'aName' });
       expect(() => model.createRecord({ id: 'a', name: 'bName' })).toThrow();
     });
@@ -495,7 +495,7 @@ describe('Model', () => {
       expect(() => model.createRecord({ id: 'b', name: 'aName' })).toThrow();
     });
 
-    it('throws if a record with the same key exists', () => {
+    it('throws if a record with the same id exists', () => {
       // eslint-disable-next-line no-unused-vars
       const record = model.createRecord({ id: 'a', name: 'aName' });
       expect(() => model.createRecord({ id: 'a', name: 'bName' })).toThrow();
@@ -548,7 +548,7 @@ describe('Model', () => {
       });
     });
 
-    it('returns false if "recordKey" does not exist', () => {
+    it('returns false if "recordId" does not exist', () => {
       expect(model.removeRecord('aRecord')).toEqual(false);
     });
 
@@ -572,11 +572,11 @@ describe('Model', () => {
       });
     });
 
-    it('throws if "recordKey" does not exist', () => {
+    it('throws if "recordId" does not exist', () => {
       expect(() => model.updateRecord('a', { name: 'ab' })).toThrow();
     });
 
-    it('throws if "recordKey" does not match the new record', () => {
+    it('throws if "recordId" does not match the new record', () => {
       expect(() => model.updateRecord('a', { id: 'b', name: 'ab' })).toThrow();
     });
 

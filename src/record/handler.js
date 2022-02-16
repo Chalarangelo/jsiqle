@@ -1,6 +1,6 @@
 import Record from './record';
 import { DuplicationError } from 'src/errors';
-import types, { key } from 'src/types';
+import types, { recordId } from 'src/types';
 import symbols from 'src/symbols';
 import { deepClone } from 'src/utils';
 
@@ -36,8 +36,8 @@ class RecordHandler {
     if (typeof recordData !== 'object')
       throw new TypeError('Record data must be an object.');
     const modelName = this.#getModelName();
-    // Validate record key
-    const newRecordKey = RecordHandler.#validateNewRecordKey(
+    // Validate record id
+    const newRecordId = RecordHandler.#validateNewRecordId(
       modelName,
       recordData.id,
       this.#model.records
@@ -45,17 +45,17 @@ class RecordHandler {
     // Clone record data, check for extra properties
     const clonedRecord = deepClone(recordData);
     const extraProperties = Object.keys(clonedRecord).filter(
-      property => !this.#hasField(property) && !this.#isModelKey(property)
+      property => !this.#hasField(property) && !this.#isRecordId(property)
     );
     if (extraProperties.length > 0) {
       console.warn(
         `${modelName} record has extra fields: ${extraProperties.join(', ')}.`
       );
     }
-    // Create record with key and extra properties only
+    // Create record with id and extra properties only
     const newRecord = new Record(
       {
-        id: newRecordKey,
+        id: newRecordId,
         ...extraProperties.reduce(
           (obj, property) => ({ ...obj, [property]: clonedRecord[property] }),
           {}
@@ -71,11 +71,11 @@ class RecordHandler {
     this.#getValidators().forEach((validator, validatorName) => {
       if (!validator(newRecord, this.#model.records))
         throw new RangeError(
-          `${modelName} record with key ${newRecordKey} failed validation for ${validatorName}.`
+          `${modelName} record with id ${newRecordId} failed validation for ${validatorName}.`
         );
     });
 
-    return [newRecordKey, newRecord];
+    return [newRecordId, newRecord];
   }
 
   /*  ======  Trap definitions  ======  */
@@ -84,8 +84,8 @@ class RecordHandler {
     // Check relationships first to avoid matching them as fields
     if (this.#hasRelationshipField(property))
       return this.#getRelationship(record, property);
-    // Key or field, return as-is
-    if (this.#isModelKey(property) || this.#hasField(property))
+    // Id or field, return as-is
+    if (this.#isRecordId(property) || this.#hasField(property))
       return this.#getFieldValue(record, property);
     // Property, get and call, this also matches relationship reverses (properties)
     if (this.#hasProperty(property)) return this.#getProperty(record, property);
@@ -95,7 +95,7 @@ class RecordHandler {
     if (this.#isCallToSerialize(property))
       return RecordHandler.#recordToObject(record, this.#model, this);
     // Call toString method, return key value
-    if (this.#isCallToString(property)) return () => this.#getKeyValue(record);
+    if (this.#isCallToString(property)) return () => this.getRecordId(record);
     // Known symbol, handle as required
     if (this.#isKnownSymbol(property))
       return this.#getKnownSymbol(record, property);
@@ -106,18 +106,18 @@ class RecordHandler {
   set(record, property, value, receiver, skipValidation) {
     // Receiver is the same as record but never used (API compatibility)
     const recordValue = record[$recordValue];
-    const recordKey = this.#getKeyValue(record);
-    const otherRecords = this.#model.records.except(recordKey);
+    const recordId = this.getRecordId(record);
+    const otherRecords = this.#model.records.except(recordId);
     // Throw an error when trying to set a property, also catches
     // relationship reverses, safeguarding against issues there.
     if (this.#hasProperty(property))
       throw new TypeError(
-        `${this.#getModelName()} record ${recordKey} cannot set property ${property}.`
+        `${this.#getModelName()} record ${recordId} cannot set property ${property}.`
       );
     // Throw an error when trying to set a method.
     if (this.#hasMethod(property))
       throw new TypeError(
-        `${this.#getModelName()} record ${recordKey} cannot set method ${property}.`
+        `${this.#getModelName()} record ${recordId} cannot set method ${property}.`
       );
     // Validate and set field, warn if field is not defined
     /* istanbul ignore else*/
@@ -137,7 +137,7 @@ class RecordHandler {
           !validator(recordValue, otherRecords)
         )
           throw new RangeError(
-            `${this.#getModelName()} record with key ${recordKey} failed validation for ${validatorName}.`
+            `${this.#getModelName()} record with id ${recordId} failed validation for ${validatorName}.`
           );
       });
     } else {
@@ -151,7 +151,7 @@ class RecordHandler {
       this.#getValidators().forEach((validator, validatorName) => {
         if (!validator(recordValue, otherRecords))
           throw new RangeError(
-            `${this.#getModelName()} record with key ${recordKey} failed validation for ${validatorName}.`
+            `${this.#getModelName()} record with id ${recordId} failed validation for ${validatorName}.`
           );
       });
     }
@@ -190,17 +190,17 @@ class RecordHandler {
     return () => object;
   }
 
-  static #validateNewRecordKey = (modelName, recordKey, records) => {
-    let newRecordKey = recordKey;
+  static #validateNewRecordId = (modelName, id, records) => {
+    let newRecordId = id;
 
-    if (!key(newRecordKey))
+    if (!recordId(newRecordId))
       throw new TypeError(`${modelName} record has invalid id.`);
 
-    if (records.has(newRecordKey))
+    if (records.has(newRecordId))
       throw new DuplicationError(
-        `${modelName} record with key ${newRecordKey} already exists.`
+        `${modelName} record with id ${newRecordId} already exists.`
       );
-    return newRecordKey;
+    return newRecordId;
   };
 
   /*  ======  Utility methods  ======  */
@@ -217,11 +217,11 @@ class RecordHandler {
     return this.#model[$validators];
   }
 
-  #isModelKey(property) {
+  #isRecordId(property) {
     return property === 'id';
   }
 
-  #getKeyValue(record) {
+  getRecordId(record) {
     return record[$recordValue].id;
   }
 

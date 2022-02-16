@@ -140,7 +140,6 @@ describe('Field', () => {
       number: 0,
       string: '',
       date: new Date(),
-      stringOrNumber: '',
       booleanArray: [],
       numberArray: [],
       stringArray: [],

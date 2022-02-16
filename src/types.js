@@ -83,7 +83,6 @@ export const standardTypes = {
   number: { type: isNumber },
   string: { type: isString },
   date: { type: isDate },
-  stringOrNumber: { type: or(isString, isNumber) },
   booleanArray: { type: isArrayOf(isBoolean) },
   numberArray: { type: isArrayOf(isNumber) },
   stringArray: { type: isArrayOf(isString) },

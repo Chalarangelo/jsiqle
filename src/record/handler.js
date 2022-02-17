@@ -42,27 +42,9 @@ class RecordHandler {
       recordData.id,
       this.#model.records
     );
-    // Clone record data, check for extra properties
+    // Clone record data
     const clonedRecord = deepClone(recordData);
-    const extraProperties = Object.keys(clonedRecord).filter(
-      property => !this.#hasField(property) && !this.#isRecordId(property)
-    );
-    if (extraProperties.length > 0) {
-      console.warn(
-        `${modelName} record has extra fields: ${extraProperties.join(', ')}.`
-      );
-    }
-    // Create record with id and extra properties only
-    const newRecord = new Record(
-      {
-        id: newRecordId,
-        ...extraProperties.reduce(
-          (obj, property) => ({ ...obj, [property]: clonedRecord[property] }),
-          {}
-        ),
-      },
-      this
-    );
+    const newRecord = new Record({ id: newRecordId }, this);
     // Set fields and skip validation
     this.#getFieldNames().forEach(field => {
       this.set(newRecord, field, clonedRecord[field], newRecord, true);
@@ -140,9 +122,6 @@ class RecordHandler {
             `${this.#getModelName()} record with id ${recordId} failed validation for ${validatorName}.`
           );
       });
-    } else {
-      console.warn(`${this.#model.name} record has extra field: ${property}.`);
-      recordValue[property] = value;
     }
     // Perform model validations
     // The last argument, `skipValidation`, is used to skip validation

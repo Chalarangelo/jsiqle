@@ -2,7 +2,7 @@ import symbols from 'src/symbols';
 import { ValidationError } from 'src/errors';
 import { Validator } from 'src/validator';
 import { validateName, capitalize } from 'src/utils';
-import types, { standardTypes } from 'src/types';
+import { isUndefined, isOptional, isEnum, standardTypes } from 'src/types';
 
 const { $defaultValue, $validators } = symbols;
 
@@ -51,11 +51,11 @@ class Field {
   static #validateType(type) {
     if (typeof type !== 'function')
       throw new TypeError('Field type must be a function.');
-    return types.optional(type);
+    return isOptional(type);
   }
 
   static #validateDefaultValue(defaultValue, type) {
-    if (types.undefined(defaultValue)) return null;
+    if (isUndefined(defaultValue)) return null;
     if (!type(defaultValue))
       throw new ValidationError('Default value must be valid.');
     return defaultValue;
@@ -87,7 +87,6 @@ Object.entries(standardTypes).forEach(([typeName, standardType]) => {
 });
 
 // Enum is special, handle it separately
-Field.enum = ({ name, values }) =>
-  new Field({ name, type: types.enum(...values) });
+Field.enum = ({ name, values }) => new Field({ name, type: isEnum(...values) });
 
 export { Field };

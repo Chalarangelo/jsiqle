@@ -1,6 +1,6 @@
 import Record from './record';
 import { DuplicationError } from 'src/errors';
-import types, { recordId } from 'src/types';
+import { isUndefined, recordId } from 'src/types';
 import symbols from 'src/symbols';
 import { deepClone } from 'src/utils';
 
@@ -142,7 +142,7 @@ class RecordHandler {
   static #setRecordField(modelName, record, field, value, isRelationship) {
     // Set the default value if the field is null or undefined
     const recordValue =
-      !isRelationship && types.undefined(value) ? field[$defaultValue] : value;
+      !isRelationship && isUndefined(value) ? field[$defaultValue] : value;
     if (!isRelationship && !field.typeCheck(recordValue))
       // Throw an error if the field value is invalid
       throw new TypeError(

@@ -39,9 +39,6 @@ describe('Serializer', () => {
           specialDescription: item => {
             return item.description + '!!';
           },
-          children: item => {
-            return item.children.map(child => child.prettyName);
-          },
           customDescription: (item, { prefix }) => {
             return prefix + item.description;
           },
@@ -74,12 +71,6 @@ describe('Serializer', () => {
         const object = {
           name: 'myItem',
           description: 'my description',
-          children: [
-            {
-              name: 'myChild',
-              prettyName: 'my pretty child',
-            },
-          ],
         };
 
         const serialized = serializer.serialize(object, { prefix: 'prefix' });
@@ -88,7 +79,6 @@ describe('Serializer', () => {
           regularDescription: 'my description',
           description: 'my description!!',
           customDescription: 'prefixmy description',
-          children: ['my pretty child'],
         });
       });
     });
@@ -99,22 +89,10 @@ describe('Serializer', () => {
         const object1 = {
           name: 'myItem1',
           description: 'my description',
-          children: [
-            {
-              name: 'myChild',
-              prettyName: 'my pretty child',
-            },
-          ],
         };
         const object2 = {
           name: 'myItem2',
           description: 'my description',
-          children: [
-            {
-              name: 'myChild',
-              prettyName: 'my pretty child',
-            },
-          ],
         };
 
         const serialized = serializer.serializeArray([object1, object2], {
@@ -126,14 +104,12 @@ describe('Serializer', () => {
             regularDescription: 'my description',
             description: 'my description!!',
             customDescription: 'prefixmy description',
-            children: ['my pretty child'],
           },
           {
             name: 'myItem2',
             regularDescription: 'my description',
             description: 'my description!!',
             customDescription: 'prefixmy description',
-            children: ['my pretty child'],
           },
         ]);
       });
@@ -146,10 +122,6 @@ describe('Serializer', () => {
           fields: {
             name: 'string',
             description: 'string',
-            children: {
-              type: 'objectArray',
-              defaultValue: [],
-            },
           },
         });
         model.createRecord({
@@ -180,7 +152,6 @@ describe('Serializer', () => {
             regularDescription: 'description of myItem1',
             description: 'description of myItem1!!',
             customDescription: 'prefixdescription of myItem1',
-            children: [],
           },
         });
       });

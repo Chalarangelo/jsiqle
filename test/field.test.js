@@ -1,5 +1,5 @@
 import { Field } from 'src/field';
-import types, { standardTypes } from 'src/types';
+import { standardTypes } from 'src/types';
 import symbols from 'src/symbols';
 
 const { $defaultValue, $validators } = symbols;
@@ -101,36 +101,6 @@ describe('Field', () => {
         expect(validator({ myField: 'test a' }, [])).toBe(true);
       });
     });
-
-    // Indirectly cover any leftover types
-    describe('with "objectOf" type', () => {
-      beforeEach(() => {
-        field = new Field({
-          name: 'myField',
-          type: types.objectOf(types.number),
-        });
-      });
-
-      it('correctly checks values based on the given type', () => {
-        expect(field.typeCheck({ a: 1, b: 2 })).toBe(true);
-        expect(field.typeCheck({ a: '1', b: 2 })).toBe(false);
-      });
-    });
-
-    describe('with "object" type', () => {
-      beforeEach(() => {
-        field = new Field({
-          name: 'myField',
-          type: types.object({ name: types.string }),
-        });
-      });
-
-      it('correctly checks values based on the given type', () => {
-        expect(field.typeCheck({ name: 'a' })).toBe(true);
-        expect(field.typeCheck({ name: 1 })).toBe(false);
-        expect(field.typeCheck({ name: 'a', b: 1 })).toBe(false);
-      });
-    });
   });
 
   describe('standard types', () => {
@@ -144,12 +114,6 @@ describe('Field', () => {
       numberArray: [],
       stringArray: [],
       dateArray: [],
-      object: {},
-      booleanObject: { a: true },
-      numberObject: {},
-      stringObject: {},
-      dateObject: {},
-      objectArray: [],
     };
 
     test.each(standardTypesEntries)('%s is defined', typeName => {

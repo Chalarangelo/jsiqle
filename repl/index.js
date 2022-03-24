@@ -16,6 +16,7 @@ const schema = jsiqle.create({
       fields: {
         description: {
           type: 'string',
+          defaultValue: 'a description',
           validators: {
             unique: true,
             minLength: 5,

@@ -2,7 +2,6 @@ import Record from './record';
 import { DuplicationError } from 'src/errors';
 import { isUndefined, recordId } from 'src/types';
 import symbols from 'src/symbols';
-import { deepClone } from 'src/utils';
 
 const {
   $fields,
@@ -42,13 +41,18 @@ class RecordHandler {
       recordData.id,
       this.#model.records
     );
-    // Clone record data
-    const clonedRecord = deepClone(recordData);
-    const newRecord = new Record({ id: newRecordId }, this);
-    // Set fields and skip validation
-    this.#getFieldNames().forEach(field => {
-      this.set(newRecord, field, clonedRecord[field], newRecord, true);
-    });
+    // TODO: Check that dates are not messed up
+    const newRecordData = this.#getFieldNames().reduce(
+      (data, fieldName) => {
+        const value = recordData[fieldName];
+        if (value !== undefined) {
+          data[fieldName] = Array.isArray(value) ? [...value] : value;
+        } else data[fieldName] = this.#model.templateRecord[fieldName];
+        return data;
+      },
+      { id: newRecordId }
+    );
+    const newRecord = new Record(newRecordData, this);
     // Validate record just once
     this.#getValidators().forEach((validator, validatorName) => {
       if (!validator(newRecord, this.#model.records))

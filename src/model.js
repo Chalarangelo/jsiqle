@@ -24,6 +24,7 @@ const {
   $removeScope,
   $instances,
   $handleExperimentalAPIMessage,
+  $defaultValue,
 } = symbols;
 
 const allStandardTypes = [...Object.keys(standardTypes), 'enum'];
@@ -37,6 +38,7 @@ export class Model extends EventEmitter {
   #relationships;
   #validators;
   #cachedProperties;
+  #templateRecord;
 
   static #instances = new Map();
 
@@ -260,6 +262,32 @@ export class Model extends EventEmitter {
     return true;
   }
 
+  // TODO: Make internal
+  generateTemplateRecord() {
+    // TODO: Validate if this deep clones everything correctly
+    const record = {};
+    this.#fields.forEach((field, name) => {
+      if (!this.#relationships.has(`${name}.${name}`)) {
+        let defaultValue = field[$defaultValue];
+        Object.defineProperty(record, name, {
+          get() {
+            return Array.isArray(defaultValue)
+              ? [...defaultValue]
+              : defaultValue;
+          },
+        });
+      } else {
+        Object.defineProperty(record, name, {
+          get() {
+            return undefined;
+          },
+        });
+      }
+    });
+    this.#templateRecord = record;
+    return record;
+  }
+
   // Record operations do not emit 'change' events by design
   createRecord(record) {
     this.emit('beforeCreateRecord', { record, model: this });
@@ -421,6 +449,11 @@ export class Model extends EventEmitter {
       },
       model: this,
     });
+  }
+
+  // TODO: Make internal
+  get templateRecord() {
+    return this.#templateRecord;
   }
 
   // Private

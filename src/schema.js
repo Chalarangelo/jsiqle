@@ -98,6 +98,11 @@ export class Schema extends EventEmitter {
         );
     });
 
+    models.forEach(model => {
+      const modelRecord = this.getModel(model.name);
+      modelRecord.generateTemplateRecord();
+    });
+
     // TODO: V2 enhancements
     // Replace `schemaData` with the getter for `#schemaObject`
     serializers.forEach(serializer => {

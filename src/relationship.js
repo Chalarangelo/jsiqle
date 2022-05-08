@@ -221,9 +221,7 @@ export class Relationship {
   static #validateModelParams(modelData) {
     const model = Relationship.#validateModel(modelData);
     const name =
-      typeof modelData === 'string'
-        ? null
-        : validateName('Field', modelData.name);
+      typeof modelData === 'string' ? null : validateName(modelData.name);
     if (name !== null && model[$fields].has(name))
       throw new DuplicationError(
         `Field ${name} already exists in ${model.name}.`

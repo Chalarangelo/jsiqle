@@ -69,12 +69,6 @@ describe('Model', () => {
     expect(
       () => new Model({ ...modelParams, properties: { aProperty: 'hi' } })
     ).toThrow();
-    expect(
-      () => new Model({ ...modelParams, properties: { id: () => null } })
-    ).toThrow();
-    expect(
-      () => new Model({ ...modelParams, properties: { '2d': () => null } })
-    ).toThrow();
   });
 
   it('throws if "scopes" contain invalid values', () => {
@@ -169,15 +163,6 @@ describe('Model', () => {
 
     beforeEach(() => {
       model = new Model({ name: 'aModel' });
-    });
-
-    it('throws if "fieldOptions" are invalid', () => {
-      expect(() => model.addField(null)).toThrow();
-      expect(() => model.addField(2)).toThrow();
-      expect(() => model.addField({ name: 'aField' })).toThrow();
-      expect(() => model.addField({ name: 'id', type: 'string' })).toThrow();
-      expect(() => model.addField({ name: 'aField', type: 'test' })).toThrow();
-      expect(() => model.addField({ name: '2f', type: 'string' })).toThrow();
     });
 
     it('creates the appropriate field', () => {

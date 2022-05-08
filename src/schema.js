@@ -41,7 +41,7 @@ export class Schema {
     serializers = [],
     config = {},
   } = {}) {
-    this.#name = validateName('Schema', name);
+    this.#name = validateName(name);
     this.#models = new Map();
     this.#serializers = new Map();
     Schema.#parseConfig(config);
@@ -53,6 +53,22 @@ export class Schema {
         Schema.#separateModelProperties(model);
       if (Object.keys(lazyProperties).length)
         lazyPropertyMap[modelData.name] = lazyProperties;
+
+      // Perform name validation for fields, properties and methods here
+      // to evaluate lazy properties early on and exit if something is wrong.
+      const { fields = {}, properties = {}, methods = {} } = modelData;
+      const names = [
+        ...Object.keys(fields),
+        ...Object.keys(properties),
+        ...Object.keys(methods),
+      ];
+      const uniqueNames = new Set(names);
+      if (uniqueNames.size !== names.length)
+        throw new Error(
+          `Model ${modelData.name} has duplicate field, property or method names.`
+        );
+      names.forEach(name => validateName(name));
+
       this.createModel(modelData);
     });
     relationships.forEach(relationship =>

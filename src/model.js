@@ -1,4 +1,3 @@
-import EventEmitter from 'events';
 import { Schema } from 'src/schema';
 import { Field } from 'src/field';
 import { RecordSet, RecordHandler } from 'src/record';
@@ -28,7 +27,7 @@ const {
 
 const allStandardTypes = [...Object.keys(standardTypes), 'enum'];
 
-export class Model extends EventEmitter {
+export class Model {
   #records;
   #recordHandler;
   #fields;
@@ -47,11 +46,7 @@ export class Model extends EventEmitter {
     methods = {},
     scopes = {},
     validators = {},
-    // TODO: V2 Enhancements
-    // Adding a hooks parameter would be an interesting idea. There's a blind
-    // spot currently where we can't listen for events on model creation.
   } = {}) {
-    super();
     this.name = validateName('Model', name);
 
     if (Model.#instances.has(name))
@@ -107,7 +102,6 @@ export class Model extends EventEmitter {
   }
 
   addField(fieldOptions) {
-    this.emit('beforeAddField', { field: fieldOptions, model: this });
     const field = Model.#parseField(this.name, fieldOptions, [
       'id',
       ...this.#fields.keys(),
@@ -115,16 +109,10 @@ export class Model extends EventEmitter {
       ...this.#methods.keys(),
     ]);
     this.#fields.set(fieldOptions.name, field);
-    this.emit('fieldAdded', { field, model: this });
-    this.emit('change', { type: 'fieldAdded', field, model: this });
     return field;
   }
 
   addProperty({ name, body, cache = false }) {
-    this.emit('beforeAddProperty', {
-      property: { name, body },
-      model: this,
-    });
     const propertyName = validateName('Property', name);
     this.#properties.set(
       propertyName,
@@ -136,22 +124,9 @@ export class Model extends EventEmitter {
       ])
     );
     if (cache) this.#cachedProperties.add(propertyName);
-    this.emit('propertyAdded', {
-      property: { name: propertyName, body },
-      model: this,
-    });
-    this.emit('change', {
-      type: 'propertyAdded',
-      property: { name: propertyName, body },
-      model: this,
-    });
   }
 
   addMethod(name, method) {
-    this.emit('beforeAddMethod', {
-      method: { name, body: method },
-      model: this,
-    });
     const methodName = validateName('Method', name);
     this.#methods.set(
       methodName,
@@ -162,33 +137,11 @@ export class Model extends EventEmitter {
         ...this.#methods.keys(),
       ])
     );
-    this.emit('methodAdded', {
-      method: { name: methodName, body: method },
-      model: this,
-    });
-    this.emit('change', {
-      type: 'methodAdded',
-      method: { name: methodName, body: method },
-      model: this,
-    });
   }
 
   addScope(name, scope, sortFn) {
-    this.emit('beforeAddScope', {
-      scope: { name, body: scope },
-      model: this,
-    });
     const scopeName = validateName('Scope', name);
     this.#records[$addScope](scopeName, scope, sortFn);
-    this.emit('scopeAdded', {
-      scope: { name: scopeName, body: scope },
-      model: this,
-    });
-    this.emit('change', {
-      type: 'scopeAdded',
-      scope: { name: scopeName, body: scope },
-      model: this,
-    });
   }
 
   removeScope(name) {
@@ -196,29 +149,11 @@ export class Model extends EventEmitter {
       !Model.#validateContains(this.name, 'Scope', name, this.#records[$scopes])
     )
       return false;
-    const scope = this.#records[$scopes].get(name);
-    this.emit('beforeRemoveScope', {
-      scope: { name, body: scope },
-      model: this,
-    });
     this.#records[$removeScope](name);
-    this.emit('scopeRemoved', {
-      scope: { name },
-      model: this,
-    });
-    this.emit('change', {
-      type: 'scopeRemoved',
-      scope: { name, body: scope },
-      model: this,
-    });
     return true;
   }
 
   addValidator(name, validator) {
-    this.emit('beforeAddValidator', {
-      validator: { name, body: validator },
-      model: this,
-    });
     // Validators are not name-validated by design.
     this.#validators.set(
       name,
@@ -226,15 +161,6 @@ export class Model extends EventEmitter {
         ...this.#validators.keys(),
       ])
     );
-    this.emit('validatorAdded', {
-      validator: { name, body: validator },
-      model: this,
-    });
-    this.emit('change', {
-      type: 'validatorAdded',
-      validator: { name, body: validator },
-      model: this,
-    });
   }
 
   removeValidator(name) {
@@ -242,30 +168,15 @@ export class Model extends EventEmitter {
       !Model.#validateContains(this.name, 'Validator', name, this.#validators)
     )
       return false;
-    const validator = this.#validators.get(name);
-    this.emit('beforeRemoveValidator', {
-      validator: { name, body: validator },
-      model: this,
-    });
     this.#validators.delete(name);
-    this.emit('validatorRemoved', {
-      validator: { name },
-      model: this,
-    });
-    this.emit('change', {
-      type: 'validatorRemoved',
-      validator: { name, body: validator },
-      model: this,
-    });
     return true;
   }
 
-  // Record operations do not emit 'change' events by design
+  // TODO: V2 Enhancements
+  // Connect all record events to an event emitter
   createRecord(record) {
-    this.emit('beforeCreateRecord', { record, model: this });
     const [newRecordId, newRecord] = this.#recordHandler.createRecord(record);
     this.#records.set(newRecordId, newRecord);
-    this.emit('recordCreated', { newRecord, model: this });
     return newRecord;
   }
 
@@ -274,13 +185,7 @@ export class Model extends EventEmitter {
       console.warn(`Record ${recordId} does not exist.`);
       return false;
     }
-    const record = this.#records.get(recordId);
-    this.emit('beforeRemoveRecord', { record, model: this });
     this.#records.delete(recordId);
-    this.emit('recordRemoved', {
-      record: { id: recordId },
-      model: this,
-    });
     return true;
   }
 
@@ -290,17 +195,8 @@ export class Model extends EventEmitter {
     if (!this.#records.has(recordId))
       throw new ReferenceError(`Record ${recordId} does not exist.`);
     const oldRecord = this.#records.get(recordId);
-    this.emit('beforeUpdateRecord', {
-      record: oldRecord,
-      newRecord: { id: recordId, ...record },
-      model: this,
-    });
     Object.entries(record).forEach(([fieldName, fieldValue]) => {
       oldRecord[fieldName] = fieldValue;
-    });
-    this.emit('recordUpdated', {
-      record: oldRecord,
-      model: this,
     });
     return oldRecord;
   }
@@ -348,12 +244,8 @@ export class Model extends EventEmitter {
   }
 
   [$addRelationshipAsField](relationship) {
-    const { name, type, fieldName, field } = relationship[$getField]();
+    const { name, fieldName, field } = relationship[$getField]();
     const relationshipName = `${name}.${fieldName}`;
-    this.emit('beforeAddRelationship', {
-      relationship: { name, type },
-      model: this,
-    });
     if (
       [
         'id',
@@ -370,28 +262,11 @@ export class Model extends EventEmitter {
 
     this.#fields.set(fieldName, field);
     this.#relationships.set(relationshipName, relationship);
-
-    this.emit('relationshipAdded', {
-      relationship: { name, type },
-      model: this,
-    });
-    this.emit('change', {
-      type: 'relationshipAdded',
-      relationship: {
-        relationship: { name, type },
-        model: this,
-      },
-      model: this,
-    });
   }
 
   [$addRelationshipAsProperty](relationship) {
-    const { name, type, propertyName, property } = relationship[$getProperty]();
+    const { name, propertyName, property } = relationship[$getProperty]();
     const relationshipName = `${name}.${propertyName}`;
-    this.emit('beforeAddRelationship', {
-      relationship: { name, type },
-      model: this,
-    });
     if (
       [
         'id',
@@ -408,19 +283,6 @@ export class Model extends EventEmitter {
 
     this.#properties.set(propertyName, property);
     this.#relationships.set(relationshipName, relationship);
-
-    this.emit('relationshipAdded', {
-      relationship: { name, type },
-      model: this,
-    });
-    this.emit('change', {
-      type: 'relationshipAdded',
-      relationship: {
-        relationship: { name, type },
-        model: this,
-      },
-      model: this,
-    });
   }
 
   // Private

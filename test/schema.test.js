@@ -344,6 +344,16 @@ describe('Schema', () => {
     it('creates the appropriate serializer', () => {
       expect(schema.getSerializer('aSerializer')).toBe(serializer);
     });
+
+    it('throws if the serializer name is invalid', () => {
+      expect(() => schema.createSerializer({ name: 1 })).toThrow();
+      expect(() => schema.createSerializer({ name: null })).toThrow();
+      expect(() => schema.createSerializer({ name: undefined })).toThrow();
+      expect(() => schema.createSerializer({ name: '' })).toThrow();
+      expect(() => schema.createSerializer({ name: ' ' })).toThrow();
+      expect(() => schema.createSerializer({ name: '1' })).toThrow();
+      expect(() => schema.createSerializer({ name: 'a&1*b' })).toThrow();
+    });
   });
 
   describe('getSerializer', () => {

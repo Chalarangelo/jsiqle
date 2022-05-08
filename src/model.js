@@ -4,7 +4,7 @@ import { RecordSet, RecordHandler } from 'src/record';
 import { NameError, DuplicationError } from 'src/errors';
 import symbols from 'src/symbols';
 import { standardTypes } from 'src/types';
-import { validateObjectWithUniqueName, validateName } from 'src/utils';
+import { validateName } from 'src/utils';
 
 const {
   $fields,
@@ -47,7 +47,7 @@ export class Model {
     scopes = {},
     validators = {},
   } = {}) {
-    this.name = validateName('Model', name);
+    this.name = validateName(name);
 
     if (Model.#instances.has(name))
       throw new DuplicationError(`A model named ${name} already exists.`);
@@ -102,45 +102,41 @@ export class Model {
   }
 
   addField(fieldOptions) {
-    const field = Model.#parseField(this.name, fieldOptions, [
-      'id',
-      ...this.#fields.keys(),
-      ...this.#properties.keys(),
-      ...this.#methods.keys(),
-    ]);
-    this.#fields.set(fieldOptions.name, field);
+    const { type, name } = fieldOptions;
+    if (!['string', 'function'].includes(typeof type))
+      throw new TypeError(`Field ${type} is not an string or a function.`);
+    const isStandardType = allStandardTypes.includes(type);
+    let field;
+
+    if (isStandardType) {
+      field = Field[type](fieldOptions);
+    } else if (typeof type === 'function') {
+      Schema[$handleExperimentalAPIMessage](
+        `The provided type for ${name} is not part of the standard types. Function types are experimental and may go away in a later release.`
+      );
+      field = new Field(fieldOptions);
+    } else {
+      throw new TypeError(`Field ${type} is not a valid type.`);
+    }
+    this.#fields.set(name, field);
     return field;
   }
 
   addProperty({ name, body, cache = false }) {
-    const propertyName = validateName('Property', name);
-    this.#properties.set(
-      propertyName,
-      Model.#validateFunction('Property', name, body, [
-        'id',
-        ...this.#fields.keys(),
-        ...this.#properties.keys(),
-        ...this.#methods.keys(),
-      ])
-    );
-    if (cache) this.#cachedProperties.add(propertyName);
+    if (typeof body !== 'function')
+      throw new TypeError(`Property ${name} is not a function.`);
+    this.#properties.set(name, body);
+    if (cache) this.#cachedProperties.add(name);
   }
 
   addMethod(name, method) {
-    const methodName = validateName('Method', name);
-    this.#methods.set(
-      methodName,
-      Model.#validateFunction('Method', name, method, [
-        'id',
-        ...this.#fields.keys(),
-        ...this.#properties.keys(),
-        ...this.#methods.keys(),
-      ])
-    );
+    if (typeof method !== 'function')
+      throw new TypeError(`Method ${name} is not a function.`);
+    this.#methods.set(name, method);
   }
 
   addScope(name, scope, sortFn) {
-    const scopeName = validateName('Scope', name);
+    const scopeName = validateName(name);
     this.#records[$addScope](scopeName, scope, sortFn);
   }
 
@@ -154,13 +150,11 @@ export class Model {
   }
 
   addValidator(name, validator) {
-    // Validators are not name-validated by design.
-    this.#validators.set(
-      name,
-      Model.#validateFunction('Validator', name, validator, [
-        ...this.#validators.keys(),
-      ])
-    );
+    if (typeof validator !== 'function')
+      throw new TypeError(`Validator ${name} is not a function.`);
+    if (this.#validators.has(name))
+      throw new DuplicationError(`Validator ${name} already exists.`);
+    this.#validators.set(name, validator);
   }
 
   removeValidator(name) {
@@ -287,28 +281,6 @@ export class Model {
 
   // Private
 
-  static #parseField(modelName, field, restrictedNames) {
-    validateObjectWithUniqueName(
-      {
-        objectType: 'Field',
-        parentType: 'Model',
-        parentName: modelName,
-      },
-      field,
-      restrictedNames
-    );
-
-    const isStandardType = allStandardTypes.includes(field.type);
-
-    if (isStandardType) return Field[field.type](field);
-    else if (typeof field.type === 'function') {
-      Schema[$handleExperimentalAPIMessage](
-        `The provided type for ${field.name} is not part of the standard types. Function types are experimental and may go away in a later release.`
-      );
-    }
-    return new Field(field);
-  }
-
   static #parseScope(scope) {
     if (typeof scope === 'function') return [scope];
     if (typeof scope === 'object') {
@@ -326,23 +298,6 @@ export class Model {
     throw new TypeError(
       `The provided scope is not a function or valid object.`
     );
-  }
-
-  static #validateFunction(
-    callbackType,
-    callbackName,
-    callback,
-    restrictedNames
-  ) {
-    if (typeof callback !== 'function')
-      throw new TypeError(`${callbackType} ${callbackName} is not a function.`);
-
-    if (restrictedNames.includes(callbackName))
-      throw new DuplicationError(
-        `${callbackType} ${callbackName} already exists.`
-      );
-
-    return callback;
   }
 
   static #validateContains(modelName, objectType, objectName, objects) {

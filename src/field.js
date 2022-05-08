@@ -1,7 +1,7 @@
 import symbols from 'src/symbols';
 import { ValidationError } from 'src/errors';
 import { Validator } from 'src/validator';
-import { validateName, capitalize } from 'src/utils';
+import { capitalize } from 'src/utils';
 import { isUndefined, isOptional, isEnum, standardTypes } from 'src/types';
 
 const { $defaultValue, $validators } = symbols;
@@ -13,7 +13,7 @@ class Field {
   #validators;
 
   constructor({ name, type, defaultValue = null, validators = {} }) {
-    this.#name = validateName(name);
+    this.#name = name;
     this.#type = Field.#validateType(type);
     this.#defaultValue = Field.#validateDefaultValue(defaultValue, this.#type);
     this.#validators = new Map();

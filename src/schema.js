@@ -182,12 +182,13 @@ export class Schema {
    * @returns The newly created serializer.
    */
   createSerializer(serializerData) {
+    const serializerName = validateName(serializerData.name);
     const serializer = Schema.#parseSerializer(
       this.#name,
       serializerData,
       this.#serializers
     );
-    this.#serializers.set(serializer.name, serializer);
+    this.#serializers.set(serializerName, serializer);
     return serializer;
   }
 

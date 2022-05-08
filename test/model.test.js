@@ -30,15 +30,6 @@ describe('Model', () => {
     Model[$instances].clear();
   });
 
-  it('throws if "name" is invalid', () => {
-    expect(() => new Model({ name: null })).toThrow();
-    expect(() => new Model({ name: undefined })).toThrow();
-    expect(() => new Model({ name: '' })).toThrow();
-    expect(() => new Model({ name: ' ' })).toThrow();
-    expect(() => new Model({ name: '1' })).toThrow();
-    expect(() => new Model({ name: 'a&1*b' })).toThrow();
-  });
-
   it('throws if a model with the same name already exists', () => {
     // eslint-disable-next-line no-unused-vars
     const model = new Model({ name: 'aModel' });
@@ -55,9 +46,6 @@ describe('Model', () => {
     ).toThrow();
     expect(
       () => new Model({ ...modelParams, fields: { id: { type: 'test' } } })
-    ).toThrow();
-    expect(
-      () => new Model({ ...modelParams, fields: { '2f': { type: 'string' } } })
     ).toThrow();
   });
 

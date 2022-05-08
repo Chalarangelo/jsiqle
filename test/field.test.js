@@ -5,15 +5,6 @@ import symbols from 'src/symbols';
 const { $defaultValue, $validators } = symbols;
 
 describe('Field', () => {
-  it('throws if "name" is invalid', () => {
-    expect(() => new Field({ name: null })).toThrow();
-    expect(() => new Field({ name: undefined })).toThrow();
-    expect(() => new Field({ name: '' })).toThrow();
-    expect(() => new Field({ name: ' ' })).toThrow();
-    expect(() => new Field({ name: '1' })).toThrow();
-    expect(() => new Field({ name: 'a&1*b' })).toThrow();
-  });
-
   it('throws if "type" is invalid', () => {
     expect(() => new Field({ type: null })).toThrow();
     expect(() => new Field({ type: undefined })).toThrow();

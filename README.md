@@ -1,6 +1,6 @@
 # @jsiqle/core
 
-JavaScript In-memory Query Language with Events.
+JavaScript In-memory Query Language.
 
 ## Installation
 
@@ -676,37 +676,6 @@ Additionally, record sets implement the following serialization properties:
 - `RecordSet.prototype.toFlatArray()`: Returns an array of objects representing the records contained in the record set.
 - `RecordSet.prototype.toObject()`: Returns an object of records representing the key-value pairs of the records in the record set.
 - `RecordSet.prototype.toFlatObject()`: Returns an object of objects representing the key-value pairs of the records in the record set.
-
-### Listening for events
-
-Both the schema and its models are event emitters, allowing event listeners to be added to them as necessary.
-
-```js
-MySchema.addEventListener('change', data => console.log(data));
-MyModel.addEventListener('change', data => console.log(data));
-```
-
-All emitted events contain an object argument with the related data in appropriate keys, as well as a `schema` key with the schema itself. Events prefixed with `before` contain the raw data passed to the related method call, whereas events emitted after a method finishes contain the result of the method. `change` events are emitted for all non-`before` events except `got` and have the same arguments, as well as a `type` argument that specifies the event type. `change` events are also emitted as wrappers of model `change` events with the model event `type` prefixed (e.g. `modelPropertyAdded` instead of `propertyAdded`).
-
-#### Model events
-
-Model objects emit the following events:
-
-```
-beforeAddField fieldAdded
-beforeAddProperty propertyAdded
-beforeAddScope scopeAdded
-beforeRemoveScope scopeRemoved
-beforeAddValidator validatorAdded
-beforeRemoveValidator validatorRemoved
-beforeCreateRecord recordCreated
-beforeRemoveRecord recordRemoved
-beforeUpdateRecord recordUpdated
-beforeAddRelationship relationshipAdded
-change
-```
-
-All emitted events contain an object argument with the related data in appropriate keys, as well as a `model` key with the model itself. Events prefixed with `before` contain the raw data passed to the related method call, whereas events emitted after a method finishes contain the result of the method. `change` events are emitted for all non-`before` events except `recordCreated`, `recordRemoved` and `recordUpdated` and have the same arguments, as well as a `type` argument that specifies the event type.
 
 ### Naming conventions
 

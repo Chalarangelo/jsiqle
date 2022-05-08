@@ -85,22 +85,21 @@ describe('validateObjectWithUniqueName', () => {
 
 describe('validateName', () => {
   it('returns if name is valid', () => {
-    expect(() => validateName('Field', 'test')).not.toThrow();
-    expect(() => validateName('Field', 'test1')).not.toThrow();
-    expect(() => validateName('Field', '_test')).not.toThrow();
-    expect(() => validateName('Other', 'toString')).not.toThrow();
+    expect(() => validateName('test')).not.toThrow();
+    expect(() => validateName('test1')).not.toThrow();
+    expect(() => validateName('_test')).not.toThrow();
   });
 
   it('throws if name is invalid', () => {
-    expect(() => validateName('Field', 1)).toThrow();
-    expect(() => validateName('Field', '')).toThrow();
-    expect(() => validateName('Field', undefined)).toThrow();
-    expect(() => validateName('Field', '1test')).toThrow();
-    expect(() => validateName('Field', 'test.')).toThrow();
-    expect(() => validateName('Field', 'test test')).toThrow();
-    expect(() => validateName('Field', 'test-test')).toThrow();
-    expect(() => validateName('Field', 'test/test')).toThrow();
-    expect(() => validateName('Field', 'test\\test')).toThrow();
-    expect(() => validateName('Field', 'toJSON')).toThrow();
+    expect(() => validateName(1)).toThrow();
+    expect(() => validateName('')).toThrow();
+    expect(() => validateName(undefined)).toThrow();
+    expect(() => validateName('1test')).toThrow();
+    expect(() => validateName('test.')).toThrow();
+    expect(() => validateName('test test')).toThrow();
+    expect(() => validateName('test-test')).toThrow();
+    expect(() => validateName('test/test')).toThrow();
+    expect(() => validateName('test\\test')).toThrow();
+    expect(() => validateName('toJSON')).toThrow();
   });
 });

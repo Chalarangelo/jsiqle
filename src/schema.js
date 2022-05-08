@@ -130,8 +130,9 @@ export class Schema {
    * @returns The newly created model.
    */
   createModel(modelData) {
+    const modelName = validateName(modelData.name);
     const model = Schema.#parseModel(this.#name, modelData, this.#models);
-    this.#models.set(model.name, model);
+    this.#models.set(modelName, model);
     return model;
   }
 

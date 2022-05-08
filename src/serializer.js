@@ -1,5 +1,4 @@
 import { DuplicationError } from 'src/errors';
-import { validateName } from 'src/utils';
 
 export class Serializer {
   #name;
@@ -7,9 +6,7 @@ export class Serializer {
   #methods;
 
   constructor({ name, attributes = [], methods = {} }) {
-    // TODO: V2 Enhancements
-    // This check here is not necessary. We might be able to get rid of it.
-    this.#name = validateName(name);
+    this.#name = name;
     this.#attributes = new Map();
     this.#methods = new Map();
 

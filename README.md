@@ -685,17 +685,6 @@ Both the schema and its models are event emitters, allowing event listeners to b
 MySchema.addEventListener('change', data => console.log(data));
 MyModel.addEventListener('change', data => console.log(data));
 ```
-#### Schema events
-
-The schema object emits the following events:
-
-```
-beforeCreateModel modelCreated
-beforeRemoveModel modelRemoved
-beforeCreateRelationship relationshipCreated
-beforeGet got
-change
-```
 
 All emitted events contain an object argument with the related data in appropriate keys, as well as a `schema` key with the schema itself. Events prefixed with `before` contain the raw data passed to the related method call, whereas events emitted after a method finishes contain the result of the method. `change` events are emitted for all non-`before` events except `got` and have the same arguments, as well as a `type` argument that specifies the event type. `change` events are also emitted as wrappers of model `change` events with the model event `type` prefixed (e.g. `modelPropertyAdded` instead of `propertyAdded`).
 

@@ -1,13 +1,8 @@
-import EventEmitter from 'events';
 import { Model } from 'src/model';
 import { Relationship } from 'src/relationship';
 import { Serializer } from 'src/serializer';
 import { ExperimentalAPIUsageError } from 'src/errors';
-import {
-  capitalize,
-  validateObjectWithUniqueName,
-  validateName,
-} from 'src/utils';
+import { validateObjectWithUniqueName, validateName } from 'src/utils';
 import symbols from 'src/symbols';
 
 const {
@@ -19,13 +14,12 @@ const {
 
 /**
  * A Schema is a collection of models.
- * @extends EventEmitter
  * @param {Object} options Schema options
  * @param {String} options.name The name of the schema
  * @param {Array<Object>} options.models An object containing initial models for
  * the schema.
  */
-export class Schema extends EventEmitter {
+export class Schema {
   #name;
   #models;
   #serializers;
@@ -47,7 +41,6 @@ export class Schema extends EventEmitter {
     serializers = [],
     config = {},
   } = {}) {
-    super();
     this.#name = validateName('Schema', name);
     this.#models = new Map();
     this.#serializers = new Map();
@@ -121,21 +114,8 @@ export class Schema extends EventEmitter {
    * @returns The newly created model.
    */
   createModel(modelData) {
-    this.emit('beforeCreateModel', { model: modelData, schema: this });
     const model = Schema.#parseModel(this.#name, modelData, this.#models);
-
     this.#models.set(model.name, model);
-
-    model.on('change', ({ type, ...eventData }) => {
-      this.emit('change', {
-        type: `model${capitalize(type)}`,
-        ...eventData,
-        schema: this,
-      });
-    });
-
-    this.emit('modelCreated', { model, schema: this });
-    this.emit('change', { type: 'modelCreated', model, schema: this });
     return model;
   }
 
@@ -153,9 +133,6 @@ export class Schema extends EventEmitter {
    * @param {String} name The name of the model to remove.
    */
   removeModel(name) {
-    const model = this.getModel(name);
-    this.emit('beforeRemoveModel', { model, schema: this });
-
     if (!this.#models.has(name))
       throw new ReferenceError(
         `Model ${name} does not exist in schema ${this.#name}.`
@@ -165,9 +142,6 @@ export class Schema extends EventEmitter {
 
     // TODO: V2 enhancements
     // Figure out a way to add cascade for relationships
-
-    this.emit('modelRemoved', { model: { name }, schema: this });
-    this.emit('change', { type: 'modelRemoved', model, schema: this });
   }
 
   /**
@@ -177,22 +151,11 @@ export class Schema extends EventEmitter {
    * @returns The newly created relationship.
    */
   createRelationship(relationshipData) {
-    this.emit('beforeCreateRelationship', {
-      relationship: relationshipData,
-      schema: this,
-    });
     const relationship = Schema.#applyRelationship(
       this.#name,
       relationshipData,
       this.#models
     );
-
-    this.emit('relationshipCreated', { relationship, schema: this });
-    this.emit('change', {
-      type: 'relationshipCreated',
-      relationship,
-      schema: this,
-    });
     return relationship;
   }
 
@@ -202,24 +165,12 @@ export class Schema extends EventEmitter {
    * @returns The newly created serializer.
    */
   createSerializer(serializerData) {
-    this.emit('beforeCreateSerializer', {
-      serializer: serializerData,
-      schema: this,
-    });
     const serializer = Schema.#parseSerializer(
       this.#name,
       serializerData,
       this.#serializers
     );
-
     this.#serializers.set(serializer.name, serializer);
-
-    this.emit('serializerCreated', { serializer, schema: this });
-    this.emit('change', {
-      type: 'serializerCreated',
-      serializer,
-      schema: this,
-    });
     return serializer;
   }
 
@@ -270,7 +221,6 @@ export class Schema extends EventEmitter {
    * @returns The value at the specified path.
    */
   get(pathName) {
-    this.emit('beforeGet', { pathName, schema: this });
     const [modelName, recordId, ...rest] = pathName.split('.');
     const model = this.getModel(modelName);
 
@@ -290,7 +240,6 @@ export class Schema extends EventEmitter {
       );
 
     const result = rest.reduce((acc, key) => acc[key], record);
-    this.emit('got', { pathName, result, schema: this });
     return result;
   }
 
@@ -407,9 +356,6 @@ export class Schema extends EventEmitter {
   // Add a mechanism here so that plugins can hook up to the schema via the
   // event API or other stuff. Generally, the Schema is the de facto entrypoint
   // of the library, so we should make sure that all plugins interface with it.
-  //
-  // Alternatively, we could have a wrapper around the Schema, which might be
-  // preferable as we can have multiple schemas and hook up events more easily.
   //
   // We also need a way to modularize and granularize the logging/erroring. A
   // wrapper would allow us to specify this across.

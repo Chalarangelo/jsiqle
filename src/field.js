@@ -13,7 +13,7 @@ class Field {
   #validators;
 
   constructor({ name, type, defaultValue = null, validators = {} }) {
-    this.#name = validateName('Field', name);
+    this.#name = validateName(name);
     this.#type = Field.#validateType(type);
     this.#defaultValue = Field.#validateDefaultValue(defaultValue, this.#type);
     this.#validators = new Map();

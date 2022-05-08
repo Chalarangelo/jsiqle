@@ -32,6 +32,86 @@ describe('Schema', () => {
     expect(() => Schema.create({ name: 'a&1*b' })).toThrow();
   });
 
+  it('throws if a model contains invalid or duplicate fields, properties or methods', () => {
+    expect(() =>
+      Schema.create({
+        name: 'test',
+        models: [
+          {
+            name: 'aModel',
+            fields: {
+              aField: 'string',
+              id: 'string',
+            },
+          },
+        ],
+        config: {
+          experimentalAPIMessages: 'off',
+        },
+      })
+    ).toThrow();
+
+    expect(() =>
+      Schema.create({
+        name: 'test',
+        models: [
+          {
+            name: 'aModel',
+            fields: {
+              aField: 'string',
+            },
+            properties: {
+              aProperty: 1,
+            },
+          },
+        ],
+        config: {
+          experimentalAPIMessages: 'off',
+        },
+      })
+    ).toThrow();
+
+    expect(() =>
+      Schema.create({
+        name: 'test',
+        models: [
+          {
+            name: 'aModel',
+            fields: {
+              aField: 'string',
+            },
+            methods: {
+              aMethod: null,
+            },
+          },
+        ],
+        config: {
+          experimentalAPIMessages: 'off',
+        },
+      })
+    ).toThrow();
+
+    expect(() =>
+      Schema.create({
+        name: 'test',
+        models: [
+          {
+            name: 'aModel',
+            fields: {
+              aField: 'string',
+            },
+            properties: {
+              aField: () => {},
+            },
+          },
+        ],
+        config: {
+          experimentalAPIMessages: 'off',
+        },
+      })
+    ).toThrow();
+  });
+
   describe('when arguments are valid', () => {
     let schema;
 

@@ -2,15 +2,6 @@ import { Serializer } from 'src/serializer';
 import { Model } from 'src/model';
 
 describe('Serializer', () => {
-  it('throws if "name" is invalid', () => {
-    expect(() => new Serializer({ name: null })).toThrow();
-    expect(() => new Serializer({ name: undefined })).toThrow();
-    expect(() => new Serializer({ name: '' })).toThrow();
-    expect(() => new Serializer({ name: ' ' })).toThrow();
-    expect(() => new Serializer({ name: '1' })).toThrow();
-    expect(() => new Serializer({ name: 'a&1*b' })).toThrow();
-  });
-
   it('throws if "attributes" is invalid', () => {
     expect(
       () => new Serializer({ name: 'mySerializer', attributes: ['a', 'a'] })

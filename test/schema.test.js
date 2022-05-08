@@ -218,6 +218,15 @@ describe('Schema', () => {
     it('creates the appropriate model', () => {
       expect(schema.models.get('bModel')).toBe(model);
     });
+
+    it('throws the model name is invalid', () => {
+      expect(() => schema.createModel({ name: null })).toThrow();
+      expect(() => schema.createModel({ name: undefined })).toThrow();
+      expect(() => schema.createModel({ name: '' })).toThrow();
+      expect(() => schema.createModel({ name: ' ' })).toThrow();
+      expect(() => schema.createModel({ name: '1' })).toThrow();
+      expect(() => schema.createModel({ name: 'a&1*b' })).toThrow();
+    });
   });
 
   describe('getModel', () => {

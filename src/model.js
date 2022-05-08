@@ -47,7 +47,7 @@ export class Model {
     scopes = {},
     validators = {},
   } = {}) {
-    this.name = validateName(name);
+    this.name = name;
 
     if (Model.#instances.has(name))
       throw new DuplicationError(`A model named ${name} already exists.`);

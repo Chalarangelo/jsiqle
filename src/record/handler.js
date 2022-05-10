@@ -113,15 +113,15 @@ class RecordHandler {
         this.#hasRelationshipField(property)
       );
       // Never skip individual field validation
-      field[$validators].forEach((validator, validatorName) => {
-        if (
-          ![null, undefined].includes(recordValue[property]) &&
-          !validator(recordValue, otherRecords)
-        )
-          throw new RangeError(
-            `${this.#getModelName()} record with id ${recordId} failed validation for ${validatorName}.`
-          );
-      });
+      // field[$validators].forEach((validator, validatorName) => {
+      //   if (
+      //     ![null, undefined].includes(recordValue[property]) &&
+      //     !validator(recordValue, otherRecords)
+      //   )
+      //     throw new RangeError(
+      //       `${this.#getModelName()} record with id ${recordId} failed validation for ${validatorName}.`
+      //     );
+      // });
     }
     // Perform model validations
     // The last argument, `skipValidation`, is used to skip validation
@@ -142,7 +142,9 @@ class RecordHandler {
   static #setRecordField(modelName, record, field, value, isRelationship) {
     // Set the default value if the field is null or undefined
     const recordValue =
-      !isRelationship && isUndefined(value) ? field[$defaultValue] : value;
+      !isRelationship && isUndefined(value)
+        ? field.createDefaultValue()
+        : value;
     if (!isRelationship && !field.typeCheck(recordValue))
       // Throw an error if the field value is invalid
       throw new TypeError(

@@ -26,6 +26,16 @@ const schema = jsiqle.create({
         language: 'string',
         tags: 'stringArray',
       },
+      properties: {
+        isCool: record => record.tags.includes('cool'),
+      },
+      scopes: {
+        cool: snippet => snippet.isCool,
+      },
+    },
+    {
+      name: 'category',
+      fields: { description: 'string' },
     },
   ],
   relationships: [
@@ -33,6 +43,11 @@ const schema = jsiqle.create({
       from: { model: 'snippet', name: 'children' },
       to: { model: 'snippet', name: 'parent' },
       type: 'oneToMany',
+    },
+    {
+      from: 'snippet',
+      to: 'category',
+      type: 'manyToMany',
     },
   ],
   serializers: [
@@ -60,13 +75,9 @@ const schema = jsiqle.create({
 });
 
 const snippet = schema.getModel('snippet');
+const category = schema.getModel('category');
 
-const category = schema.createModel({
-  name: 'category',
-  fields: { description: 'string' },
-});
-
-const snippetA = snippet.createRecord({
+let snippetA = snippet.createRecord({
   id: 'snippetA',
   description: 'description of snippetA',
   code: 'console.log("Hello World!");',
@@ -92,28 +103,6 @@ const categoryB = category.createRecord({
   description: 'description of categoryB',
 });
 
-snippet.addField({
-  name: 'special',
-  type: 'string',
-});
-
-snippet.addProperty({
-  name: 'isCool',
-  body: record => {
-    return record.tags.includes('cool');
-  },
-});
-
-snippet.addScope('cool', record => {
-  return record.isCool;
-});
-
-schema.createRelationship({
-  from: 'snippet',
-  to: 'category',
-  type: 'manyToMany',
-});
-
 const snippetC = snippet.createRecord({
   id: 'snippetC',
   description: 'description of snippetC',
@@ -134,7 +123,11 @@ Array.from({ length: 1000 }).forEach((_, i) => {
   });
 });
 
-snippetA.categorySet = ['categoryB', 'categoryA'];
+// snippetA.categorySet = ['categoryB', 'categoryA'];
+snippetA = snippet.updateRecord('snippetA', {
+  categorySet: ['categoryB', 'categoryA'],
+  description: 'warriors come out to playeyeyy',
+});
 
 replServer.context.schema = schema;
 

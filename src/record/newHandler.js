@@ -6,7 +6,7 @@ import { deepClone } from 'src/utils';
 
 const {
   $fields,
-  $defaultValue,
+  // $defaultValue,
   $properties,
   $cachedProperties,
   $methods,
@@ -19,6 +19,13 @@ const {
   $get,
 } = symbols;
 
+// Collection/static responsibilities:
+// 1. Create a new record
+// 2. Update the record
+// 3. Delete the record
+//
+// Record instance responsibilities:
+// 1. Provide a getter for the record
 class RecordHandler {
   #model;
 
@@ -43,24 +50,115 @@ class RecordHandler {
     );
     // Clone record data
     const clonedRecord = deepClone(recordData);
-    const newRecord = new Record({ id: newRecordId }, this);
-    // Set fields and skip validation
-    this.#getFieldNames().forEach(field => {
-      this.set(newRecord, field, clonedRecord[field], newRecord, true);
+    const newRecordData = { id: newRecordId };
+
+    this.#model[$fields].forEach((field, fieldName) => {
+      const value = clonedRecord[fieldName];
+      const isRelationship = this.#hasRelationshipField(fieldName);
+      const recordValue =
+        !isRelationship && isUndefined(value)
+          ? field.createDefaultValue()
+          : value;
+      if (!isRelationship) {
+        if (!field.typeCheck(recordValue))
+          // Throw an error if the field value is invalid
+          throw new TypeError(
+            `${modelName} record has invalid value for field ${field.name}.`
+          );
+        if (!field.prevalidate('create', { value: recordValue }))
+          // Throw an error if the field value is invalid
+          throw new TypeError(
+            `${modelName} record has invalid value for field ${field.name}.`
+          );
+      }
+      newRecordData[fieldName] = recordValue;
     });
 
+    // All prevalidations passing, let's add values to unique sets
+    this.#model[$fields].forEach((field, fieldName) => {
+      if (this.#hasRelationshipField(fieldName)) return;
+      field.addValue(newRecordData[fieldName]);
+    });
+
+    const newRecord = new Record(newRecordData, this);
     return [newRecordId, newRecord];
+  }
+
+  updateRecord(record, diffData) {
+    if (typeof diffData !== 'object')
+      throw new TypeError('Record data must be an object.');
+    const modelName = this.#getModelName();
+
+    const clonedPreviousRecord = deepClone(
+      RecordHandler.#recordToObject(record, this.#model)()
+    );
+    const clonedDiffData = deepClone(diffData);
+    const newRecordData = { id: record.id };
+
+    this.#model[$fields].forEach((field, fieldName) => {
+      const previous = clonedPreviousRecord[fieldName];
+      const value = clonedDiffData[fieldName];
+      const isRelationship = this.#hasRelationshipField(fieldName);
+      const recordValue = !isUndefined(value) ? value : previous;
+      if (!isRelationship) {
+        if (!field.typeCheck(recordValue))
+          // Throw an error if the field value is invalid
+          throw new TypeError(
+            `${modelName} record has invalid value for field ${field.name}.`
+          );
+        if (!field.prevalidate('update', { value: recordValue, previous }))
+          // Throw an error if the field value is invalid
+          throw new TypeError(
+            `${modelName} record has invalid value for field ${field.name}.`
+          );
+      }
+      newRecordData[fieldName] = recordValue;
+    });
+
+    // All prevalidations passing, let's add values to unique sets
+    this.#model[$fields].forEach((field, fieldName) => {
+      if (this.#hasRelationshipField(fieldName)) return;
+      field.updateValue(
+        clonedPreviousRecord[fieldName],
+        newRecordData[fieldName]
+      );
+    });
+
+    const newRecord = new Record(newRecordData, this);
+    record.makeObsolete;
+    return [record.id, newRecord];
+  }
+
+  deleteRecord(record) {
+    const recordId = record.id;
+    this.#model[$fields].forEach((field, fieldName) => {
+      const value = record[fieldName];
+      const isRelationship = this.#hasRelationshipField(fieldName);
+      if (!isRelationship) {
+        field.deleteValue(value);
+      }
+    });
+    record.makeObsolete;
+    return recordId;
   }
 
   /*  ======  Trap definitions  ======  */
 
   get(record, property) {
+    // TODO: We can fast query and reference the new value of the record via
+    // the model itself
+    if (record.isObsolete && property !== 'id') {
+      throw new ReferenceError(
+        `Record ${this.getRecordId(record)} is obsolete.`
+      );
+    }
     // Check relationships first to avoid matching them as fields
     if (this.#hasRelationshipField(property))
       return this.#getRelationship(record, property);
     // Id or field, return as-is
     if (this.#isRecordId(property) || this.#hasField(property))
       return this.#getFieldValue(record, property);
+
     // Property, get and call, this also matches relationship reverses (properties)
     if (this.#hasProperty(property)) return this.#getProperty(record, property);
     // Method, get and call
@@ -77,65 +175,13 @@ class RecordHandler {
     return undefined;
   }
 
-  set(record, property, value, receiver, skipValidation) {
-    // Receiver is the same as record but never used (API compatibility)
-    const recordValue = record[$recordValue];
-    const recordId = this.getRecordId(record);
-    const otherRecords = this.#model.records.except(recordId);
-    // Throw an error when trying to set a property, also catches
-    // relationship reverses, safeguarding against issues there.
-    if (this.#hasProperty(property))
-      throw new TypeError(
-        `${this.#getModelName()} record ${recordId} cannot set property ${property}.`
-      );
-    // Throw an error when trying to set a method.
-    if (this.#hasMethod(property))
-      throw new TypeError(
-        `${this.#getModelName()} record ${recordId} cannot set method ${property}.`
-      );
-    // Validate and set field, warn if field is not defined
-    /* istanbul ignore else*/
-    if (this.#hasField(property)) {
-      const field = this.#getField(property);
-      RecordHandler.#setRecordField(
-        this.#model.name,
-        record,
-        field,
-        value,
-        this.#hasRelationshipField(property)
-      );
-      // Never skip individual field validation
-      // field[$validators].forEach((validator, validatorName) => {
-      //   if (
-      //     ![null, undefined].includes(recordValue[property]) &&
-      //     !validator(recordValue, otherRecords)
-      //   )
-      //     throw new RangeError(
-      //       `${this.#getModelName()} record with id ${recordId} failed validation for ${validatorName}.`
-      //     );
-      // });
-    }
-    return true;
+  set() {
+    throw new TypeError(
+      `Cannot alter record of model ${this.#getModelName()}. Use an appropriate API method to update the record.`
+    );
   }
 
   // Private methods
-
-  static #setRecordField(modelName, record, field, value, isRelationship) {
-    // Set the default value if the field is null or undefined
-    const recordValue =
-      !isRelationship && isUndefined(value)
-        ? field.createDefaultValue()
-        : value;
-    if (!isRelationship && !field.typeCheck(recordValue))
-      // Throw an error if the field value is invalid
-      throw new TypeError(
-        `${modelName} record has invalid value for field ${field.name}.`
-      );
-    // We check for $wrappedRecordValue to ensure the record is wrapped in a
-    // handler (i.e. initialized) and not a plain object (i.e. initializing).
-    if (record[$wrappedRecordValue]) record[$cachedProperties].clear();
-    record[$recordValue][field.name] = recordValue;
-  }
 
   static #recordToObject(record, model) {
     const recordValue = record[$recordValue];
@@ -144,9 +190,9 @@ class RecordHandler {
       id: recordValue.id,
     };
 
-    fields.forEach(field => {
-      const value = recordValue[field.name];
-      if (value !== undefined) object[field.name] = recordValue[field.name];
+    fields.forEach((field, fieldName) => {
+      const value = recordValue[fieldName];
+      if (value !== undefined) object[fieldName] = recordValue[fieldName];
     });
 
     return () => object;
@@ -248,9 +294,14 @@ class RecordHandler {
   }
 
   #isKnownSymbol(property) {
-    return [$recordModel, $recordTag, $recordValue, $isRecord].includes(
-      property
-    );
+    return [
+      $recordModel,
+      $recordTag,
+      $recordValue,
+      $isRecord,
+      'makeObsolete',
+      'isObsolete',
+    ].includes(property);
   }
 
   #getKnownSymbol(record, property) {

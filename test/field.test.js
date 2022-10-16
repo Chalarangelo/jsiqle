@@ -6,9 +6,9 @@ const { $defaultValue, $validators } = symbols;
 
 describe('Field', () => {
   it('throws if "type" is invalid', () => {
-    expect(() => new Field({ type: null })).toThrow();
-    expect(() => new Field({ type: undefined })).toThrow();
-    expect(() => new Field({ type: 'a' })).toThrow();
+    expect(() => Field({ type: null })).toThrow();
+    expect(() => Field({ type: undefined })).toThrow();
+    expect(() => Field({ type: 'a' })).toThrow();
   });
 
   it('throws if "defaultValue" is invalid', () => {

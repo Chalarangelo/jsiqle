@@ -14,6 +14,7 @@ class Record {
   #recordHandler;
   #proxiedRecord;
   #cachedProperties;
+  #obsolete = false;
 
   constructor(value, handler) {
     this.#recordValue = value;
@@ -25,6 +26,15 @@ class Record {
 
   get [$cachedProperties]() {
     return this.#cachedProperties;
+  }
+
+  get makeObsolete() {
+    this.#obsolete = true;
+    return true;
+  }
+
+  get isObsolete() {
+    return this.#obsolete;
   }
 
   /* istanbul ignore next */

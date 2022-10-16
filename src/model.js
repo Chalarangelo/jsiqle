@@ -13,7 +13,6 @@ const {
   $methods,
   $scopes,
   $relationships,
-  $validators,
   $recordHandler,
   $addScope,
   $addRelationshipAsField,
@@ -34,7 +33,6 @@ export class Model {
   #properties;
   #methods;
   #relationships;
-  #validators;
   #cachedProperties;
 
   static #instances = new Map();
@@ -45,7 +43,6 @@ export class Model {
     properties = {},
     methods = {},
     scopes = {},
-    validators = {},
   } = {}) {
     this.name = name;
 
@@ -61,7 +58,6 @@ export class Model {
     this.#properties = new Map();
     this.#methods = new Map();
     this.#relationships = new Map();
-    this.#validators = new Map();
     this.#cachedProperties = new Set();
 
     // Add fields, checking for duplicates and invalids
@@ -92,32 +88,15 @@ export class Model {
       this.addScope(scopeName, ...Model.#parseScope(scope));
     });
 
-    // Add validators, checking for duplicates and invalids
-    Object.entries(validators).forEach(([validatorName, validator]) => {
-      this.addValidator(validatorName, validator);
-    });
-
     // Add the model to the instances map
     Model.#instances.set(this.name, this);
   }
 
   addField(fieldOptions) {
     const { type, name } = fieldOptions;
-    if (!['string', 'function'].includes(typeof type))
+    if (typeof type !== 'string')
       throw new TypeError(`Field ${type} is not an string or a function.`);
-    const isStandardType = allStandardTypes.includes(type);
-    let field;
-
-    if (isStandardType) {
-      field = Field[type](fieldOptions);
-    } else if (typeof type === 'function') {
-      Schema[$handleExperimentalAPIMessage](
-        `The provided type for ${name} is not part of the standard types. Function types are experimental and may go away in a later release.`
-      );
-      field = new Field(fieldOptions);
-    } else {
-      throw new TypeError(`Field ${type} is not a valid type.`);
-    }
+    const field = Field.create(fieldOptions);
     this.#fields.set(name, field);
     return field;
   }
@@ -149,23 +128,6 @@ export class Model {
     return true;
   }
 
-  addValidator(name, validator) {
-    if (typeof validator !== 'function')
-      throw new TypeError(`Validator ${name} is not a function.`);
-    if (this.#validators.has(name))
-      throw new DuplicationError(`Validator ${name} already exists.`);
-    this.#validators.set(name, validator);
-  }
-
-  removeValidator(name) {
-    if (
-      !Model.#validateContains(this.name, 'Validator', name, this.#validators)
-    )
-      return false;
-    this.#validators.delete(name);
-    return true;
-  }
-
   // TODO: V2 Enhancements
   // Connect all record events to an event emitter
   createRecord(record) {
@@ -179,20 +141,21 @@ export class Model {
       console.warn(`Record ${recordId} does not exist.`);
       return false;
     }
-    this.#records.delete(recordId);
+    const deletedRecordId = this.#recordHandler.deleteRecord(recordId);
+    this.#records.delete(deletedRecordId);
     return true;
   }
 
-  updateRecord(recordId, record) {
-    if (typeof record !== 'object')
-      throw new TypeError('Record data must be an object.');
-    if (!this.#records.has(recordId))
-      throw new ReferenceError(`Record ${recordId} does not exist.`);
-    const oldRecord = this.#records.get(recordId);
-    Object.entries(record).forEach(([fieldName, fieldValue]) => {
-      oldRecord[fieldName] = fieldValue;
-    });
-    return oldRecord;
+  updateRecord(recordId, diff) {
+    if (!this.#records.has(recordId)) {
+      throw new TypeError(`Record ${recordId} does not exist.`);
+    }
+    const [updatedRecordId, updatedRecord] = this.#recordHandler.updateRecord(
+      this.#records.get(recordId),
+      diff
+    );
+    this.#records.set(updatedRecordId, updatedRecord);
+    return updatedRecord;
   }
 
   get records() {
@@ -231,10 +194,6 @@ export class Model {
 
   get [$relationships]() {
     return this.#relationships;
-  }
-
-  get [$validators]() {
-    return this.#validators;
   }
 
   [$addRelationshipAsField](relationship) {

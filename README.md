@@ -187,11 +187,8 @@ Additionally, in the case of simple fields that only need a `type` definition an
 There are a few standard field types corresponding to primitives and certain common field type values:
 
 ```
-boolean string number date
+boolean string number date enum object
 booleanArray numberArray stringArray dateArray
-object booleanObject numberObject
-stringObject dateObject objectArray
-enum
 ```
 
 For `enum` types, the `values` key must also be specified as an array of distinct values.

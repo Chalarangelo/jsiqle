@@ -78,11 +78,6 @@ export const standardTypes = {
   stringArray: { type: isArrayOf(isString) },
   dateArray: { type: isArrayOf(isDate) },
   object: { type: isObject({}) },
-  booleanObject: { type: isObjectOf(isBoolean) },
-  numberObject: { type: isObjectOf(isNumber) },
-  stringObject: { type: isObjectOf(isString) },
-  dateObject: { type: isObjectOf(isDate) },
-  objectArray: { type: isArrayOf(isObject({})) },
 };
 
 // Internal types

@@ -34,9 +34,6 @@ describe('Record', () => {
       methods: {
         prefixedName: (rec, prefix) => `${prefix} ${rec.name}`,
       },
-      validators: {
-        nameNotSameAsId: rec => rec.name !== rec.id,
-      },
     });
   });
 
@@ -50,19 +47,11 @@ describe('Record', () => {
     expect(record).toBeInstanceOf(Record);
   });
 
-  it('throws if a record created by Model.prototype.createRecord() fails validation', () => {
-    expect(() => model.createRecord({ id: 'jd', name: 5, age: 42 })).toThrow();
-    expect(() =>
-      model.createRecord({ id: 'John', name: 'John', age: 42 })
-    ).toThrow();
-  });
-
   it('getting/setting on a record goes through the RecordHandler', () => {
     const record = model.createRecord({ id: 'jd', name: 'John Doe', age: 42 });
     expect(record.firstName).toBe('John');
     expect(() => (record.name = 5)).toThrow();
     expect(() => (record.firstName = null)).toThrow();
-    expect(() => (record.name = 'jd')).toThrow();
     expect(() => (record.prefixedName = 'jd')).toThrow();
   });
 

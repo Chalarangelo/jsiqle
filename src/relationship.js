@@ -166,20 +166,13 @@ export class Relationship {
     const isMultiple = Relationship.#isToMany(relationshipType);
     const type = isMultiple ? recordIdArray : recordId;
     // TODO: V2 enhancements
-    // Add a custom validator for symmetric relationships to ensure that a
+    // Add a check for symmetric relationships to ensure that a
     // record does not reference itself in the relationship, creating a loop.
-    const validators = {};
-    // oneToOne means that for each record in the to model, there is at most
-    // one record in the from model. No overlap.
-    if (isSingleSource && !isMultiple) validators.unique = true;
-    // toMany relationships are not allowed to have duplicate values.
-    if (isMultiple) validators.uniqueValues = true;
 
     const relationshipField = new Field({
       name,
       type,
       defaultValue: isMultiple ? [] : null,
-      validators,
     });
     // Override the default value to throw an error
     Object.defineProperty(relationshipField, $defaultValue, {

@@ -9,7 +9,6 @@ const {
   $cachedProperties,
   $methods,
   $scopes,
-  $validators,
 } = symbols;
 
 describe('Model', () => {
@@ -78,16 +77,6 @@ describe('Model', () => {
     ).toThrow();
   });
 
-  it('throws if "validators" contain invalid values', () => {
-    const modelParams = { name: 'aModel' };
-
-    expect(() => new Model({ ...modelParams, validators: null })).toThrow();
-    expect(() => new Model({ ...modelParams, validators: [2] })).toThrow();
-    expect(
-      () => new Model({ ...modelParams, validators: { aValidator: 'hi' } })
-    ).toThrow();
-  });
-
   describe('when arguments are valid', () => {
     it('has the appropriate name', () => {
       expect(new Model({ name: 'aModel' }).name).toBe('aModel');
@@ -132,17 +121,6 @@ describe('Model', () => {
       expect(model.records[$scopes].has('aScope')).toEqual(true);
       expect(model.records[$scopes].has('bScope')).toEqual(true);
       expect(model.records[$scopes].has('cScope')).toEqual(true);
-    });
-
-    it('has the correct validators', () => {
-      const validators = {
-        aValidator: () => null,
-        bValidator: () => null,
-      };
-
-      const model = new Model({ name: 'aModel', validators });
-      expect(model[$validators].has('aValidator')).toEqual(true);
-      expect(model[$validators].has('bValidator')).toEqual(true);
     });
   });
 
@@ -270,49 +248,6 @@ describe('Model', () => {
     });
   });
 
-  describe('addValidator', () => {
-    let model;
-
-    beforeEach(() => {
-      model = new Model({ name: 'aModel' });
-    });
-
-    it('throws if "name" is invalid', () => {
-      expect(() => model.addValidator(null)).toThrow();
-      expect(() => model.addValidator(2)).toThrow();
-    });
-
-    it('throws if "validators" is not a function', () => {
-      expect(() => model.addValidator('aValidator', null)).toThrow();
-      expect(() => model.addValidator('aValidator', 2)).toThrow();
-    });
-
-    it('creates the appropriate validator', () => {
-      model.addValidator('aValidator', () => null);
-      expect(model[$validators].has('aValidator')).toEqual(true);
-    });
-  });
-
-  describe('removeValidator', () => {
-    let model;
-
-    beforeEach(() => {
-      model = new Model({
-        name: 'aModel',
-        validators: { aValidator: () => null },
-      });
-    });
-
-    it('returns false if "validatorName" does not exist', () => {
-      expect(model.removeValidator('bValidator')).toEqual(false);
-    });
-
-    it('removes the appropriate field and returns true', () => {
-      expect(model.removeValidator('aValidator')).toEqual(true);
-      expect(model[$validators].has('aValidator')).toEqual(false);
-    });
-  });
-
   describe('createRecord', () => {
     let model;
 
@@ -322,9 +257,6 @@ describe('Model', () => {
         fields: {
           name: {
             type: 'string',
-            validators: {
-              unique: true,
-            },
           },
           age: {
             type: 'number',
@@ -339,9 +271,6 @@ describe('Model', () => {
         },
         methods: {
           nameWithSuffix: (record, suffix) => `${record.name}_${suffix}`,
-        },
-        validators: {
-          nameNotEqualToId: record => record.id !== record.name,
         },
       });
     });
@@ -365,20 +294,10 @@ describe('Model', () => {
       expect(() => model.createRecord({ id: 'a', name: 2 })).toThrow();
     });
 
-    it('throws if a field value fails validation', () => {
-      // eslint-disable-next-line no-unused-vars
-      const record = model.createRecord({ id: 'a', name: 'aName' });
-      expect(() => model.createRecord({ id: 'b', name: 'aName' })).toThrow();
-    });
-
     it('throws if a record with the same id exists', () => {
       // eslint-disable-next-line no-unused-vars
       const record = model.createRecord({ id: 'a', name: 'aName' });
       expect(() => model.createRecord({ id: 'a', name: 'bName' })).toThrow();
-    });
-
-    it('throws if a model validator fails for the new record', () => {
-      expect(() => model.createRecord({ id: 'a', name: 'a' })).toThrow();
     });
 
     describe('with correct arguments', () => {
@@ -418,7 +337,7 @@ describe('Model', () => {
     beforeEach(() => {
       model = new Model({
         name: 'aModel',
-        fields: { name: { type: 'string', validators: { minLength: 1 } } },
+        fields: { name: { type: 'string' } },
       });
     });
 
@@ -440,7 +359,7 @@ describe('Model', () => {
     beforeEach(() => {
       model = new Model({
         name: 'aModel',
-        fields: { name: { type: 'string', validators: { minLength: 1 } } },
+        fields: { name: { type: 'string' } },
       });
     });
 
@@ -454,13 +373,6 @@ describe('Model', () => {
 
     it('throws if "record" is not an object', () => {
       expect(() => model.updateRecord('a', 'ab')).toThrow();
-    });
-
-    it('throws if a field fails type checking or validation', () => {
-      // eslint-disable-next-line no-unused-vars
-      const record = model.createRecord({ id: 'a', name: 'aName' });
-      expect(() => model.updateRecord('a', { name: 2 })).toThrow();
-      expect(() => model.updateRecord('a', { name: '' })).toThrow();
     });
 
     it('updates the record with the correct values', () => {
@@ -477,7 +389,7 @@ describe('Model', () => {
     beforeEach(() => {
       model = new Model({
         name: 'aModel',
-        fields: { name: { type: 'string', validators: { minLength: 1 } } },
+        fields: { name: { type: 'string' } },
         scopes: {
           nonExistentRecords: record => record.name === '',
           namedRecords: record => record.name.length > 2,

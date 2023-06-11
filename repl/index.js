@@ -16,11 +16,6 @@ const schema = jsiqle.create({
       fields: {
         description: {
           type: 'string',
-          validators: {
-            unique: true,
-            minLength: 5,
-            containsTheWordDescription: value => value.includes('description'),
-          },
         },
         code: 'string',
         language: 'string',

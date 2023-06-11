@@ -1,31 +1,18 @@
 import symbols from 'src/symbols';
 import { ValidationError } from 'src/errors';
-import { Validator } from 'src/validator';
-import { capitalize } from 'src/utils';
 import { isUndefined, isOptional, isEnum, standardTypes } from 'src/types';
 
-const { $defaultValue, $validators } = symbols;
+const { $defaultValue } = symbols;
 
 class Field {
   #name;
   #defaultValue;
   #type;
-  #validators;
 
-  constructor({ name, type, defaultValue = null, validators = {} }) {
+  constructor({ name, type, defaultValue = null }) {
     this.#name = name;
     this.#type = Field.#validateType(type);
     this.#defaultValue = Field.#validateDefaultValue(defaultValue, this.#type);
-    this.#validators = new Map();
-    Object.entries(validators).forEach(([validatorName, validator]) => {
-      this.addValidator(validatorName, validator);
-    });
-  }
-
-  addValidator(validatorName, validator) {
-    this.#validators.set(
-      ...Field.#parseFieldValidator(this.#name, validatorName, validator)
-    );
   }
 
   get name() {
@@ -42,10 +29,6 @@ class Field {
     return this.#defaultValue;
   }
 
-  get [$validators]() {
-    return this.#validators;
-  }
-
   // Private
 
   static #validateType(type) {
@@ -59,20 +42,6 @@ class Field {
     if (!type(defaultValue))
       throw new ValidationError('Default value must be valid.');
     return defaultValue;
-  }
-
-  static #parseFieldValidator(fieldName, validatorName, validator) {
-    if (Validator[validatorName] !== undefined)
-      return [
-        `${fieldName}${capitalize(validatorName)}`,
-        Validator[validatorName](fieldName, validator),
-      ];
-    if (typeof validator !== 'function')
-      throw new TypeError(`Validator ${validatorName} is not defined.`);
-    return [
-      `${fieldName}${capitalize(validatorName)}`,
-      Validator.custom(fieldName, validator),
-    ];
   }
 }
 

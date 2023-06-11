@@ -18,8 +18,6 @@ const or =
 
 const isArrayOf = type => val => Array.isArray(val) && val.every(type);
 
-const isOrIsArrayOf = type => val => or(isArrayOf(type), type)(val);
-
 const isObject = shape => {
   const props = Object.keys(shape);
   return val => {
@@ -47,8 +45,6 @@ const isNull = val => val === null;
 
 const isUndefined = val => val === undefined;
 
-const isNil = or(isNull, isUndefined);
-
 const isOptional = type => val => or(isNull, type)(val);
 
 export default {
@@ -58,24 +54,18 @@ export default {
   string: isString,
   date: isDate,
   // Special types
-  stringOrNumber: or(isString, isNumber),
-  numberOrString: or(isString, isNumber),
   enum: isEnum,
   boolArray: isArrayOf(isBoolean),
   numberArray: isArrayOf(isNumber),
   stringArray: isArrayOf(isString),
   dateArray: isArrayOf(isDate),
   // Composition types
-  oneOf: or,
-  arrayOf: isArrayOf,
-  oneOrArrayOf: isOrIsArrayOf,
   object: isObject,
   objectOf: isObjectOf,
   optional: isOptional,
   // Empty types
   null: isNull,
   undefined: isUndefined,
-  nil: isNil,
 };
 
 export const standardTypes = {

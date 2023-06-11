@@ -24,12 +24,7 @@ const Ledger = jsiqle.create({
       name: 'Person',
       fields: {
         username: {
-          type: 'string',
-          validators: {
-            unique: true,
-            minLength: 5,
-            regex: /\w/g
-          }
+          type: 'string'
         },
         role: {
           type: 'enum',
@@ -120,7 +115,6 @@ Both of these model definition options require an object argument with the follo
 - `fields`: (Optional) An object containing key-value pairs for fields that make up the model. More information about field definitions can be found in the next section.
 - `properties`: (Optional) An object containing key-value pairs for getter properties to be defined on the model. All properties expect a single argument representing a record of the given model. More information about property definitions can be found in one of the following sections.
 - `scopes`: (Optional) An object containing key-value pairs for getter properties to be defined on the record set of the model. All scopes expect a single argument representing the record set or a subset of records from the current model. Alternatively, an object with a `matcher` and `sorter` key can be supplied for ordered scopes. More information about scope definitions can be found in one of the following sections.
-- `validators`: (Optional) An object containing key-value pairs for validation properties that return a boolean value depending on the validation's result. All validators expect two arguments, the current record and the record set of the current model. More information about validators and field validators can be found in one of the following sections.
 
 You can retrieve an already defined model by calling `Schema.prototype.getModel()` with the model name:
 
@@ -150,11 +144,7 @@ const MySchema = jsiqle.create({
         age: { type: 'number', defaultValue: 18 },
         username: {
           type: 'string',
-          defaultValue: '',
-          validators: {
-            unique: true,
-            minLength: 5
-          }
+          defaultValue: ''
         }
       }
     }
@@ -176,7 +166,6 @@ Both of these field definition options require an object argument with the follo
 - `name`: The name of the field. By convention, field names should be camel-cased (i.e. `myField`). Field names must be unique for each model.
 - `type`: The type of the field. Read below for more information on types and validation.
 - `defaultValue`: (Optional) A value that will be used as the default for records with an empty value in this field. The `defaultValue` must be either `null` (default) or a valid value for the given type.
-- `validators`: (Optional) An object that defines what validations the field needs to pass. More information can be found below.
 
 In the case of defining the field in the model definition, the field `name` should be defined as the key that the object corresponds to. In case of defining the field individually, the field `name` should be defined as part of the field object definition.
 
@@ -192,27 +181,6 @@ booleanArray numberArray stringArray dateArray
 ```
 
 For `enum` types, the `values` key must also be specified as an array of distinct values.
-
-Apart from standard types, there's also an experimental API that allows types to be specified as a function that takes one argument and returns a boolean determining the validity of the argument. In most cases, a validator function would suffice and you're strongly recommended to use one, instead.
-
-##### Field validation
-
-Fields can have additional validations specified, by specifying a `validators` object which includes key-value pairs for each validator. Standard validators for common use-cases are as follows:
-
-- `unique`: Takes one argument (`true`) and validates that each record has a unique value for this field. Works with any value type.
-- `minLength`: Takes a numeric argument, `min`, and validates that no value can have a length smaller than the `min` specified. Works with strings, arrays and other enumerable types.
-- `maxLength`: Takes a numeric argument, `max`, and validates that no value can have a length greater than the `max` specified. Works with strings, arrays and other enumerable types.
-- `length`: Takes a 2-element array, `[min, max]`, and acts as a combination of `minLength` and `maxLength`. Works with strings, arrays and other enumerable types.
-- `min`: Takes a numeric argument, `min`, and validates that no value can be smaller than the `min` specified. Works with numeric values and dates.
-- `max`: Takes a numeric argument, `max`, and validates that no value can be greater than the `max` specified. Works with numeric values and dates.
-- `range`: Takes a 2-element array, `[min, max]`, and acts as a combination of `min` and `max`. Works with numeric values and dates.
-- `integer`: Takes one argument (`true`) and validates that a given numeric value is an integer. Works with numeric types.
-- `regex`: Takes a regular expression argument, `regex`, and checks each value against it. Works with strings.
-- `uniqueValues`: Takes one argument (`true`) and validates that an array has no duplicates. Works with array types.
-- `sortedAscending`: Takes one argument (`true`) and validates that an array is sorted in ascending order. Works with array types.
-- `sortedDescending`: Takes one argument (`true`) and validates that an array is sorted in descending order. Works with array types.
-
-Apart from standard validators, custom ones can be specified using a new name as the key and a function as the value. The function takes two arguments, the field value of the current record and an array of field values in other records in the model.
 
 #### Property definitions
 
@@ -377,48 +345,6 @@ You can remove a scope from a model using `Model.prototype.removeScope()`:
 ```js
 MyModel.removeScope('does');
 ```
-
-#### Validator definitions
-
-Validators can be defined as part of a model definition or added individually to a model by calling `Model.prototype.addValidator()`:
-
-```js
-import jsiqle from '@jsiqle/core';
-const MySchema = jsiqle.create({
-  name: 'MySchema',
-  models: [
-    {
-      name: 'MyModel',
-      fields: {
-        startDate: 'date',
-        endDate: 'date'
-      },
-      validators: {
-        datesValid: record => record.startDate <= record.endDate
-      }
-    }
-  ]
-});
-
-const MyModel = MySchema.getModel('MyModel');
-
-MyModel.addValidator(
-  'datesDifferent',
-  record => record.startDate !== record.endDate
-);
-```
-
-Validators defined as part of the model definition as specified as key-value pairs, whereas validators defined in `Model.prototype.addValidator()` are passed as two separate arguments, the name and the validator body.
-
-Validators expect two arguments, the current record and an array of other records in the model. They return a boolean indicating if the current record is valid.
-
-You can remove a validator from a model using `Model.prototype.removeValidator()`:
-
-```js
-MyModel.removeValidator('datesDifferent');
-```
-
-Validators should be used to perform multi-field validations. For single-field validations, validators specified on the field are preferred due to their increased performance.
 
 #### Relationship definitions
 
@@ -690,7 +616,7 @@ Additionally, conventions dictate that model and schema names are title-cased, a
 To clear up any confusion, here are the names of the definition types and the names of the corresponding data objects they create:
 
 - A schema is a set of definitions that contain models, fields, relationships etc. The data contained within a schema is called a dataset.
-- A model is a set of field, property, validator and scope definitions. The data contained within a model is called a record set and each individual item within it is called a record.
+- A model is a set of field, property and scope definitions. The data contained within a model is called a record set and each individual item within it is called a record.
 - A record is a set of values corresponding to different keys. Each of these values is called an attribute.
 
 ## License

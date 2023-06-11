@@ -13,7 +13,6 @@ const {
   $methods,
   $scopes,
   $relationships,
-  $validators,
   $recordHandler,
   $addScope,
   $addRelationshipAsField,
@@ -34,7 +33,6 @@ export class Model {
   #properties;
   #methods;
   #relationships;
-  #validators;
   #cachedProperties;
 
   static #instances = new Map();
@@ -45,7 +43,6 @@ export class Model {
     properties = {},
     methods = {},
     scopes = {},
-    validators = {},
   } = {}) {
     this.name = name;
 
@@ -61,7 +58,6 @@ export class Model {
     this.#properties = new Map();
     this.#methods = new Map();
     this.#relationships = new Map();
-    this.#validators = new Map();
     this.#cachedProperties = new Set();
 
     // Add fields, checking for duplicates and invalids
@@ -90,11 +86,6 @@ export class Model {
     // Add scopes, checking for duplicates and invalids
     Object.entries(scopes).forEach(([scopeName, scope]) => {
       this.addScope(scopeName, ...Model.#parseScope(scope));
-    });
-
-    // Add validators, checking for duplicates and invalids
-    Object.entries(validators).forEach(([validatorName, validator]) => {
-      this.addValidator(validatorName, validator);
     });
 
     // Add the model to the instances map
@@ -146,23 +137,6 @@ export class Model {
     )
       return false;
     this.#records[$removeScope](name);
-    return true;
-  }
-
-  addValidator(name, validator) {
-    if (typeof validator !== 'function')
-      throw new TypeError(`Validator ${name} is not a function.`);
-    if (this.#validators.has(name))
-      throw new DuplicationError(`Validator ${name} already exists.`);
-    this.#validators.set(name, validator);
-  }
-
-  removeValidator(name) {
-    if (
-      !Model.#validateContains(this.name, 'Validator', name, this.#validators)
-    )
-      return false;
-    this.#validators.delete(name);
     return true;
   }
 
@@ -231,10 +205,6 @@ export class Model {
 
   get [$relationships]() {
     return this.#relationships;
-  }
-
-  get [$validators]() {
-    return this.#validators;
   }
 
   [$addRelationshipAsField](relationship) {

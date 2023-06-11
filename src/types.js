@@ -27,6 +27,8 @@ export const isEnum =
 
 const isNull = val => val === null;
 
+const hasUniqueValues = arr => new Set(arr).size === arr.length;
+
 export const isUndefined = val => val === undefined;
 
 export const isOptional = type => val => or(isNull, type)(val);
@@ -46,4 +48,4 @@ export const standardTypes = {
 // Internal types
 const isNonEmptyString = val => val.trim().length !== 0;
 export const recordId = and(isString, isNonEmptyString);
-export const recordIdArray = isArrayOf(recordId);
+export const recordIdArray = and(isArrayOf(recordId), hasUniqueValues);

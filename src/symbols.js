@@ -17,7 +17,6 @@ export default symbolizeAll(
   'scopes',
   'relationships',
   'relationshipField',
-  'validators',
   'recordModel',
   'recordValue',
   'wrappedRecordValue',

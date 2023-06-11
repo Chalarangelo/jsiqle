@@ -2,7 +2,7 @@ import { Field } from 'src/field';
 import { standardTypes } from 'src/types';
 import symbols from 'src/symbols';
 
-const { $defaultValue, $validators } = symbols;
+const { $defaultValue } = symbols;
 
 describe('Field', () => {
   it('throws if "type" is invalid', () => {
@@ -40,57 +40,6 @@ describe('Field', () => {
     it('correctly checks empty values', () => {
       expect(field.typeCheck(null)).toBe(true);
       expect(field.typeCheck(undefined)).toBe(false);
-    });
-
-    describe('when validators are specified', () => {
-      it('throws if the validator is invalid', () => {
-        expect(
-          () =>
-            new Field({
-              name: 'myField',
-              type: x => x === 'test',
-              validators: { nonExistent: null },
-            })
-        ).toThrow();
-        expect(
-          () =>
-            new Field({
-              name: 'myField',
-              type: x => x === 'test',
-              validators: { nonExistent: 1 },
-            })
-        ).toThrow();
-      });
-
-      it('adds an existing validator to the field validators', () => {
-        field = new Field({
-          name: 'myField',
-          type: x => typeof x === 'string',
-          validators: {
-            minLength: 2,
-          },
-        });
-        expect(field[$validators].size).toBe(1);
-        const validator = field[$validators].get('myFieldMinLength');
-        expect(validator).not.toBe(undefined);
-        expect(validator({ myField: 'a' })).toBe(false);
-        expect(validator({ myField: 'ab' })).toBe(true);
-      });
-
-      it('adds a custom validator to the field validators', () => {
-        field = new Field({
-          name: 'myField',
-          type: x => typeof x === 'string',
-          validators: {
-            startsWithTest: x => x.startsWith('test'),
-          },
-        });
-        expect(field[$validators].size).toBe(1);
-        const validator = field[$validators].get('myFieldStartsWithTest');
-        expect(validator).not.toBe(undefined);
-        expect(validator({ myField: 'a test' }, [])).toBe(false);
-        expect(validator({ myField: 'test a' }, [])).toBe(true);
-      });
     });
   });
 

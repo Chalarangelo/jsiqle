@@ -11,7 +11,6 @@ const {
   $cachedProperties,
   $methods,
   $relationships,
-  $validators,
   $recordValue,
   $wrappedRecordValue,
   $recordModel,
@@ -47,14 +46,7 @@ class RecordHandler {
     const newRecord = new Record({ id: newRecordId }, this);
     // Set fields and skip validation
     this.#getFieldNames().forEach(field => {
-      this.set(newRecord, field, clonedRecord[field], newRecord, true);
-    });
-    // Validate record just once
-    this.#getValidators().forEach((validator, validatorName) => {
-      if (!validator(newRecord, this.#model.records))
-        throw new RangeError(
-          `${modelName} record with id ${newRecordId} failed validation for ${validatorName}.`
-        );
+      this.set(newRecord, field, clonedRecord[field], newRecord);
     });
 
     return [newRecordId, newRecord];
@@ -85,7 +77,7 @@ class RecordHandler {
     return undefined;
   }
 
-  set(record, property, value, receiver, skipValidation) {
+  set(record, property, value, receiver) {
     // Receiver is the same as record but never used (API compatibility)
     const recordValue = record[$recordValue];
     const recordId = this.getRecordId(record);
@@ -112,27 +104,6 @@ class RecordHandler {
         value,
         this.#hasRelationshipField(property)
       );
-      // Never skip individual field validation
-      field[$validators].forEach((validator, validatorName) => {
-        if (
-          ![null, undefined].includes(recordValue[property]) &&
-          !validator(recordValue, otherRecords)
-        )
-          throw new RangeError(
-            `${this.#getModelName()} record with id ${recordId} failed validation for ${validatorName}.`
-          );
-      });
-    }
-    // Perform model validations
-    // The last argument, `skipValidation`, is used to skip validation
-    // and should only ever be set to `true` by the by the handler itself.
-    if (!skipValidation) {
-      this.#getValidators().forEach((validator, validatorName) => {
-        if (!validator(recordValue, otherRecords))
-          throw new RangeError(
-            `${this.#getModelName()} record with id ${recordId} failed validation for ${validatorName}.`
-          );
-      });
     }
     return true;
   }
@@ -190,10 +161,6 @@ class RecordHandler {
 
   #getFieldNames() {
     return [...this.#model[$fields].keys()];
-  }
-
-  #getValidators() {
-    return this.#model[$validators];
   }
 
   #isRecordId(property) {

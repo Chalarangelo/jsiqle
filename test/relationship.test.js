@@ -461,11 +461,11 @@ describe('Relationship', () => {
 
       it('returns the correct result for one to many relationships', () => {
         // Filled field
-        expect(records.b1.modelGammaSet.flatPluck('id').flat()).toEqual([
+        expect(records.b1.modelGammaSet.pluck('id')).toEqual([
           records.g2.id,
           records.g1.id,
         ]);
-        expect(records.b1.children.flatPluck('id').flat()).toEqual([
+        expect(records.b1.children.pluck('id')).toEqual([
           records.g2.id,
           records.g3.id,
         ]);
@@ -489,11 +489,11 @@ describe('Relationship', () => {
         expect(records.g1.parent2.id).toBe(records.d2.id);
         expect(records.g3.parent2.id).toBe(records.d2.id);
         // Filled property
-        expect(records.d1.modelGammaSet.flatPluck('id').flat()).toEqual([
+        expect(records.d1.modelGammaSet.pluck('id')).toEqual([
           records.g1.id,
           records.g2.id,
         ]);
-        expect(records.d2.children2.flatPluck('id').flat()).toEqual([
+        expect(records.d2.children2.pluck('id')).toEqual([
           records.g1.id,
           records.g3.id,
         ]);
@@ -507,28 +507,22 @@ describe('Relationship', () => {
 
       it('returns the correct result for many to many relationships', () => {
         // Filled field
-        expect(records.d1.modelAlphaSet.flatPluck('id').flat()).toEqual([
+        expect(records.d1.modelAlphaSet.pluck('id')).toEqual([
           records.a1.id,
           records.a2.id,
         ]);
-        expect(records.d1.friends.flatPluck('id').flat()).toEqual([
+        expect(records.d1.friends.pluck('id')).toEqual([
           records.a2.id,
           records.a3.id,
         ]);
-        expect(records.a1.friends2.flatPluck('id').flat()).toEqual([
+        expect(records.a1.friends2.pluck('id')).toEqual([
           records.a2.id,
           records.a3.id,
         ]);
         // Filled property
-        expect(records.a1.modelDeltaSet.flatPluck('id').flat()).toEqual([
-          records.d1.id,
-        ]);
-        expect(records.a2.friends.flatPluck('id').flat()).toEqual([
-          records.d1.id,
-        ]);
-        expect(records.a2.colleagues.flatPluck('id').flat()).toEqual([
-          records.a1.id,
-        ]);
+        expect(records.a1.modelDeltaSet.pluck('id')).toEqual([records.d1.id]);
+        expect(records.a2.friends.pluck('id')).toEqual([records.d1.id]);
+        expect(records.a2.colleagues.pluck('id')).toEqual([records.a1.id]);
         // Empty field
         expect(records.d2.modelAlphaSet.size).toBe(0);
         expect(records.d2.friends.size).toBe(0);

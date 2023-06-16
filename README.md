@@ -122,12 +122,6 @@ You can retrieve an already defined model by calling `Schema.prototype.getModel(
 const MyModel = MySchema.getModel('MyModel');
 ```
 
-Finally, models can be removed from a schema by calling `Schema.prototype.removeModel()` with the model name:
-
-```js
-MySchema.removeModel('MyModel');
-```
-
 #### Field definitions
 
 Fields can be defined as part of a model definition or added individually to a model by calling `Model.prototype.addField()`:

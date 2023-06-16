@@ -9,7 +9,6 @@ const {
   $addRelationshipAsField,
   $addRelationshipAsProperty,
   $handleExperimentalAPIMessage,
-  $instances,
 } = symbols;
 
 /**

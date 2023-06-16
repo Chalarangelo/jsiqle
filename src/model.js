@@ -258,14 +258,4 @@ export class Model {
       `The provided scope is not a function or valid object.`
     );
   }
-
-  static #validateContains(modelName, objectType, objectName, objects) {
-    if (!objects.has(objectName)) {
-      console.warn(
-        `Model ${modelName} does not contain a ${objectType.toLowerCase()} named ${objectName}.`
-      );
-      return false;
-    }
-    return true;
-  }
 }

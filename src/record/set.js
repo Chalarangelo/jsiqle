@@ -1,17 +1,9 @@
 import { allEqualBy } from 'src/utils';
 import { NameError, DuplicationError } from 'src/errors';
-import RecordFragment from './fragment';
 import RecordGroup from './group';
 import symbols from 'src/symbols';
 
-const {
-  $recordModel,
-  $recordTag,
-  $scopes,
-  $addScope,
-  $removeScope,
-  $isRecord,
-} = symbols;
+const { $recordModel, $scopes, $addScope, $removeScope, $isRecord } = symbols;
 
 /**
  * An extension of the native Map object. Provides the same API, along with
@@ -305,31 +297,15 @@ class RecordSet extends Map {
   }
 
   /**
-   * Returns a new record set with records mapped to fragments containing
-   * only the keys specified.
-   * @param  {...any} keys A list of keys to map each record to.
-   * @returns {RecordSet} A new record set with all elements mapped to
-   * fragments containing only the keys specified.
-   */
-  pluck(...keys) {
-    return new RecordSet({
-      iterable: [...this.entries()].map(([key, value]) => {
-        const values = keys.map(key => value[key]);
-        return [key, new RecordFragment(values, value[$recordTag])];
-      }),
-      copyScopesFrom: this,
-    }).freeze();
-  }
-
-  /**
    * Returns an array with records mapped to arrays containing only the
    * keys specified. If only one key is specified, the array contains the
    * value of each element instead.
    * @param  {...any} keys A list of keys to map each record to.
-   * @returns {RecordSet} A new record set with all elements mapped to
-   * fragments containing only the keys specified.
+   * @returns {Array} An array of arrays with records mapped to the values
+   * of the keys specified. If only one key is specified, the array contains
+   * the value of each element instead.
    */
-  flatPluck(...keys) {
+  pluck(...keys) {
     const isSingleKey = keys.length === 1;
     if (isSingleKey) {
       const key = keys[0];

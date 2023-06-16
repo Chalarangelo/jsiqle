@@ -322,15 +322,8 @@ describe('RecordSet', () => {
   });
 
   describe('pluck', () => {
-    it('should return an record set of record fragments', () => {
-      const result = model.records.pluck('age');
-      expect(result.toFlatArray()).toEqual([[42], [34], [34], [15]]);
-    });
-  });
-
-  describe('flatPluck', () => {
     it('should return an array of arrays of values for multiple keys', () => {
-      const result = model.records.flatPluck('age', 'name');
+      const result = model.records.pluck('age', 'name');
       expect(result).toEqual([
         [42, 'John Doe'],
         [34, 'Jane Doe'],
@@ -340,7 +333,7 @@ describe('RecordSet', () => {
     });
 
     it('should return an array of values for a single key', () => {
-      const result = model.records.flatPluck('age');
+      const result = model.records.pluck('age');
       expect(result).toEqual([42, 34, 34, 15]);
     });
   });
@@ -460,11 +453,11 @@ describe('RecordSet', () => {
   describe('batchIterator', () => {
     it('should iterate over the records', () => {
       const result = model.records.batchIterator(2);
-      expect(result.next().value.flatPluck('name')).toEqual([
+      expect(result.next().value.pluck('name')).toEqual([
         'John Doe',
         'Jane Doe',
       ]);
-      expect(result.next().value.flatPluck('name')).toEqual([
+      expect(result.next().value.pluck('name')).toEqual([
         'John Smith',
         'Jane Smith',
       ]);
@@ -473,12 +466,12 @@ describe('RecordSet', () => {
 
     it('should return the last batch with however many elements are left', () => {
       const result = model.records.batchIterator(3);
-      expect(result.next().value.flatPluck('name')).toEqual([
+      expect(result.next().value.pluck('name')).toEqual([
         'John Doe',
         'Jane Doe',
         'John Smith',
       ]);
-      expect(result.next().value.flatPluck('name')).toEqual(['Jane Smith']);
+      expect(result.next().value.pluck('name')).toEqual(['Jane Smith']);
       expect(result.next().value).toEqual(undefined);
     });
   });
@@ -503,33 +496,33 @@ describe('RecordSet', () => {
 
   describe('slice', () => {
     it('should return the correct slice with only a start', () => {
-      expect(model.records.slice(2).flatPluck('name')).toEqual([
+      expect(model.records.slice(2).pluck('name')).toEqual([
         'John Smith',
         'Jane Smith',
       ]);
-      expect(model.records.slice(0).flatPluck('name')).toEqual([
+      expect(model.records.slice(0).pluck('name')).toEqual([
         'John Doe',
         'Jane Doe',
         'John Smith',
         'Jane Smith',
       ]);
-      expect(model.records.slice(4).flatPluck('name')).toEqual([]);
-      expect(model.records.slice(5).flatPluck('name')).toEqual([]);
-      expect(model.records.slice(-1).flatPluck('name')).toEqual(['Jane Smith']);
+      expect(model.records.slice(4).pluck('name')).toEqual([]);
+      expect(model.records.slice(5).pluck('name')).toEqual([]);
+      expect(model.records.slice(-1).pluck('name')).toEqual(['Jane Smith']);
     });
 
     it('should return the correct slice with a start and end', () => {
-      expect(model.records.slice(2, 4).flatPluck('name')).toEqual([
+      expect(model.records.slice(2, 4).pluck('name')).toEqual([
         'John Smith',
         'Jane Smith',
       ]);
-      expect(model.records.slice(0, 2).flatPluck('name')).toEqual([
+      expect(model.records.slice(0, 2).pluck('name')).toEqual([
         'John Doe',
         'Jane Doe',
       ]);
-      expect(model.records.slice(4, 5).flatPluck('name')).toEqual([]);
-      expect(model.records.slice(5, 6).flatPluck('name')).toEqual([]);
-      expect(model.records.slice(-3, 3).flatPluck('name')).toEqual([
+      expect(model.records.slice(4, 5).pluck('name')).toEqual([]);
+      expect(model.records.slice(5, 6).pluck('name')).toEqual([]);
+      expect(model.records.slice(-3, 3).pluck('name')).toEqual([
         'Jane Doe',
         'John Smith',
       ]);
@@ -538,11 +531,9 @@ describe('RecordSet', () => {
 
   describe('toArray', () => {
     it('should return an array of the records', () => {
-      const fragmentsSet = model.records.pluck('age');
       const groupSet = model.records.groupBy('age');
 
       expect(model.records.toArray().map(v => v.age)).toEqual([42, 34, 34, 15]);
-      expect(fragmentsSet.toArray().map(v => v[0])).toEqual([42, 34, 34, 15]);
       expect(groupSet.toArray().map(v => v.toArray().map(v => v.age))).toEqual([
         [42],
         [34, 34],
@@ -553,7 +544,6 @@ describe('RecordSet', () => {
 
   describe('toFlatArray', () => {
     it('returns an array of objects', () => {
-      const fragmentsSet = model.records.pluck('age');
       const groupSet = model.records.groupBy('age');
 
       expect(model.records.toFlatArray()).toEqual([
@@ -562,7 +552,6 @@ describe('RecordSet', () => {
         { id: '2', name: 'John Smith', age: 34 },
         { id: '3', name: 'Jane Smith', age: 15 },
       ]);
-      expect(fragmentsSet.toFlatArray()).toEqual([[42], [34], [34], [15]]);
       expect(groupSet.toFlatArray()).toEqual([
         [{ id: '0', name: 'John Doe', age: 42 }],
         [
@@ -576,7 +565,6 @@ describe('RecordSet', () => {
 
   describe('toObject', () => {
     it('should return an object of the records', () => {
-      const fragmentsSet = model.records.pluck('age');
       const groupSet = model.records.groupBy('age');
 
       expect(JSON.stringify(model.records.toObject())).toEqual(
@@ -586,9 +574,6 @@ describe('RecordSet', () => {
           2: { id: '2', name: 'John Smith', age: 34 },
           3: { id: '3', name: 'Jane Smith', age: 15 },
         })
-      );
-      expect(JSON.stringify(fragmentsSet.toObject())).toEqual(
-        JSON.stringify({ 0: [42], 1: [34], 2: [34], 3: [15] })
       );
       expect(JSON.stringify(groupSet.toObject())).toEqual(
         JSON.stringify({
@@ -605,7 +590,6 @@ describe('RecordSet', () => {
 
   describe('toFlatObject', () => {
     it('should return an object of objects', () => {
-      const fragmentsSet = model.records.pluck('age');
       const groupSet = model.records.groupBy('age');
 
       expect(model.records.toFlatObject()).toEqual({
@@ -613,12 +597,6 @@ describe('RecordSet', () => {
         1: { id: '1', name: 'Jane Doe', age: 34 },
         2: { id: '2', name: 'John Smith', age: 34 },
         3: { id: '3', name: 'Jane Smith', age: 15 },
-      });
-      expect(fragmentsSet.toFlatObject()).toEqual({
-        0: [42],
-        1: [34],
-        2: [34],
-        3: [15],
       });
       expect(groupSet.toFlatObject()).toEqual({
         42: [{ id: '0', name: 'John Doe', age: 42 }],
@@ -633,7 +611,6 @@ describe('RecordSet', () => {
 
   describe('toJSON', () => {
     it('should return an object of the records', () => {
-      const fragmentsSet = model.records.pluck('age');
       const groupSet = model.records.groupBy('age');
 
       expect(JSON.stringify(model.records.toJSON())).toEqual(
@@ -643,9 +620,6 @@ describe('RecordSet', () => {
           2: { id: '2', name: 'John Smith', age: 34 },
           3: { id: '3', name: 'Jane Smith', age: 15 },
         })
-      );
-      expect(JSON.stringify(fragmentsSet.toJSON())).toEqual(
-        JSON.stringify({ 0: [42], 1: [34], 2: [34], 3: [15] })
       );
       expect(JSON.stringify(groupSet.toJSON())).toEqual(
         JSON.stringify({

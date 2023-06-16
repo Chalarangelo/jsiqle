@@ -44,7 +44,7 @@ const schema = jsiqle.create({
           return snippet.description + '!!';
         },
         children: snippet => {
-          return snippet.children.flatPluck('code');
+          return snippet.children.pluck('code');
         },
       },
     },

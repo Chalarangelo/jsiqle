@@ -699,13 +699,6 @@ class RecordSet extends Map {
       throw new TypeError(`${callbackType} ${callbackName} is not a function.`);
     return callback;
   }
-
-  static #validateContains(objectType, objectName, objects) {
-    if (!objects.has(objectName))
-      throw new ReferenceError(`${objectType} ${objectName} does not exist.`);
-
-    return objectName;
-  }
 }
 
 export default RecordSet;

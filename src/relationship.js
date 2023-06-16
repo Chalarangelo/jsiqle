@@ -162,7 +162,6 @@ export class Relationship {
   static #createField(name, relationshipType) {
     // TODO: V2 enhancements
     // Potentially add a check if the other model contains the ids(s)?
-    const isSingleSource = Relationship.#isFromOne(relationshipType);
     const isMultiple = Relationship.#isToMany(relationshipType);
     const type = isMultiple ? recordIdArray : recordId;
     // TODO: V2 enhancements

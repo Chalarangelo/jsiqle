@@ -1,6 +1,5 @@
 import { allEqualBy } from 'src/utils';
 import { NameError, DuplicationError } from 'src/errors';
-import PartialRecord from './partial';
 import RecordFragment from './fragment';
 import RecordGroup from './group';
 import symbols from 'src/symbols';
@@ -295,28 +294,11 @@ class RecordSet extends Map {
   }
 
   /**
-   * Returns a new record set with all elements mapped to the keys specified.
-   * @param  {...any} keys A list of keys to map each record to.
-   * @returns {RecordSet} A new record set with all elements mapped to the
-   * keys specified.
-   */
-  select(...keys) {
-    return new RecordSet({
-      iterable: [...this.entries()].map(([key, value]) => {
-        const obj = {};
-        keys.forEach(key => (obj[key] = value[key]));
-        return [key, new PartialRecord(obj, value[$recordTag])];
-      }),
-      copyScopesFrom: this,
-    }).freeze();
-  }
-
-  /**
    * Returns an array of objects with all elements mapped to the keys specified.
    * @param  {...any} keys A list of keys to map each record to.
    * @returns {Array} An array with all elements mapped to the keys specified.
    */
-  flatSelect(...keys) {
+  select(...keys) {
     return [...this.values()].map(value =>
       keys.reduce((obj, key) => ({ ...obj, [key]: value[key] }), {})
     );

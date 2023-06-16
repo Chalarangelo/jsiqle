@@ -77,11 +77,9 @@ class RecordHandler {
     return undefined;
   }
 
-  set(record, property, value, receiver) {
+  set(record, property, value) {
     // Receiver is the same as record but never used (API compatibility)
-    const recordValue = record[$recordValue];
     const recordId = this.getRecordId(record);
-    const otherRecords = this.#model.records.except(recordId);
     // Throw an error when trying to set a property, also catches
     // relationship reverses, safeguarding against issues there.
     if (this.#hasProperty(property))

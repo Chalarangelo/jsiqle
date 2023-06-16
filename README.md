@@ -508,8 +508,7 @@ Record sets can be filtered, mapped and sorted much like regular arrays. Here's 
 
 Specific attributes can be selected from records via the following properties:
 
-- `RecordSet.prototype.select()`: Expects any number of field names in a record. Returns a record set with partial records containing only those fields.
-- `RecordSet.prototype.flatSelect()`: Same as `RecordSet.prototype.select()` except that the resulting value is an array of objects instead of a record set of partial records.
+- `RecordSet.prototype.select()`: Expects any number of field names in a record. Returns an array of objects with only the selected fields.
 - `RecordSet.prototype.pluck()`: Expects any number of field names in a record. Returns a record set with record fragments containing only those fields. Record fragments behave similar to arrays.
 - `RecordSet.prototype.flatPluck()`: Same as `RecordSet.prototype.pluck()` except that the resulting value is an array of arrays instead of a record set of record fragments. If only one key is provided, an array of individual attributes will be returned instead.
 

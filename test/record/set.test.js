@@ -310,16 +310,8 @@ describe('RecordSet', () => {
   });
 
   describe('select', () => {
-    it('should return a record set of partial records', () => {
-      const result = model.records.select('age');
-      expect(result.first.name).toBe(undefined);
-      expect(result.first.age).toBe(42);
-    });
-  });
-
-  describe('flatSelect', () => {
     it('should return an array of objects', () => {
-      const result = model.records.flatSelect('age');
+      const result = model.records.select('age');
       expect(result).toEqual([
         { age: 42 },
         { age: 34 },
@@ -546,12 +538,10 @@ describe('RecordSet', () => {
 
   describe('toArray', () => {
     it('should return an array of the records', () => {
-      const partialsSet = model.records.select('age');
       const fragmentsSet = model.records.pluck('age');
       const groupSet = model.records.groupBy('age');
 
       expect(model.records.toArray().map(v => v.age)).toEqual([42, 34, 34, 15]);
-      expect(partialsSet.toArray().map(v => v.age)).toEqual([42, 34, 34, 15]);
       expect(fragmentsSet.toArray().map(v => v[0])).toEqual([42, 34, 34, 15]);
       expect(groupSet.toArray().map(v => v.toArray().map(v => v.age))).toEqual([
         [42],
@@ -563,7 +553,6 @@ describe('RecordSet', () => {
 
   describe('toFlatArray', () => {
     it('returns an array of objects', () => {
-      const partialsSet = model.records.select('age');
       const fragmentsSet = model.records.pluck('age');
       const groupSet = model.records.groupBy('age');
 
@@ -572,12 +561,6 @@ describe('RecordSet', () => {
         { id: '1', name: 'Jane Doe', age: 34 },
         { id: '2', name: 'John Smith', age: 34 },
         { id: '3', name: 'Jane Smith', age: 15 },
-      ]);
-      expect(partialsSet.toFlatArray()).toEqual([
-        { age: 42 },
-        { age: 34 },
-        { age: 34 },
-        { age: 15 },
       ]);
       expect(fragmentsSet.toFlatArray()).toEqual([[42], [34], [34], [15]]);
       expect(groupSet.toFlatArray()).toEqual([
@@ -593,7 +576,6 @@ describe('RecordSet', () => {
 
   describe('toObject', () => {
     it('should return an object of the records', () => {
-      const partialsSet = model.records.select('age');
       const fragmentsSet = model.records.pluck('age');
       const groupSet = model.records.groupBy('age');
 
@@ -603,14 +585,6 @@ describe('RecordSet', () => {
           1: { id: '1', name: 'Jane Doe', age: 34 },
           2: { id: '2', name: 'John Smith', age: 34 },
           3: { id: '3', name: 'Jane Smith', age: 15 },
-        })
-      );
-      expect(JSON.stringify(partialsSet.toObject())).toEqual(
-        JSON.stringify({
-          0: { age: 42 },
-          1: { age: 34 },
-          2: { age: 34 },
-          3: { age: 15 },
         })
       );
       expect(JSON.stringify(fragmentsSet.toObject())).toEqual(
@@ -631,7 +605,6 @@ describe('RecordSet', () => {
 
   describe('toFlatObject', () => {
     it('should return an object of objects', () => {
-      const partialsSet = model.records.select('age');
       const fragmentsSet = model.records.pluck('age');
       const groupSet = model.records.groupBy('age');
 
@@ -640,12 +613,6 @@ describe('RecordSet', () => {
         1: { id: '1', name: 'Jane Doe', age: 34 },
         2: { id: '2', name: 'John Smith', age: 34 },
         3: { id: '3', name: 'Jane Smith', age: 15 },
-      });
-      expect(partialsSet.toFlatObject()).toEqual({
-        0: { age: 42 },
-        1: { age: 34 },
-        2: { age: 34 },
-        3: { age: 15 },
       });
       expect(fragmentsSet.toFlatObject()).toEqual({
         0: [42],
@@ -666,7 +633,6 @@ describe('RecordSet', () => {
 
   describe('toJSON', () => {
     it('should return an object of the records', () => {
-      const partialsSet = model.records.select('age');
       const fragmentsSet = model.records.pluck('age');
       const groupSet = model.records.groupBy('age');
 
@@ -676,14 +642,6 @@ describe('RecordSet', () => {
           1: { id: '1', name: 'Jane Doe', age: 34 },
           2: { id: '2', name: 'John Smith', age: 34 },
           3: { id: '3', name: 'Jane Smith', age: 15 },
-        })
-      );
-      expect(JSON.stringify(partialsSet.toJSON())).toEqual(
-        JSON.stringify({
-          0: { age: 42 },
-          1: { age: 34 },
-          2: { age: 34 },
-          3: { age: 15 },
         })
       );
       expect(JSON.stringify(fragmentsSet.toJSON())).toEqual(

@@ -228,26 +228,6 @@ describe('Model', () => {
     });
   });
 
-  describe('removeScope', () => {
-    let model;
-
-    beforeEach(() => {
-      model = new Model({
-        name: 'aModel',
-        scopes: { aScope: () => null },
-      });
-    });
-
-    it('returns false if "scopeName" does not exist', () => {
-      expect(model.removeScope('bScope')).toEqual(false);
-    });
-
-    it('removes the appropriate field and returns true', () => {
-      expect(model.removeScope('aScope')).toEqual(true);
-      expect(model.records[$scopes].has('aScope')).toEqual(false);
-    });
-  });
-
   describe('createRecord', () => {
     let model;
 

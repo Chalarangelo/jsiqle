@@ -340,12 +340,6 @@ Scopes defined as part of the model definition as specified as key-value pairs, 
 
 Scopes expect one argument, the current record, and must return a boolean indicating if the scope should include the record or not. Alternatively, scopes can be specified as objects when defined as part of the model definition with a `matcher` function and a `sorter` function. This will create an ordered scope that will always apply the `sorter` to matched records before returning them. Ordered scopes can also be created by supplying a third argument to `Model.prototype.addScope()` which will act as the `sorter` function.
 
-You can remove a scope from a model using `Model.prototype.removeScope()`:
-
-```js
-MyModel.removeScope('does');
-```
-
 #### Relationship definitions
 
 **Note:** The relationships API is not currently stable and is considered experimental. While no major changes are expected in the future, it might not be fit for use in production just yet.

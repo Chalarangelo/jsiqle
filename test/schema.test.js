@@ -248,26 +248,6 @@ describe('Schema', () => {
     });
   });
 
-  describe('removeModel', () => {
-    let schema;
-
-    beforeEach(() => {
-      schema = Schema.create({
-        name: 'test',
-        models: [{ name: 'aModel' }],
-      });
-      schema.removeModel('aModel');
-    });
-
-    it('throws if the model does not exist', () => {
-      expect(() => schema.removeModel('bModel')).toThrow();
-    });
-
-    it('removes the specified model', () => {
-      expect(schema.models.get('aModel')).toBeUndefined();
-    });
-  });
-
   describe('createRelationship', () => {
     let schema;
 

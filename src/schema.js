@@ -146,22 +146,6 @@ export class Schema {
   }
 
   /**
-   * Removes a model from the schema.
-   * @param {String} name The name of the model to remove.
-   */
-  removeModel(name) {
-    if (!this.#models.has(name))
-      throw new ReferenceError(
-        `Model ${name} does not exist in schema ${this.#name}.`
-      );
-    this.#models.delete(name);
-    Model[$instances].delete(name);
-
-    // TODO: V2 enhancements
-    // Figure out a way to add cascade for relationships
-  }
-
-  /**
    * EXPERIMENTAL
    * Creates a relationship between two models and adds it to the schema.
    * @param {Object} relationshipData Data for the relationship to be added.

@@ -515,7 +515,7 @@ Specific attributes can be selected from records via the following properties:
 
 Record sets can be grouped or sorted via the following properties:
 
-- `RecordSet.prototype.groupBy()`: Expects a field name and groups the records based on its value. Returns a record set containing record groups, which in turn behave like nested record sets themselves.
+- `RecordSet.prototype.groupBy()`: Expects a field name and groups the records based on its value. Returns an object with value-based keys containing record sets.
 - `RecordSet.prototype.sort()`: Sorts the elements of the record set and returns a new sorted record set. Expects a comparator callback function as an argument that takes three arguments (`firstValue`, `secondValue`, `firstId`, `secondId`) and returns an appropriate value for sorting similar to `Array.prototype.sort()`.
 
 #### Iterating over records

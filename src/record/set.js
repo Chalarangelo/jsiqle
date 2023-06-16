@@ -1,6 +1,5 @@
 import { allEqualBy } from 'src/utils';
 import { NameError, DuplicationError } from 'src/errors';
-import RecordGroup from './group';
 import symbols from 'src/symbols';
 
 const { $recordModel, $scopes, $addScope, $removeScope, $isRecord } = symbols;
@@ -318,33 +317,31 @@ class RecordSet extends Map {
   /**
    * Group the elements of the record set by the specified key.
    * @param {*} key A key to group the elements by.
-   * @returns {RecordSet} A new record set containing groups of elements.
+   * @returns {Object} An object with the keys being the values of the
+   * specified key and the values being record sets containing the elements
+   * of the original record set that have the same value for the specified key.
    */
   groupBy(key) {
-    const res = new RecordSet({ copyScopesFrom: this, iterable: [] });
+    const res = {};
     for (const [recordKey, value] of this.entries()) {
       let keyValue = value[key];
       if (keyValue !== undefined && keyValue !== null && keyValue[$isRecord]) {
         keyValue = value[key].id;
       }
-      if (!res.has(keyValue)) {
-        res.set(
-          keyValue,
-          new RecordGroup({
-            copyScopesFrom: this,
-            iterable: [],
-            groupName: keyValue,
-          })
-        );
+      if (!res[keyValue]) {
+        res[keyValue] = new RecordSet({
+          copyScopesFrom: this,
+          iterable: [],
+        });
       }
-      res.get(keyValue).set(recordKey, value);
+      res[keyValue].set(recordKey, value);
     }
 
-    for (const value of res.values()) {
+    for (const value of Object.values(res)) {
       value.freeze();
     }
 
-    return res.freeze();
+    return res;
   }
 
   /**
@@ -580,9 +577,7 @@ class RecordSet extends Map {
    * the record set.
    */
   toFlatArray() {
-    return [...this.values()].map(value =>
-      value instanceof RecordGroup ? value.toFlatArray() : value.toObject()
-    );
+    return [...this.values()].map(value => value.toObject());
   }
 
   /**
@@ -603,8 +598,7 @@ class RecordSet extends Map {
    */
   toFlatObject() {
     return [...this.entries()].reduce((obj, [id, value]) => {
-      obj[id] =
-        value instanceof RecordGroup ? value.toFlatArray() : value.toObject();
+      obj[id] = value.toObject();
       return obj;
     }, {});
   }

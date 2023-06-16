@@ -340,8 +340,14 @@ describe('RecordSet', () => {
 
   describe('groupBy', () => {
     it('should group the records by the given key', () => {
-      const result = model.records.groupBy('age');
-      expect(result.toFlatObject()).toEqual({
+      const result = Object.entries(model.records.groupBy('age')).reduce(
+        (acc, [key, value]) => {
+          acc[key] = value.toFlatArray();
+          return acc;
+        },
+        {}
+      );
+      expect(result).toEqual({
         15: [{ id: '3', age: 15, name: 'Jane Smith' }],
         34: [
           { id: '1', age: 34, name: 'Jane Doe' },
@@ -531,42 +537,23 @@ describe('RecordSet', () => {
 
   describe('toArray', () => {
     it('should return an array of the records', () => {
-      const groupSet = model.records.groupBy('age');
-
       expect(model.records.toArray().map(v => v.age)).toEqual([42, 34, 34, 15]);
-      expect(groupSet.toArray().map(v => v.toArray().map(v => v.age))).toEqual([
-        [42],
-        [34, 34],
-        [15],
-      ]);
     });
   });
 
   describe('toFlatArray', () => {
     it('returns an array of objects', () => {
-      const groupSet = model.records.groupBy('age');
-
       expect(model.records.toFlatArray()).toEqual([
         { id: '0', name: 'John Doe', age: 42 },
         { id: '1', name: 'Jane Doe', age: 34 },
         { id: '2', name: 'John Smith', age: 34 },
         { id: '3', name: 'Jane Smith', age: 15 },
       ]);
-      expect(groupSet.toFlatArray()).toEqual([
-        [{ id: '0', name: 'John Doe', age: 42 }],
-        [
-          { id: '1', name: 'Jane Doe', age: 34 },
-          { id: '2', name: 'John Smith', age: 34 },
-        ],
-        [{ id: '3', name: 'Jane Smith', age: 15 }],
-      ]);
     });
   });
 
   describe('toObject', () => {
     it('should return an object of the records', () => {
-      const groupSet = model.records.groupBy('age');
-
       expect(JSON.stringify(model.records.toObject())).toEqual(
         JSON.stringify({
           0: { id: '0', name: 'John Doe', age: 42 },
@@ -575,60 +562,28 @@ describe('RecordSet', () => {
           3: { id: '3', name: 'Jane Smith', age: 15 },
         })
       );
-      expect(JSON.stringify(groupSet.toObject())).toEqual(
-        JSON.stringify({
-          42: { 0: { id: '0', name: 'John Doe', age: 42 } },
-          34: {
-            1: { id: '1', name: 'Jane Doe', age: 34 },
-            2: { id: '2', name: 'John Smith', age: 34 },
-          },
-          15: { 3: { id: '3', name: 'Jane Smith', age: 15 } },
-        })
-      );
     });
   });
 
   describe('toFlatObject', () => {
     it('should return an object of objects', () => {
-      const groupSet = model.records.groupBy('age');
-
       expect(model.records.toFlatObject()).toEqual({
         0: { id: '0', name: 'John Doe', age: 42 },
         1: { id: '1', name: 'Jane Doe', age: 34 },
         2: { id: '2', name: 'John Smith', age: 34 },
         3: { id: '3', name: 'Jane Smith', age: 15 },
       });
-      expect(groupSet.toFlatObject()).toEqual({
-        42: [{ id: '0', name: 'John Doe', age: 42 }],
-        34: [
-          { id: '1', name: 'Jane Doe', age: 34 },
-          { id: '2', name: 'John Smith', age: 34 },
-        ],
-        15: [{ id: '3', name: 'Jane Smith', age: 15 }],
-      });
     });
   });
 
   describe('toJSON', () => {
     it('should return an object of the records', () => {
-      const groupSet = model.records.groupBy('age');
-
       expect(JSON.stringify(model.records.toJSON())).toEqual(
         JSON.stringify({
           0: { id: '0', name: 'John Doe', age: 42 },
           1: { id: '1', name: 'Jane Doe', age: 34 },
           2: { id: '2', name: 'John Smith', age: 34 },
           3: { id: '3', name: 'Jane Smith', age: 15 },
-        })
-      );
-      expect(JSON.stringify(groupSet.toJSON())).toEqual(
-        JSON.stringify({
-          42: { 0: { id: '0', name: 'John Doe', age: 42 } },
-          34: {
-            1: { id: '1', name: 'Jane Doe', age: 34 },
-            2: { id: '2', name: 'John Smith', age: 34 },
-          },
-          15: { 3: { id: '3', name: 'Jane Smith', age: 15 } },
         })
       );
     });

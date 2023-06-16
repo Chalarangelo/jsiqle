@@ -2,7 +2,7 @@ import { allEqualBy } from 'src/utils';
 import { NameError, DuplicationError } from 'src/errors';
 import symbols from 'src/symbols';
 
-const { $recordModel, $scopes, $addScope, $removeScope, $isRecord } = symbols;
+const { $recordModel, $scopes, $addScope, $isRecord } = symbols;
 
 /**
  * An extension of the native Map object. Provides the same API, along with
@@ -643,18 +643,11 @@ class RecordSet extends Map {
 
     this.#scopes.set(name, [scope, sortFn]);
     Object.defineProperty(this, name, {
-      configurable: true, // Allows deletion in $removeScope
+      configurable: false, // Prevents deletion
       get: () => {
         return this.#scopedWhere(name);
       },
     });
-  }
-
-  [$removeScope](name) {
-    this.#scopes.delete(
-      RecordSet.#validateContains('Scope', name, this.#scopes)
-    );
-    delete this[name];
   }
 
   get [$scopes]() {
@@ -669,7 +662,7 @@ class RecordSet extends Map {
       // other record set already.
       this.#scopes.set(name, scope);
       Object.defineProperty(this, name, {
-        configurable: true, // Allows deletion in $removeScope
+        configurable: false, // Prevents deletion
         get: () => {
           return this.#scopedWhere(name);
         },

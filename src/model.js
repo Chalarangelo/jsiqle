@@ -11,7 +11,6 @@ const {
   $properties,
   $cachedProperties,
   $methods,
-  $scopes,
   $relationships,
   $recordHandler,
   $addScope,
@@ -19,7 +18,6 @@ const {
   $addRelationshipAsProperty,
   $getField,
   $getProperty,
-  $removeScope,
   $instances,
   $handleExperimentalAPIMessage,
 } = symbols;
@@ -129,15 +127,6 @@ export class Model {
   addScope(name, scope, sortFn) {
     const scopeName = validateName(name);
     this.#records[$addScope](scopeName, scope, sortFn);
-  }
-
-  removeScope(name) {
-    if (
-      !Model.#validateContains(this.name, 'Scope', name, this.#records[$scopes])
-    )
-      return false;
-    this.#records[$removeScope](name);
-    return true;
   }
 
   // TODO: V2 Enhancements

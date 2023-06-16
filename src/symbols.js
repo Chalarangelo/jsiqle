@@ -28,7 +28,6 @@ export default symbolizeAll(
   'addRelationshipAsProperty',
   'getField',
   'getProperty',
-  'removeScope',
   'instances',
   'isRecord',
   'groupTag',

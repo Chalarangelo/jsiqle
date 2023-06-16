@@ -21,6 +21,11 @@ const schema = jsiqle.create({
         language: 'string',
         tags: 'stringArray',
       },
+      scopes: {
+        cool: record => {
+          return record.isCool;
+        },
+      },
     },
   ],
   relationships: [
@@ -97,10 +102,6 @@ snippet.addProperty({
   body: record => {
     return record.tags.includes('cool');
   },
-});
-
-snippet.addScope('cool', record => {
-  return record.isCool;
 });
 
 schema.createRelationship({

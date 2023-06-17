@@ -9,19 +9,14 @@ const {
   $addRelationshipAsField,
   $addRelationshipAsProperty,
   $handleExperimentalAPIMessage,
+  $clearSchemaForTesting,
 } = symbols;
 
-/**
- * A Schema is a collection of models.
- * @param {Object} options Schema options
- * @param {String} options.name The name of the schema
- * @param {Array<Object>} options.models An object containing initial models for
- * the schema.
- */
 export class Schema {
-  #name;
-  #models;
-  #serializers;
+  static #models = new Map();
+  static #serializers = new Map();
+  static #schemaObject = {};
+  static #instantiated = false;
 
   static defaultConfig = {
     experimentalAPIMessages: 'warn',
@@ -31,20 +26,21 @@ export class Schema {
     ...Schema.defaultConfig,
   };
 
-  static #schemas = new Map();
-
-  constructor({
-    name,
+  /**
+   * Creates a new schema with the given name and options.
+   * @param {Object} schemaData Data for the schema to be created.
+   * @returns The newly created schema.
+   */
+  static create({
     models = [],
     relationships = [],
     serializers = [],
     config = {},
   } = {}) {
-    this.#name = validateName(name);
-    this.#models = new Map();
-    this.#serializers = new Map();
+    if (Schema.#instantiated)
+      throw new Error('Only one schema can be created.');
+
     Schema.#parseConfig(config);
-    Schema.#schemas.set(this.#name, this);
 
     const lazyPropertyMap = {};
     models.forEach(model => {
@@ -68,71 +64,64 @@ export class Schema {
         );
       names.forEach(name => validateName(name));
 
-      this.createModel(modelData);
+      Schema.#createModel(modelData);
     });
-    relationships.forEach(relationship =>
-      this.createRelationship(relationship)
-    );
-    serializers.forEach(serializer => this.createSerializer(serializer));
 
-    // V2 enhancements: Replace with the getter for `#schemaObject` entirely
+    relationships.forEach(relationship =>
+      Schema.#createRelationship(relationship)
+    );
+
+    serializers.forEach(serializer => Schema.#createSerializer(serializer));
+
     // Lazy properties, models and serializers require initial set up as they
     // depend on other models or serializers.
-    const schemaData = {
-      models: Object.fromEntries([...this.#models.entries()]),
-      serializers: Object.fromEntries([...this.#serializers.entries()]),
+    Schema.#schemaObject = {
+      models: Object.fromEntries([...Schema.#models.entries()]),
+      serializers: Object.fromEntries([...Schema.#serializers.entries()]),
     };
+
     models.forEach(model => {
-      const modelRecord = this.getModel(model.name);
+      const modelRecord = Schema.getModel(model.name);
       const lazyProperties = lazyPropertyMap[model.name] || {};
       if (lazyProperties)
         Object.entries(lazyProperties).forEach(
           ([propertyName, { body: propertyInitializer, cache }]) => {
             modelRecord.addProperty({
               name: propertyName,
-              body: value => propertyInitializer(value, this.#schemaObject),
+              body: value => propertyInitializer(value, Schema.#schemaObject),
               cache,
             });
           }
         );
 
-      // TODO: V2 enhancements
-      // Replace `schemaData` with the getter for `#schemaObject`
       if (model.lazyMethods)
         Object.entries(model.lazyMethods).forEach(
           ([methodName, methodInitializer]) => {
-            modelRecord.addMethod(methodName, methodInitializer(schemaData));
+            modelRecord.addMethod(
+              methodName,
+              methodInitializer(Schema.#schemaObject)
+            );
           }
         );
     });
 
-    // TODO: V2 enhancements
-    // Replace `schemaData` with the getter for `#schemaObject`
     serializers.forEach(serializer => {
-      const serializerRecord = this.getSerializer(serializer.name);
+      const serializerRecord = Schema.getSerializer(serializer.name);
       if (serializer.lazyMethods) {
         Object.entries(serializer.lazyMethods).forEach(
           ([methodName, methodInitializer]) => {
             serializerRecord.addMethod(
               methodName,
-              methodInitializer(schemaData)
+              methodInitializer(Schema.#schemaObject)
             );
           }
         );
       }
     });
-  }
 
-  /**
-   * Creates a model and adds it to the schema.
-   * @param {Object} modelData Data for the model to be added.
-   * @returns The newly created model.
-   */
-  createModel(modelData) {
-    const modelName = validateName(modelData.name);
-    const model = Schema.#parseModel(this.#name, modelData, this.#models);
-    this.#models.set(modelName, model);
-    return model;
+    Schema.#instantiated = true;
+
+    return Schema;
   }
 
   /**
@@ -140,39 +129,8 @@ export class Schema {
    * @param {String} name The name of the model to retrieve.
    * @returns The model or `undefined` if it does not exist.
    */
-  getModel(name) {
-    return this.#models.get(name);
-  }
-
-  /**
-   * EXPERIMENTAL
-   * Creates a relationship between two models and adds it to the schema.
-   * @param {Object} relationshipData Data for the relationship to be added.
-   * @returns The newly created relationship.
-   */
-  createRelationship(relationshipData) {
-    const relationship = Schema.#applyRelationship(
-      this.#name,
-      relationshipData,
-      this.#models
-    );
-    return relationship;
-  }
-
-  /**
-   * Creates a serializer and adds it to the schema.
-   * @param {Object} serializerData Data for the serializer to be added.
-   * @returns The newly created serializer.
-   */
-  createSerializer(serializerData) {
-    const serializerName = validateName(serializerData.name);
-    const serializer = Schema.#parseSerializer(
-      this.#name,
-      serializerData,
-      this.#serializers
-    );
-    this.#serializers.set(serializerName, serializer);
-    return serializer;
+  static getModel(name) {
+    return Schema.#models.get(name);
   }
 
   /**
@@ -180,40 +138,15 @@ export class Schema {
    * @param {String} name The name of the serializer to retrieve.
    * @returns The serializer or `undefined` if it does not exist.
    */
-  getSerializer(name) {
-    return this.#serializers.get(name);
-  }
-
-  /**
-   * Gets the schema's name.
-   */
-  get name() {
-    return this.#name;
+  static getSerializer(name) {
+    return Schema.#serializers.get(name);
   }
 
   /**
    * Gets all models in the schema.
    */
-  get models() {
-    return this.#models;
-  }
-
-  // TODO: Make users use this instead of the constructor, using a private flag.
-  // Use another private flag to throw if more than one schema is created
-  // (not supported for this release).
-  /**
-   * Creates a new schema with the given name and options.
-   * @param {Object} schemaData Data for the schema to be created.
-   * @returns The newly created schema.
-   */
-  static create(schemaData) {
-    return new Schema(schemaData);
-  }
-
-  // TODO: V2 enhancements
-  // Check validity of this. Currently it's not mentioned anywhere in the docs.
-  static get(name) {
-    return Schema.#schemas.get(name);
+  static get models() {
+    return Schema.#models;
   }
 
   /**
@@ -221,13 +154,13 @@ export class Schema {
    * @param {String} pathName A '.'-delimited path to the data.
    * @returns The value at the specified path.
    */
-  get(pathName) {
+  static get(pathName) {
     const [modelName, recordId, ...rest] = pathName.split('.');
-    const model = this.getModel(modelName);
+    const model = Schema.getModel(modelName);
 
     if (!model)
       throw new ReferenceError(
-        `Model ${modelName} does not exist in schema ${this.#name}.`
+        `Model ${modelName} does not exist in the schema.`
       );
 
     if (recordId === undefined) return model;
@@ -245,6 +178,7 @@ export class Schema {
   }
 
   // Protected (package internal-use only)
+
   /* istanbul ignore next */
   static [$handleExperimentalAPIMessage](message) {
     const { experimentalAPIMessages } = Schema.config;
@@ -255,26 +189,36 @@ export class Schema {
     }
   }
 
-  // Private
-
-  get #schemaObject() {
-    return {
-      models: Object.fromEntries([...this.#models.entries()]),
-      serializers: Object.fromEntries([...this.#serializers.entries()]),
-    };
+  /* istanbul ignore next */
+  static [$clearSchemaForTesting]() {
+    Schema.#models.clear();
+    Schema.#serializers.clear();
+    Schema.#schemaObject = {};
+    Schema.#instantiated = false;
   }
 
-  static #parseModel(schemaName, modelData, models) {
+  // Private
+
+  static #createModel(modelData) {
+    const modelName = validateName(modelData.name);
     validateObjectWithUniqueName(
-      {
-        objectType: 'Model',
-        parentType: 'Schema',
-        parentName: schemaName,
-      },
+      { objectType: 'Model', parentType: 'Schema' },
       modelData,
-      [...models.keys()]
+      [...Schema.#models.keys()]
     );
-    return new Model(modelData);
+    const model = new Model(modelData);
+    Schema.#models.set(modelName, model);
+  }
+
+  static #createSerializer(serializerData) {
+    const serializerName = validateName(serializerData.name);
+    validateObjectWithUniqueName(
+      { objectType: 'Serializer', parentType: 'Schema' },
+      serializerData,
+      [...Schema.#serializers.keys()]
+    );
+    const serializer = new Serializer(serializerData);
+    Schema.#serializers.set(serializerName, serializer);
   }
 
   static #separateModelProperties(modelData) {
@@ -301,7 +245,7 @@ export class Schema {
     };
   }
 
-  static #applyRelationship(schemName, relationshipData, models) {
+  static #createRelationship(relationshipData) {
     const { from, to, type /* , cascade */ } = relationshipData;
     [from, to].forEach(model => {
       if (!['string', 'object'].includes(typeof model))
@@ -311,36 +255,21 @@ export class Schema {
     const fromModelName = typeof from === 'string' ? from : from.model;
     const toModelName = typeof to === 'string' ? to : to.model;
 
-    const fromModel = models.get(fromModelName);
-    const toModel = models.get(toModelName);
+    const fromModel = Schema.#models.get(fromModelName);
+    const toModel = Schema.#models.get(toModelName);
     if (!fromModel)
       throw new ReferenceError(
-        `Model ${fromModelName} not found in schema ${schemName} when attempting to create a relationship.`
+        `Model ${fromModelName} not found in schema when attempting to create a relationship.`
       );
     if (!toModel)
       throw new ReferenceError(
-        `Model ${toModelName} not found in schema ${schemName} when attempting to create a relationship.`
+        `Model ${toModelName} not found in schema when attempting to create a relationship.`
       );
 
     const relationship = new Relationship({ from, to, type });
 
     fromModel[$addRelationshipAsField](relationship);
     toModel[$addRelationshipAsProperty](relationship);
-
-    return relationship;
-  }
-
-  static #parseSerializer(schemaName, serializerData, serializers) {
-    validateObjectWithUniqueName(
-      {
-        objectType: 'Serializer',
-        parentType: 'Schema',
-        parentName: schemaName,
-      },
-      serializerData,
-      [...serializers.keys()]
-    );
-    return new Serializer(serializerData);
   }
 
   static #parseConfig(config = {}) {
@@ -352,14 +281,6 @@ export class Schema {
       }
     });
   }
-
-  // TODO: V2 enhancements
-  // Add a mechanism here so that plugins can hook up to the schema via the
-  // event API or other stuff. Generally, the Schema is the de facto entrypoint
-  // of the library, so we should make sure that all plugins interface with it.
-  //
-  // We also need a way to modularize and granularize the logging/erroring. A
-  // wrapper would allow us to specify this across.
 }
 
 export default Schema;

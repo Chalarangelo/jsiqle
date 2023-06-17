@@ -81,11 +81,13 @@ export const validateObjectWithUniqueName = (
 ) => {
   if (!isObject(obj))
     throw new TypeError(`${objectType} ${obj} is not an object.`);
-  if (contains(collection, obj.name))
+  if (contains(collection, obj.name)) {
+    const namedType = parentName ? `${parentType} ${parentName}` : parentType;
     throw new DuplicationError(
-      `${parentType} ${parentName} already has a ${objectType.toLowerCase()} named ${
+      `${namedType} already has a ${objectType.toLowerCase()} named ${
         obj.name
       }.`
     );
+  }
   return true;
 };

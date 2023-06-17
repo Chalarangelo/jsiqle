@@ -32,5 +32,6 @@ export default symbolizeAll(
   'isRecord',
   'groupTag',
   'get',
-  'handleExperimentalAPIMessage'
+  'handleExperimentalAPIMessage',
+  'clearSchemaForTesting'
 );

@@ -18,7 +18,6 @@ import data from './data.json';
 import jsiqle from '@jsiqle/core';
 
 const Ledger = jsiqle.create({
-  name: 'Ledger',
   models: [
     {
       name: 'Person',
@@ -45,19 +44,19 @@ const Ledger = jsiqle.create({
         amount: 'number'
       }
     }
+  ],
+  relationships: [
+    {
+      from: { model: 'Transaction', name: 'payer' },
+      to: { model: 'Person', name: 'outgoingTransactions' },
+      type: 'manyToOne'
+    },
+    {
+      from: { model: 'Transaction', name: 'payee' },
+      to: { model: 'Person', name: 'incomingTransactions' },
+      type: 'manyToOne'
+    }
   ]
-});
-
-Ledger.createRelationship({
-  from: { model: 'Transaction', name: 'payer' },
-  to: { model: 'Person', name: 'outgoingTransactions' },
-  type: 'manyToOne'
-});
-
-Ledger.createRelationship({
-  from: { model: 'Transaction', name: 'payee' },
-  to: { model: 'Person', name: 'incomingTransactions' },
-  type: 'manyToOne'
 });
 
 const Person = Ledger.getModel('Person');
@@ -85,28 +84,28 @@ A schema instance can be created using `jsiqle.create()`:
 
 ```js
 import jsiqle from '@jsiqle/core';
-const MySchema = jsiqle.create({ name: 'MySchema' });
+const MySchema = jsiqle.create({});
 ```
 
 Schema definition requires an object argument with the following attributes:
 
-- `name`: The name of the schema. By convention, schema names and variables should be title-cased (i.e. `MySchema` instead of `mySchema`).
 - `models`: (Optional) An array of models that are part of the schema. More information about model definitions can be found in the next section.
+- `relationships`: (Optional) An array of relationships between models. More information about relationship definitions can be found in one of the following sections.
+- `serializers`: (Optional) An array of serializers for the schema. More information about serializer definitions can be found in one of the following sections.
 - `config`: (Optional) A configuration object that supports the following attributes:
   - `experimentalAPIMessages`: One of `'warn'`, `'error'` or `'off'`. Depending on this flag, experimental API messages can either be logged as warnings, throw an error or be turned off entirely.
 
 #### Model definitions
 
-Models can be defined either as part of the schema definition or individually using `Schema.prototype.createModel()`:
+Models can be defined as part of the schema definition.
 
 ```js
 import jsiqle from '@jsiqle/core';
 const MySchema = jsiqle.create({
-  name: 'MySchema',
   models: [{ name: 'MyModel' }]
 });
 
-const AnotherModel = MySchema.createModel({ name: 'AnotherModel' });
+const MyModel = MySchema.getModel('MyModel');
 ```
 
 Both of these model definition options require an object argument with the following attributes:
@@ -129,7 +128,6 @@ Fields can be defined as part of a model definition or added individually to a m
 ```js
 import jsiqle from '@jsiqle/core';
 const MySchema = jsiqle.create({
-  name: 'MySchema',
   models: [
     {
       name: 'MyModel',
@@ -183,7 +181,6 @@ Properties can be defined as part of a model definition or added individually to
 ```js
 import jsiqle from '@jsiqle/core';
 const MySchema = jsiqle.create({
-  name: 'MySchema',
   models: [
     {
       name: 'MyModel',
@@ -215,7 +212,6 @@ Property functions can expect up to two arguments. If they do not expect any arg
 ```js
 import jsiqle from '@jsiqle/core';
 const MySchema = jsiqle.create({
-  name: 'MySchema',
   models: [
     {
       name: 'MyModel',
@@ -248,7 +244,6 @@ Methods can be defined as part of a model definition or added individually to a 
 ```js
 import jsiqle from '@jsiqle/core';
 const MySchema = jsiqle.create({
-  name: 'MySchema',
   models: [
     {
       name: 'MyModel',
@@ -280,7 +275,6 @@ Additionally, "lazy" methods can be defined as part of the model definition by p
 ```js
 import jsiqle from '@jsiqle/core';
 const MySchema = jsiqle.create({
-  name: 'MySchema',
   models: [
     {
       name: 'MyModel',
@@ -310,7 +304,6 @@ Scopes can be defined as part of a model definition or added individually to a m
 ```js
 import jsiqle from '@jsiqle/core';
 const MySchema = jsiqle.create({
-  name: 'MySchema',
   models: [
     {
       name: 'MyModel',
@@ -338,12 +331,11 @@ Scopes expect one argument, the current record, and must return a boolean indica
 
 **Note:** The relationships API is not currently stable and is considered experimental. While no major changes are expected in the future, it might not be fit for use in production just yet.
 
-Relationships can be defined either as part of the schema definition or individually using `Schema.prototype.createRelationship()`:
+Relationships can be defined as part of the schema definition.
 
 ```js
 import jsiqle from '@jsiqle/core';
 const MySchema = jsiqle.create({
-  name: 'MySchema',
   models: [
     {
       name: 'Person',
@@ -363,14 +355,13 @@ const MySchema = jsiqle.create({
       from: { model: 'Transaction', name: 'payer' },
       to: { model: 'Person', name: 'outgoingTransactions' },
       type: 'manyToOne'
+    },
+    {
+      from: { model: 'Transaction', name: 'payee' },
+      to: { model: 'Person', name: 'incomingTransactions' },
+      type: 'manyToOne'
     }
   ]
-});
-
-Ledger.createRelationship({
-  from: { model: 'Transaction', name: 'payee' },
-  to: { model: 'Person', name: 'incomingTransactions' },
-  type: 'manyToOne'
 });
 ```
 
@@ -399,7 +390,6 @@ Records can be created using the `Model.prototype.createRecord()` method:
 ```js
 import jsiqle from '@jsiqle/core';
 const MySchema = jsiqle.create({
-  name: 'MySchema',
   models: [
     {
       name: 'MyModel',
@@ -451,7 +441,6 @@ To query the record set of an individual model, use the `Model.prototype.records
 ```js
 import jsiqle from '@jsiqle/core';
 const MySchema = jsiqle.create({
-  name: 'MySchema',
   models: [
     {
       name: 'MyModel',
@@ -524,7 +513,6 @@ Scopes defined on a model are defined as getters on its record set. Thus, they c
 ```js
 import jsiqle from '@jsiqle/core';
 const MySchema = jsiqle.create({
-  name: 'MySchema',
   models: [
     {
       name: 'MyModel',
@@ -557,7 +545,6 @@ The schema provides a quick way to access a model, record or even an attribute u
 ```js
 import jsiqle from '@jsiqle/core';
 const MySchema = jsiqle.create({
-  name: 'MySchema',
   models: [
     {
       name: 'MyModel',

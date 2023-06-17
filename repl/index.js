@@ -27,12 +27,21 @@ const schema = jsiqle.create({
         },
       },
     },
+    {
+      name: 'category',
+      fields: { description: 'string' },
+    },
   ],
   relationships: [
     {
       from: { model: 'snippet', name: 'children' },
       to: { model: 'snippet', name: 'parent' },
       type: 'oneToMany',
+    },
+    {
+      from: 'snippet',
+      to: 'category',
+      type: 'manyToMany',
     },
   ],
   serializers: [
@@ -61,10 +70,7 @@ const schema = jsiqle.create({
 
 const snippet = schema.getModel('snippet');
 
-const category = schema.createModel({
-  name: 'category',
-  fields: { description: 'string' },
-});
+const category = schema.getModel('category');
 
 const snippetA = snippet.createRecord({
   id: 'snippetA',
@@ -102,12 +108,6 @@ snippet.addProperty({
   body: record => {
     return record.tags.includes('cool');
   },
-});
-
-schema.createRelationship({
-  from: 'snippet',
-  to: 'category',
-  type: 'manyToMany',
 });
 
 const snippetC = snippet.createRecord({

@@ -2,7 +2,7 @@ import { Model } from 'src/model';
 import symbols from 'src/symbols';
 import Schema from '../../src/schema';
 
-const { $instances } = symbols;
+const { $instances, $clearSchemaForTesting } = symbols;
 
 // Indirectly check other record-related classes, too.
 describe('RecordSet', () => {
@@ -22,18 +22,22 @@ describe('RecordSet', () => {
   let schema;
 
   beforeEach(() => {
-    schema = new Schema({ name: 'test' });
-    model = schema.createModel({
-      name: 'person',
-      fields: { name: 'string', age: 'number' },
-      properties: {
-        firstName: rec => rec.name.split(' ')[0],
-        lastName: rec => rec.name.split(' ')[1],
-      },
-      scopes: {
-        adults: record => record.age >= 18,
-      },
+    schema = Schema.create({
+      models: [
+        {
+          name: 'person',
+          fields: { name: 'string', age: 'number' },
+          properties: {
+            firstName: rec => rec.name.split(' ')[0],
+            lastName: rec => rec.name.split(' ')[1],
+          },
+          scopes: {
+            adults: record => record.age >= 18,
+          },
+        },
+      ],
     });
+    model = schema.getModel('person');
 
     model.createRecord({
       id: '0',
@@ -60,6 +64,7 @@ describe('RecordSet', () => {
   afterEach(() => {
     // Cleanup to avoid instances leaking to other tests
     Model[$instances].clear();
+    Schema[$clearSchemaForTesting]();
   });
 
   describe('first', () => {

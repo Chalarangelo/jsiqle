@@ -3,7 +3,7 @@ import { Record } from 'src/record';
 import symbols from 'src/symbols';
 import Schema from '../../src/schema';
 
-const { $instances } = symbols;
+const { $instances, $clearSchemaForTesting } = symbols;
 
 // Indirectly check the record handler here, too.
 // Records are only ever accessed by proxy.
@@ -24,22 +24,27 @@ describe('Record', () => {
   let schema;
 
   beforeEach(() => {
-    schema = new Schema({ name: 'test' });
-    model = schema.createModel({
-      name: 'aModel',
-      fields: { name: 'string', age: 'number' },
-      properties: {
-        firstName: rec => rec.name.split(' ')[0],
-      },
-      methods: {
-        prefixedName: (rec, prefix) => `${prefix} ${rec.name}`,
-      },
+    schema = Schema.create({
+      models: [
+        {
+          name: 'aModel',
+          fields: { name: 'string', age: 'number' },
+          properties: {
+            firstName: rec => rec.name.split(' ')[0],
+          },
+          methods: {
+            prefixedName: (rec, prefix) => `${prefix} ${rec.name}`,
+          },
+        },
+      ],
     });
+    model = schema.getModel('aModel');
   });
 
   afterEach(() => {
     // Cleanup to avoid instances leaking to other tests
     Model[$instances].clear();
+    Schema[$clearSchemaForTesting]();
   });
 
   it('a record is returned from Model.prototype.createRecord()', () => {
@@ -81,19 +86,25 @@ describe('Record', () => {
     let record;
 
     beforeEach(() => {
-      model = schema.createModel({
-        name: 'bModel',
-        fields: { name: 'string', age: 'number' },
-        properties: {
-          firstName: {
-            body: rec => {
-              propertyCalls++;
-              return rec.name.split(' ')[0];
+      Schema[$clearSchemaForTesting]();
+      schema.create({
+        models: [
+          {
+            name: 'bModel',
+            fields: { name: 'string', age: 'number' },
+            properties: {
+              firstName: {
+                body: rec => {
+                  propertyCalls++;
+                  return rec.name.split(' ')[0];
+                },
+                cache: true,
+              },
             },
-            cache: true,
           },
-        },
+        ],
       });
+      model = schema.getModel('bModel');
       record = model.createRecord({ id: 'jd', name: 'John Doe', age: 42 });
       propertyCalls = 0;
     });

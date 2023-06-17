@@ -2,7 +2,7 @@ import { Schema } from 'src/schema';
 import { Model } from 'src/model';
 import symbols from 'src/symbols';
 
-const { $instances, $fields, $properties } = symbols;
+const { $instances, $fields, $properties, $clearSchemaForTesting } = symbols;
 
 describe('Schema', () => {
   let consoleWarn = console.warn;
@@ -20,22 +20,12 @@ describe('Schema', () => {
   afterEach(() => {
     // Cleanup to avoid instances leaking to other tests
     Model[$instances].clear();
-  });
-
-  // We prefer Schema.create as it's the "correct" way to create a schema.
-  it('throws if "name" is invalid', () => {
-    expect(() => Schema.create({ name: null })).toThrow();
-    expect(() => Schema.create({ name: undefined })).toThrow();
-    expect(() => Schema.create({ name: '' })).toThrow();
-    expect(() => Schema.create({ name: ' ' })).toThrow();
-    expect(() => Schema.create({ name: '1' })).toThrow();
-    expect(() => Schema.create({ name: 'a&1*b' })).toThrow();
+    Schema[$clearSchemaForTesting]();
   });
 
   it('throws if a model contains invalid or duplicate fields, properties or methods', () => {
     expect(() =>
       Schema.create({
-        name: 'test',
         models: [
           {
             name: 'aModel',
@@ -53,7 +43,6 @@ describe('Schema', () => {
 
     expect(() =>
       Schema.create({
-        name: 'test',
         models: [
           {
             name: 'aModel',
@@ -73,7 +62,6 @@ describe('Schema', () => {
 
     expect(() =>
       Schema.create({
-        name: 'test',
         models: [
           {
             name: 'aModel',
@@ -93,7 +81,6 @@ describe('Schema', () => {
 
     expect(() =>
       Schema.create({
-        name: 'test',
         models: [
           {
             name: 'aModel',
@@ -125,10 +112,6 @@ describe('Schema', () => {
       });
     });
 
-    it('creates a schema with the correct name', () => {
-      expect(schema.name).toBe('test');
-    });
-
     it('creates a schema with the appropriate models', () => {
       expect(schema.models.has('aModel')).toBe(true);
     });
@@ -137,14 +120,10 @@ describe('Schema', () => {
       expect(Schema.config.experimentalAPIMessages).toBe('off');
     });
 
-    it('adds the schema to the dictionary', () => {
-      expect(Schema.get('test')).toBe(schema);
-    });
-
     it('creates lazy properties and methods correctly', () => {
       let count = 0;
+      Schema[$clearSchemaForTesting]();
       schema = Schema.create({
-        name: 'test',
         models: [
           { name: 'cModel' },
           {
@@ -178,8 +157,8 @@ describe('Schema', () => {
     });
 
     it('creates lazy serializer methods correctly', () => {
+      Schema[$clearSchemaForTesting]();
       schema = Schema.create({
-        name: 'test',
         models: [{ name: 'cModel' }],
         serializers: [
           {
@@ -204,28 +183,14 @@ describe('Schema', () => {
     });
   });
 
-  describe('createModel', () => {
-    let schema, model;
-
-    beforeEach(() => {
-      schema = Schema.create({
-        name: 'test',
-        models: [{ name: 'aModel' }],
-      });
-      model = schema.createModel({ name: 'bModel' });
-    });
-
-    it('creates the appropriate model', () => {
-      expect(schema.models.get('bModel')).toBe(model);
-    });
-
+  describe('#createModel', () => {
     it('throws the model name is invalid', () => {
-      expect(() => schema.createModel({ name: null })).toThrow();
-      expect(() => schema.createModel({ name: undefined })).toThrow();
-      expect(() => schema.createModel({ name: '' })).toThrow();
-      expect(() => schema.createModel({ name: ' ' })).toThrow();
-      expect(() => schema.createModel({ name: '1' })).toThrow();
-      expect(() => schema.createModel({ name: 'a&1*b' })).toThrow();
+      expect(() => Schema.create({ models: [{ name: null }] })).toThrow();
+      expect(() => Schema.create({ models: [{ name: undefined }] })).toThrow();
+      expect(() => Schema.create({ models: [{ name: '' }] })).toThrow();
+      expect(() => Schema.create({ models: [{ name: ' ' }] })).toThrow();
+      expect(() => Schema.create({ models: [{ name: '1' }] })).toThrow();
+      expect(() => Schema.create({ models: [{ name: 'a&1*b' }] })).toThrow();
     });
   });
 
@@ -234,7 +199,6 @@ describe('Schema', () => {
 
     beforeEach(() => {
       schema = Schema.create({
-        name: 'test',
         models: [{ name: 'aModel' }],
       });
     });
@@ -248,56 +212,77 @@ describe('Schema', () => {
     });
   });
 
-  describe('createRelationship', () => {
+  describe('#createRelationship', () => {
     let schema;
 
     beforeEach(() => {
       schema = Schema.create({
-        name: 'test',
         models: [{ name: 'aModel' }, { name: 'bModel' }],
-      });
-      schema.createRelationship({
-        from: 'aModel',
-        to: 'bModel',
-        type: 'oneToOne',
-      });
-      schema.createRelationship({
-        from: { model: 'bModel', name: 'parent' },
-        to: { model: 'aModel', name: 'children' },
-        type: 'manyToOne',
+        relationships: [
+          {
+            from: 'aModel',
+            to: 'bModel',
+            type: 'oneToOne',
+          },
+          {
+            from: { model: 'bModel', name: 'parent' },
+            to: { model: 'aModel', name: 'children' },
+            type: 'manyToOne',
+          },
+        ],
       });
     });
 
     it('throws if the any of the models is of an invalid type', () => {
       expect(() =>
-        schema.createRelationship({
-          from: 1,
-          to: 'bModel',
-          type: 'oneToOne',
+        Schema.create({
+          models: [{ name: 'aModel' }, { name: 'bModel' }],
+          relationships: [
+            {
+              from: 1,
+              to: 'bModel',
+              type: 'oneToOne',
+            },
+          ],
         })
       ).toThrow();
       expect(() =>
-        schema.createRelationship({
-          from: 'aModel',
-          to: 2,
-          type: 'oneToOne',
+        Schema.create({
+          models: [{ name: 'aModel' }, { name: 'bModel' }],
+          relationships: [
+            {
+              from: 'aModel',
+              to: 2,
+              type: 'oneToOne',
+            },
+          ],
         })
       ).toThrow();
     });
 
     it('throws if any of the models does not exist', () => {
       expect(() =>
-        schema.createRelationship({
-          from: 'cModel',
-          to: 'bModel',
-          type: 'oneToOne',
+        Schema.create({
+          models: [{ name: 'aModel' }, { name: 'bModel' }],
+          relationships: [
+            {
+              from: 'cModel',
+              to: 'bModel',
+              type: 'oneToOne',
+            },
+          ],
         })
       ).toThrow();
       expect(() =>
-        schema.createRelationship({
-          from: 'aModel',
-          to: 'cModel',
-          type: 'oneToOne',
+        Schema.create({
+          models: [{ name: 'aModel' }, { name: 'bModel' }],
+          relationships: [
+            {
+              from: 'aModel',
+              to: 'cModel',
+              type: 'oneToOne',
+            },
+          ],
         })
       ).toThrow();
     });
@@ -310,29 +295,25 @@ describe('Schema', () => {
     });
   });
 
-  describe('createSerializer', () => {
-    let schema, serializer;
-
+  describe('#createSerializer', () => {
     beforeEach(() => {
-      schema = Schema.create({
-        name: 'test',
+      Schema.create({
         models: [{ name: 'aModel' }],
       });
-      serializer = schema.createSerializer({ name: 'aSerializer' });
-    });
-
-    it('creates the appropriate serializer', () => {
-      expect(schema.getSerializer('aSerializer')).toBe(serializer);
     });
 
     it('throws if the serializer name is invalid', () => {
-      expect(() => schema.createSerializer({ name: 1 })).toThrow();
-      expect(() => schema.createSerializer({ name: null })).toThrow();
-      expect(() => schema.createSerializer({ name: undefined })).toThrow();
-      expect(() => schema.createSerializer({ name: '' })).toThrow();
-      expect(() => schema.createSerializer({ name: ' ' })).toThrow();
-      expect(() => schema.createSerializer({ name: '1' })).toThrow();
-      expect(() => schema.createSerializer({ name: 'a&1*b' })).toThrow();
+      expect(() => Schema.create({ serializers: [{ name: 1 }] })).toThrow();
+      expect(() => Schema.create({ serializers: [{ name: null }] })).toThrow();
+      expect(() =>
+        Schema.create({ serializers: [{ name: undefined }] })
+      ).toThrow();
+      expect(() => Schema.create({ serializers: [{ name: '' }] })).toThrow();
+      expect(() => Schema.create({ serializers: [{ name: ' ' }] })).toThrow();
+      expect(() => Schema.create({ serializers: [{ name: '1' }] })).toThrow();
+      expect(() =>
+        Schema.create({ serializers: [{ name: 'a&1*b' }] })
+      ).toThrow();
     });
   });
 
@@ -341,7 +322,6 @@ describe('Schema', () => {
 
     beforeEach(() => {
       schema = Schema.create({
-        name: 'test',
         models: [{ name: 'aModel' }],
         serializers: [{ name: 'aSerializer' }],
       });
@@ -361,7 +341,6 @@ describe('Schema', () => {
 
     beforeEach(() => {
       schema = Schema.create({
-        name: 'test',
         models: [{ name: 'aModel' }, { name: 'bModel' }],
       });
 

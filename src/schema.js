@@ -6,6 +6,8 @@ import { validateObjectWithUniqueName, validateName } from 'src/utils';
 import symbols from 'src/symbols';
 
 const {
+  $addProperty,
+  $addMethod,
   $addRelationshipAsField,
   $addRelationshipAsProperty,
   $handleExperimentalAPIMessage,
@@ -86,7 +88,7 @@ export class Schema {
       if (lazyProperties)
         Object.entries(lazyProperties).forEach(
           ([propertyName, { body: propertyInitializer, cache }]) => {
-            modelRecord.addProperty({
+            modelRecord[$addProperty]({
               name: propertyName,
               body: value => propertyInitializer(value, Schema.#schemaObject),
               cache,
@@ -97,7 +99,7 @@ export class Schema {
       if (model.lazyMethods)
         Object.entries(model.lazyMethods).forEach(
           ([methodName, methodInitializer]) => {
-            modelRecord.addMethod(
+            modelRecord[$addMethod](
               methodName,
               methodInitializer(Schema.#schemaObject)
             );

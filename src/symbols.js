@@ -23,6 +23,8 @@ export default symbolizeAll(
   'recordHandler',
   'recordTag',
   'defaultValue',
+  'addProperty',
+  'addMethod',
   'addScope',
   'addRelationshipAsField',
   'addRelationshipAsProperty',

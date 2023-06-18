@@ -108,7 +108,7 @@ const MySchema = jsiqle.create({
 const MyModel = MySchema.getModel('MyModel');
 ```
 
-Both of these model definition options require an object argument with the following attributes:
+Model definition options require an object argument with the following attributes:
 
 - `name`: The name of the model. By convention, model names and variables should be title-cased (i.e. `MyModel` instead of `myModel`). Model names must be globally unique.
 - `fields`: (Optional) An object containing key-value pairs for fields that make up the model. More information about field definitions can be found in the next section.
@@ -123,7 +123,7 @@ const MyModel = MySchema.getModel('MyModel');
 
 #### Field definitions
 
-Fields can be defined as part of a model definition or added individually to a model by calling `Model.prototype.addField()`:
+Fields can be defined as part of a model definition.
 
 ```js
 import jsiqle from '@jsiqle/core';
@@ -137,23 +137,19 @@ const MySchema = jsiqle.create({
         username: {
           type: 'string',
           defaultValue: ''
+        },
+        role: {
+          type: 'enum',
+          values: ['user', 'admin'],
+          defaultValue: 'user'
         }
       }
     }
   ]
 });
-
-const MyModel = MySchema.getModel('MyModel');
-
-MyModel.addField({
-  name: 'role',
-  type: 'enum',
-  values: ['user', 'admin'],
-  defaultValue: 'user'
-});
 ```
 
-Both of these field definition options require an object argument with the following attributes:
+Field definition options require an object argument with the following attributes:
 
 - `name`: The name of the field. By convention, field names should be camel-cased (i.e. `myField`). Field names must be unique for each model.
 - `type`: The type of the field. Read below for more information on types and validation.
@@ -176,7 +172,7 @@ For `enum` types, the `values` key must also be specified as an array of distinc
 
 #### Property definitions
 
-Properties can be defined as part of a model definition or added individually to a model by calling `Model.prototype.addProperty()`:
+Properties can be defined as part of a model definition.
 
 ```js
 import jsiqle from '@jsiqle/core';
@@ -190,24 +186,21 @@ const MySchema = jsiqle.create({
       },
       properties: {
         fullName: record => `${record.firstName} ${record.lastName}`,
+        formalName: {
+          body: record => `${record.lastName} ${record.firstName}`,
+          cache: true
+        }
       }
     }
   ]
 });
-
-const MyModel = MySchema.getModel('MyModel');
-
-MyModel.addProperty({
-  name: 'formalName',
-  body: record => `${record.lastName} ${record.firstName}`
-});
 ```
 
-Properties defined as part of the model definition are specified as key-value pairs, whereas properties defined in `Model.prototype.addProperty()` are passed as objects with a `name` and `body` key. Property values in the model definition can either be a function or an object containing a `body` and optional `cache`.
+Properties are specified as key-value pairs. The value can either be a function or an object containing a `body` and optional `cache`.
 
 Property functions can expect up to two arguments. If they do not expect any arguments or only expect a single argument, they are called with the current record as their sole argument. If they expect two arguments, they are considered "lazy" properties and their second argument is automatically bound to the current schema object representation (`{ models, serializers }`). These can only be defined as part of the model definition, are added to the model post initialization and are useful if you need access to other models or serializers.
 
-`Model.prototype.addProperty()` and properties defined as objects in the model defintion can receive an additional boolean key, `cache`, indicating if the property should be cached. Property caches are persisted as long as there are no field changes for a given record and cannot be specified for relationships. This means that properties that depend on other properties, methods or external values are not good candidates for caching. If a cached property is stale, the only way to force a recalculation is via updating any field on the record manually.
+Properties can receive an additional boolean key, `cache`, indicating if the property should be cached. Property caches are persisted as long as there are no field changes for a given record and cannot be specified for relationships. This means that properties that depend on other properties, methods or external values are not good candidates for caching. If a cached property is stale, the only way to force a recalculation is via updating any field on the record manually.
 
 ```js
 import jsiqle from '@jsiqle/core';
@@ -239,7 +232,7 @@ const MySchema = jsiqle.create({
 
 #### Method definitions
 
-Methods can be defined as part of a model definition or added individually to a model by calling `Model.prototype.addMethod()`:
+Methods can be defined as part of a model definition.
 
 ```js
 import jsiqle from '@jsiqle/core';
@@ -252,21 +245,15 @@ const MySchema = jsiqle.create({
         lastName: 'string'
       },
       methods: {
-        prefixedName: (record, prefix) => `${prefix} ${record.lastName}`
+        prefixedName: (record, prefix) => `${prefix} ${record.lastName}`,
+        suffixedName: (record, suffix) => `${record.firstName} ${suffix}`
       }
     }
   ]
 });
-
-const MyModel = MySchema.getModel('MyModel');
-
-MyModel.addMethod(
-  'suffixedName',
-  (record, suffix) => `${record.firstName} ${suffix}`
-);
 ```
 
-Methods defined as part of the model definition are specified as key-value pairs, whereas methods defined in `Model.prototype.addMethod()` are passed as two separate arguments, the name and the method body.
+Methods definition are specified as key-value pairs.
 
 Methods expect any number of arguments, the current record and any arguments passed to them when called, and may return any type of value.
 
@@ -299,7 +286,7 @@ const MySchema = jsiqle.create({
 
 #### Scope definitions
 
-Scopes can be defined as part of a model definition or added individually to a model by calling `Model.prototype.addScope()`:
+Scopes can be defined as part of a model definition.
 
 ```js
 import jsiqle from '@jsiqle/core';
@@ -313,19 +300,20 @@ const MySchema = jsiqle.create({
       },
       scopes: {
         smiths: record => record.lastName === 'Smith'
+        does: record => record.lastName === 'Doe'
+        orderedSmiths: {
+          matcher: record => record.lastName === 'Smith',
+          sorter: (a, b) => a.firstName.localeCompare(b.firstName)
+        }
       }
     }
   ]
 });
-
-const MyModel = MySchema.getModel('MyModel');
-
-MyModel.addScope('does', record => record.lastName === 'Doe');
 ```
 
-Scopes defined as part of the model definition as specified as key-value pairs, whereas scopes defined in `Model.prototype.addScope()` are passed as two separate arguments, the name and the scope body.
+Scopes definition are specified as key-value pairs.
 
-Scopes expect one argument, the current record, and must return a boolean indicating if the scope should include the record or not. Alternatively, scopes can be specified as objects when defined as part of the model definition with a `matcher` function and a `sorter` function. This will create an ordered scope that will always apply the `sorter` to matched records before returning them. Ordered scopes can also be created by supplying a third argument to `Model.prototype.addScope()` which will act as the `sorter` function.
+Scopes expect one argument, the current record, and must return a boolean indicating if the scope should include the record or not. Alternatively, scopes can be specified as objects when defined as part of the model definition with a `matcher` function and a `sorter` function. This will create an ordered scope that will always apply the `sorter` to matched records before returning them.
 
 #### Relationship definitions
 

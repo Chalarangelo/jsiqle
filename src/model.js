@@ -1,4 +1,3 @@
-import { Schema } from 'src/schema';
 import { Field } from 'src/field';
 import { RecordSet, RecordHandler } from 'src/record';
 import { NameError, DuplicationError } from 'src/errors';
@@ -21,7 +20,6 @@ const {
   $getField,
   $getProperty,
   $instances,
-  $handleExperimentalAPIMessage,
 } = symbols;
 
 const allStandardTypes = [...Object.keys(standardTypes), 'enum'];
@@ -218,23 +216,11 @@ export class Model {
 
   #addField(fieldOptions) {
     const { type, name } = fieldOptions;
-    if (!['string', 'function'].includes(typeof type))
-      throw new TypeError(`Field ${type} is not an string or a function.`);
     const isStandardType = allStandardTypes.includes(type);
-    let field;
 
-    if (isStandardType) {
-      field = Field[type](fieldOptions);
-    } else if (typeof type === 'function') {
-      Schema[$handleExperimentalAPIMessage](
-        `The provided type for ${name} is not part of the standard types. Function types are experimental and may go away in a later release.`
-      );
-      field = new Field(fieldOptions);
-    } else {
-      throw new TypeError(`Field ${type} is not a valid type.`);
-    }
-    this.#fields.set(name, field);
-    return field;
+    if (typeof type !== 'string' || !isStandardType)
+      throw new TypeError(`Field ${name} is not a standard type.`);
+    this.#fields.set(name, Field[type](fieldOptions));
   }
 
   #addScope(name, scope, sortFn) {

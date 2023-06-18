@@ -20,6 +20,12 @@ const schema = jsiqle.create({
         code: 'string',
         language: 'string',
         tags: 'stringArray',
+        special: 'string',
+      },
+      properties: {
+        isCool: record => {
+          return record.tags.includes('cool');
+        },
       },
       scopes: {
         cool: record => {
@@ -96,18 +102,6 @@ const categoryA = category.createRecord({
 const categoryB = category.createRecord({
   id: 'categoryB',
   description: 'description of categoryB',
-});
-
-snippet.addField({
-  name: 'special',
-  type: 'string',
-});
-
-snippet.addProperty({
-  name: 'isCool',
-  body: record => {
-    return record.tags.includes('cool');
-  },
 });
 
 const snippetC = snippet.createRecord({

@@ -7,7 +7,9 @@ const {
   $fields,
   $properties,
   $cachedProperties,
+  $addProperty,
   $methods,
+  $addMethod,
   $scopes,
 } = symbols;
 
@@ -124,20 +126,7 @@ describe('Model', () => {
     });
   });
 
-  describe('addField', () => {
-    let model;
-
-    beforeEach(() => {
-      model = new Model({ name: 'aModel' });
-    });
-
-    it('creates the appropriate field', () => {
-      model.addField({ name: 'aField', type: 'string' });
-      expect(model[$fields].has('aField')).toEqual(true);
-    });
-  });
-
-  describe('addProperty', () => {
+  describe('$addProperty', () => {
     let model;
 
     beforeEach(() => {
@@ -145,32 +134,34 @@ describe('Model', () => {
     });
 
     it('throws if "name" is invalid', () => {
-      expect(() => model.addProperty(null)).toThrow();
-      expect(() => model.addProperty(2)).toThrow();
-      expect(() => model.addProperty('2f')).toThrow();
-      expect(() => model.addProperty('id')).toThrow();
+      expect(() => model[$addProperty](null)).toThrow();
+      expect(() => model[$addProperty](2)).toThrow();
+      expect(() => model[$addProperty]('2f')).toThrow();
+      expect(() => model[$addProperty]('id')).toThrow();
     });
 
     it('throws if "body" is not a function', () => {
       expect(() =>
-        model.addProperty({ name: 'aProperty', body: null })
+        model[$addProperty]({ name: 'aProperty', body: null })
       ).toThrow();
-      expect(() => model.addProperty({ name: 'aProperty', body: 2 })).toThrow();
+      expect(() =>
+        model[$addProperty]({ name: 'aProperty', body: 2 })
+      ).toThrow();
     });
 
     it('creates the appropriate property', () => {
-      model.addProperty({ name: 'aProperty', body: () => null });
+      model[$addProperty]({ name: 'aProperty', body: () => null });
       expect(model[$properties].has('aProperty')).toEqual(true);
     });
 
     it('creates a cached property if "cache" is true', () => {
-      model.addProperty({ name: 'aProperty', body: () => null, cache: true });
+      model[$addProperty]({ name: 'aProperty', body: () => null, cache: true });
       expect(model[$properties].has('aProperty')).toEqual(true);
       expect(model[$cachedProperties].has('aProperty')).toEqual(true);
     });
   });
 
-  describe('addMethod', () => {
+  describe('$addMethod', () => {
     let model;
 
     beforeEach(() => {
@@ -178,53 +169,20 @@ describe('Model', () => {
     });
 
     it('throws if "name" is invalid', () => {
-      expect(() => model.addMethod(null)).toThrow();
-      expect(() => model.addMethod(2)).toThrow();
-      expect(() => model.addMethod('2f')).toThrow();
-      expect(() => model.addMethod('id')).toThrow();
+      expect(() => model[$addMethod](null)).toThrow();
+      expect(() => model[$addMethod](2)).toThrow();
+      expect(() => model[$addMethod]('2f')).toThrow();
+      expect(() => model[$addMethod]('id')).toThrow();
     });
 
     it('throws if "method" is not a function', () => {
-      expect(() => model.addMethod('aProperty', null)).toThrow();
-      expect(() => model.addMethod('aProperty', 2)).toThrow();
+      expect(() => model[$addMethod]('aProperty', null)).toThrow();
+      expect(() => model[$addMethod]('aProperty', 2)).toThrow();
     });
 
     it('creates the appropriate property', () => {
-      model.addMethod('aMethod', () => null);
+      model[$addMethod]('aMethod', () => null);
       expect(model[$methods].has('aMethod')).toEqual(true);
-    });
-  });
-
-  describe('addScope', () => {
-    let model;
-
-    beforeEach(() => {
-      model = new Model({ name: 'aModel' });
-    });
-
-    it('throws if "name" is invalid', () => {
-      expect(() => model.addScope(null)).toThrow();
-      expect(() => model.addScope(2)).toThrow();
-      expect(() => model.addScope('2f')).toThrow();
-    });
-
-    it('throws if "scope" is not a function', () => {
-      expect(() => model.addScope('aScope', null)).toThrow();
-      expect(() => model.addScope('aScope', 2)).toThrow();
-    });
-
-    it('creates the appropriate scope', () => {
-      model.addScope('aScope', () => null);
-      expect(model.records[$scopes].has('aScope')).toEqual(true);
-    });
-
-    it('creates an appropriate scope with a sorter', () => {
-      model.addScope(
-        'aScope',
-        () => null,
-        (a, b) => a.id - b.id
-      );
-      expect(model.records[$scopes].has('aScope')).toEqual(true);
     });
   });
 

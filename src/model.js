@@ -13,6 +13,8 @@ const {
   $methods,
   $relationships,
   $recordHandler,
+  $addProperty,
+  $addMethod,
   $addScope,
   $addRelationshipAsField,
   $addRelationshipAsProperty,
@@ -61,16 +63,16 @@ export class Model {
     // Add fields, checking for duplicates and invalids
     Object.entries(fields).forEach(([fieldName, field]) => {
       if (typeof field === 'object')
-        this.addField({ name: fieldName, ...field });
-      else this.addField({ name: fieldName, type: field });
+        this.#addField({ name: fieldName, ...field });
+      else this.#addField({ name: fieldName, type: field });
     });
 
     // Add properties, checking for duplicates and invalids
     Object.entries(properties).forEach(([propertyName, property]) => {
       if (typeof property === 'object')
-        this.addProperty({ name: propertyName, ...property });
+        this[$addProperty]({ name: propertyName, ...property });
       else
-        this.addProperty({
+        this[$addProperty]({
           name: propertyName,
           body: property,
         });
@@ -78,55 +80,16 @@ export class Model {
 
     // Add methods, checking for duplicates and invalids
     Object.entries(methods).forEach(([methodName, method]) => {
-      this.addMethod(methodName, method);
+      this[$addMethod](methodName, method);
     });
 
     // Add scopes, checking for duplicates and invalids
     Object.entries(scopes).forEach(([scopeName, scope]) => {
-      this.addScope(scopeName, ...Model.#parseScope(scope));
+      this.#addScope(scopeName, ...Model.#parseScope(scope));
     });
 
     // Add the model to the instances map
     Model.#instances.set(this.name, this);
-  }
-
-  addField(fieldOptions) {
-    const { type, name } = fieldOptions;
-    if (!['string', 'function'].includes(typeof type))
-      throw new TypeError(`Field ${type} is not an string or a function.`);
-    const isStandardType = allStandardTypes.includes(type);
-    let field;
-
-    if (isStandardType) {
-      field = Field[type](fieldOptions);
-    } else if (typeof type === 'function') {
-      Schema[$handleExperimentalAPIMessage](
-        `The provided type for ${name} is not part of the standard types. Function types are experimental and may go away in a later release.`
-      );
-      field = new Field(fieldOptions);
-    } else {
-      throw new TypeError(`Field ${type} is not a valid type.`);
-    }
-    this.#fields.set(name, field);
-    return field;
-  }
-
-  addProperty({ name, body, cache = false }) {
-    if (typeof body !== 'function')
-      throw new TypeError(`Property ${name} is not a function.`);
-    this.#properties.set(name, body);
-    if (cache) this.#cachedProperties.add(name);
-  }
-
-  addMethod(name, method) {
-    if (typeof method !== 'function')
-      throw new TypeError(`Method ${name} is not a function.`);
-    this.#methods.set(name, method);
-  }
-
-  addScope(name, scope, sortFn) {
-    const scopeName = validateName(name);
-    this.#records[$addScope](scopeName, scope, sortFn);
   }
 
   // TODO: V2 Enhancements
@@ -196,6 +159,19 @@ export class Model {
     return this.#relationships;
   }
 
+  [$addProperty]({ name, body, cache = false }) {
+    if (typeof body !== 'function')
+      throw new TypeError(`Property ${name} is not a function.`);
+    this.#properties.set(name, body);
+    if (cache) this.#cachedProperties.add(name);
+  }
+
+  [$addMethod](name, method) {
+    if (typeof method !== 'function')
+      throw new TypeError(`Method ${name} is not a function.`);
+    this.#methods.set(name, method);
+  }
+
   [$addRelationshipAsField](relationship) {
     const { name, fieldName, field } = relationship[$getField]();
     const relationshipName = `${name}.${fieldName}`;
@@ -239,6 +215,32 @@ export class Model {
   }
 
   // Private
+
+  #addField(fieldOptions) {
+    const { type, name } = fieldOptions;
+    if (!['string', 'function'].includes(typeof type))
+      throw new TypeError(`Field ${type} is not an string or a function.`);
+    const isStandardType = allStandardTypes.includes(type);
+    let field;
+
+    if (isStandardType) {
+      field = Field[type](fieldOptions);
+    } else if (typeof type === 'function') {
+      Schema[$handleExperimentalAPIMessage](
+        `The provided type for ${name} is not part of the standard types. Function types are experimental and may go away in a later release.`
+      );
+      field = new Field(fieldOptions);
+    } else {
+      throw new TypeError(`Field ${type} is not a valid type.`);
+    }
+    this.#fields.set(name, field);
+    return field;
+  }
+
+  #addScope(name, scope, sortFn) {
+    const scopeName = validateName(name);
+    this.#records[$addScope](scopeName, scope, sortFn);
+  }
 
   static #parseScope(scope) {
     if (typeof scope === 'function') return [scope];

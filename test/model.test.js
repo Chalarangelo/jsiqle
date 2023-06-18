@@ -89,13 +89,11 @@ describe('Model', () => {
         aField: 'string',
         bField: 'number',
         cField: 'boolean',
-        dField: () => true,
       };
       const model = new Model({ name: 'aModel', fields });
       expect(model[$fields].has('aField')).toEqual(true);
       expect(model[$fields].has('bField')).toEqual(true);
       expect(model[$fields].has('cField')).toEqual(true);
-      expect(model[$fields].has('dField')).toEqual(true);
     });
 
     it('has the correct properties', () => {

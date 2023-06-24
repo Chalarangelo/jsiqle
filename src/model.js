@@ -12,7 +12,6 @@ const {
   $methods,
   $relationships,
   $recordHandler,
-  $addProperty,
   $addMethod,
   $addScope,
   $addRelationshipAsField,
@@ -68,9 +67,9 @@ export class Model {
     // Add properties, checking for duplicates and invalids
     Object.entries(properties).forEach(([propertyName, property]) => {
       if (typeof property === 'object')
-        this[$addProperty]({ name: propertyName, ...property });
+        this.#addProperty({ name: propertyName, ...property });
       else
-        this[$addProperty]({
+        this.#addProperty({
           name: propertyName,
           body: property,
         });
@@ -157,13 +156,6 @@ export class Model {
     return this.#relationships;
   }
 
-  [$addProperty]({ name, body, cache = false }) {
-    if (typeof body !== 'function')
-      throw new TypeError(`Property ${name} is not a function.`);
-    this.#properties.set(name, body);
-    if (cache) this.#cachedProperties.add(name);
-  }
-
   [$addMethod](name, method) {
     if (typeof method !== 'function')
       throw new TypeError(`Method ${name} is not a function.`);
@@ -221,6 +213,13 @@ export class Model {
     if (typeof type !== 'string' || !isStandardType)
       throw new TypeError(`Field ${name} is not a standard type.`);
     this.#fields.set(name, Field[type](fieldOptions));
+  }
+
+  #addProperty({ name, body, cache = false }) {
+    if (typeof body !== 'function')
+      throw new TypeError(`Property ${name} is not a function.`);
+    this.#properties.set(name, body);
+    if (cache) this.#cachedProperties.add(name);
   }
 
   #addScope(name, scope, sortFn) {

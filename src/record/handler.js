@@ -1,4 +1,5 @@
 import Record from './record';
+import Schema from '../schema';
 import { DuplicationError } from 'src/errors';
 import { isUndefined, recordId } from 'src/types';
 import symbols from 'src/symbols';
@@ -17,6 +18,7 @@ const {
   $recordTag,
   $isRecord,
   $get,
+  $schemaObject,
 } = symbols;
 
 class RecordHandler {
@@ -190,12 +192,16 @@ class RecordHandler {
       if (record[$cachedProperties] && record[$cachedProperties].has(property))
         return record[$cachedProperties].get(property);
       const value = this.#model[$properties].get(property)(
-        record[$wrappedRecordValue]
+        record[$wrappedRecordValue],
+        Schema[$schemaObject]
       );
       record[$cachedProperties].set(property, value);
       return value;
     }
-    return this.#model[$properties].get(property)(record[$wrappedRecordValue]);
+    return this.#model[$properties].get(property)(
+      record[$wrappedRecordValue],
+      Schema[$schemaObject]
+    );
   }
 
   #hasMethod(method) {

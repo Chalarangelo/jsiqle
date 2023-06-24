@@ -7,7 +7,6 @@ const {
   $fields,
   $properties,
   $cachedProperties,
-  $addProperty,
   $methods,
   $addMethod,
   $scopes,
@@ -48,6 +47,15 @@ describe('Model', () => {
     expect(
       () => new Model({ ...modelParams, fields: { id: { type: 'test' } } })
     ).toThrow();
+  });
+
+  it('creates a cached property if "cache" is true', () => {
+    const model = new Model({
+      name: 'aModel',
+      properties: { aProperty: { body: () => null, cache: true } },
+    });
+    expect(model[$properties].has('aProperty')).toEqual(true);
+    expect(model[$cachedProperties].has('aProperty')).toEqual(true);
   });
 
   it('throws if "properties" contain invalid values', () => {
@@ -121,41 +129,6 @@ describe('Model', () => {
       expect(model.records[$scopes].has('aScope')).toEqual(true);
       expect(model.records[$scopes].has('bScope')).toEqual(true);
       expect(model.records[$scopes].has('cScope')).toEqual(true);
-    });
-  });
-
-  describe('$addProperty', () => {
-    let model;
-
-    beforeEach(() => {
-      model = new Model({ name: 'aModel' });
-    });
-
-    it('throws if "name" is invalid', () => {
-      expect(() => model[$addProperty](null)).toThrow();
-      expect(() => model[$addProperty](2)).toThrow();
-      expect(() => model[$addProperty]('2f')).toThrow();
-      expect(() => model[$addProperty]('id')).toThrow();
-    });
-
-    it('throws if "body" is not a function', () => {
-      expect(() =>
-        model[$addProperty]({ name: 'aProperty', body: null })
-      ).toThrow();
-      expect(() =>
-        model[$addProperty]({ name: 'aProperty', body: 2 })
-      ).toThrow();
-    });
-
-    it('creates the appropriate property', () => {
-      model[$addProperty]({ name: 'aProperty', body: () => null });
-      expect(model[$properties].has('aProperty')).toEqual(true);
-    });
-
-    it('creates a cached property if "cache" is true', () => {
-      model[$addProperty]({ name: 'aProperty', body: () => null, cache: true });
-      expect(model[$properties].has('aProperty')).toEqual(true);
-      expect(model[$cachedProperties].has('aProperty')).toEqual(true);
     });
   });
 

@@ -23,7 +23,6 @@ export default symbolizeAll(
   'recordHandler',
   'recordTag',
   'defaultValue',
-  'addProperty',
   'addMethod',
   'addScope',
   'addRelationshipAsField',
@@ -35,5 +34,6 @@ export default symbolizeAll(
   'groupTag',
   'get',
   'handleExperimentalAPIMessage',
-  'clearSchemaForTesting'
+  'clearSchemaForTesting',
+  'schemaObject'
 );

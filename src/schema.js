@@ -6,12 +6,12 @@ import { validateObjectWithUniqueName, validateName } from 'src/utils';
 import symbols from 'src/symbols';
 
 const {
-  $addProperty,
   $addMethod,
   $addRelationshipAsField,
   $addRelationshipAsProperty,
   $handleExperimentalAPIMessage,
   $clearSchemaForTesting,
+  $schemaObject,
 } = symbols;
 
 export class Schema {
@@ -44,15 +44,9 @@ export class Schema {
 
     Schema.#parseConfig(config);
 
-    const lazyPropertyMap = {};
-    models.forEach(model => {
-      const { lazyProperties, ...modelData } =
-        Schema.#separateModelProperties(model);
-      if (Object.keys(lazyProperties).length)
-        lazyPropertyMap[modelData.name] = lazyProperties;
-
+    models.forEach(modelData => {
       // Perform name validation for fields, properties and methods here
-      // to evaluate lazy properties early on and exit if something is wrong.
+      // to exit if something is wrong.
       const { fields = {}, properties = {}, methods = {} } = modelData;
       const names = [
         ...Object.keys(fields),
@@ -84,17 +78,6 @@ export class Schema {
 
     models.forEach(model => {
       const modelRecord = Schema.getModel(model.name);
-      const lazyProperties = lazyPropertyMap[model.name] || {};
-      if (lazyProperties)
-        Object.entries(lazyProperties).forEach(
-          ([propertyName, { body: propertyInitializer, cache }]) => {
-            modelRecord[$addProperty]({
-              name: propertyName,
-              body: value => propertyInitializer(value, Schema.#schemaObject),
-              cache,
-            });
-          }
-        );
 
       if (model.lazyMethods)
         Object.entries(model.lazyMethods).forEach(
@@ -149,6 +132,10 @@ export class Schema {
    */
   static get models() {
     return Schema.#models;
+  }
+
+  static get [$schemaObject]() {
+    return Schema.#schemaObject;
   }
 
   /**
@@ -221,30 +208,6 @@ export class Schema {
     );
     const serializer = new Serializer(serializerData);
     Schema.#serializers.set(serializerName, serializer);
-  }
-
-  static #separateModelProperties(modelData) {
-    const { properties: modelProperties = {}, ...model } = modelData;
-
-    const [properties, lazyProperties] = Object.entries(modelProperties).reduce(
-      (acc, [propertyName, property]) => {
-        const isObject = typeof property === 'object';
-        const propertyFn = isObject ? property.body : property;
-        const isLazy = propertyFn.length === 2;
-        acc[isLazy ? 1 : 0][propertyName] = {
-          body: propertyFn,
-          cache: isObject ? Boolean(property.cache) : false,
-        };
-        return acc;
-      },
-      [{}, {}]
-    );
-
-    return {
-      ...model,
-      properties,
-      lazyProperties,
-    };
   }
 
   static #createRelationship(relationshipData) {

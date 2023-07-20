@@ -296,57 +296,6 @@ class RecordSet extends Map {
   }
 
   /**
-   * Duplicates the current record set.
-   * @returns {RecordSet} A new record set with the same elements as the original.
-   */
-  duplicate() {
-    return new RecordSet({
-      iterable: [...this.entries()],
-      copyScopesFrom: this,
-    });
-  }
-
-  /**
-   * Merges one or more record sets into the current record set.
-   * @param {...any} recordSets One or more record sets to merge.
-   * @returns {RecordSet} A new record set with the elements of the original
-   * record sets merged into it.
-   */
-  merge(...recordSets) {
-    const res = new Map([...this.entries()]);
-    for (const recordSet of recordSets) {
-      for (const [id, value] of recordSet.entries()) {
-        if (res.has(id))
-          throw new DuplicationError(
-            `Id ${id} already exists in the record set.`
-          );
-        res.set(id, value);
-      }
-    }
-    return new RecordSet({
-      iterable: [...res.entries()],
-      copyScopesFrom: this,
-    });
-  }
-
-  /**
-   * Merges one or more records into the current record set.
-   * @param  {...any} records One or more records to merge.
-   * @returns {RecordSet} A new record set with the elements of the original
-   * record set and any given records merged into it.
-   */
-  append(...records) {
-    const res = new RecordSet({
-      iterable: [...this.entries()],
-      copyScopesFrom: this,
-    });
-    for (const record of records) {
-      res[$set](record.id, record);
-    }
-    return res;
-  }
-
-  /**
    * Creates a new record set with all elements that pass the test implemented
    * by the provided function.
    * @param {Function} callbackFn Function that is called for every element of

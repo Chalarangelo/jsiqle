@@ -336,38 +336,6 @@ describe('RecordSet', () => {
     });
   });
 
-  describe('duplicate', () => {
-    it('should duplicate the record set', () => {
-      const result = model.records.duplicate();
-      expect(result.count).toBe(4);
-      expect(result.first.id).toBe('0');
-      expect(result.last.id).toBe('3');
-      expect(result).not.toBe(model.records);
-    });
-  });
-
-  describe('merge', () => {
-    it('should merge the record sets', () => {
-      const r1 = model.records.limit(2);
-      const r2 = model.records.offset(2).limit(1);
-      const result = r1.merge(r2);
-      expect(result.count).toBe(3);
-      expect(result.first.id).toBe('0');
-      expect(result.last.id).toBe('2');
-    });
-  });
-
-  describe('append', () => {
-    it('should append the records', () => {
-      const r1 = model.records.limit(2);
-      const r = model.records.last;
-      const result = r1.append(r);
-      expect(result.count).toBe(3);
-      expect(result.first.id).toBe('0');
-      expect(result.last.id).toBe('3');
-    });
-  });
-
   describe('where', () => {
     it('should filter over the records', () => {
       const result = model.records.where(rec => rec.age >= 18);

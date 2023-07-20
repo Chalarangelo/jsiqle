@@ -70,38 +70,28 @@ class RecordSet extends Map {
   }
 
   /**
-   * Creates an object populated with the results of calling a provided function
-   * on every element in the calling record set.
+   * Creates an array or object populated with the results of calling a provided
+   * function on every element in the calling record set.
    * @param {Function} callbackFn Function that is called for every element of
    * the record set. The callback is called with the following arguments:
    * - `value`: The value of the current element.
    * - `id`: The id of the current element.
    * - `recordSet`: The record set itself.
-   * @returns {Object} An object with each id mapped to the result of the
-   * callback function on the corresponding element.
+   * @param {Object} options An object with options for the map operation.
+   * @param {Boolean} options.flat Whether to return an array or object.
+   * @returns {Array/Object} An array or object with the results of the callback
+   * function on each element.
    */
-  map(callbackFn) {
+  map(callbackFn, { flat = false } = {}) {
+    if (flat)
+      return [...this.entries()].map(([id, value]) => {
+        return callbackFn(value, id, this);
+      });
+
     return [...this.entries()].reduce((newMap, [id, value]) => {
       newMap[id] = callbackFn(value, id, this);
       return newMap;
     }, {});
-  }
-
-  /**
-   * Creates an array of values by running each element of the record set
-   * through the provided transformation function.
-   * @param {Function} callbackFn Function that is called for every element of
-   * the record set. The callback is called with the following arguments:
-   * - `value`: The value of the current element.
-   * - `id`: The id of the current element.
-   * - `recordSet`: The record set itself.
-   * @returns {Array} An array with each element being the result of the
-   * callback function on the corresponding element.
-   */
-  flatMap(callbackFn) {
-    return [...this.entries()].map(([id, value]) => {
-      return callbackFn(value, id, this);
-    });
   }
 
   /**
@@ -126,39 +116,30 @@ class RecordSet extends Map {
   }
 
   /**
-   * Creates a new record set with all elements that pass the test implemented
-   * by the provided function.
+   * Creates a new record set or array with all elements that pass the test
+   * implemented by the provided function.
    * @param {Function} callbackFn Function that is called for every element of
    * the record set. The callback is called with the following arguments:
    * - `value`: The value of the current element.
    * - `id`: The id of the current element.
    * - `recordSet`: The record set itself.
-   * @returns {RecordSet} A new record set with all elements that pass the test.
+   * @param {Boolean} options.flat Whether to return an array or object.
+   * @returns {Array/RecordSet} An array or record set with all elements that
+   * pass the test.
    */
-  filter(callbackFn) {
+  filter(callbackFn, { flat = false } = {}) {
+    if (flat)
+      return [...this.entries()].reduce((arr, [id, value]) => {
+        if (callbackFn(value, id, this)) arr.push(value);
+        return arr;
+      }, []);
+
     return [...this.entries()]
       .reduce((newMap, [id, value]) => {
         if (callbackFn(value, id, this)) newMap.set(id, value);
         return newMap;
       }, new RecordSet({ copyScopesFrom: this }))
       .freeze();
-  }
-
-  /**
-   * Creates an array with all elements that pass the test implemente by the
-   * provided function.
-   * @param {Function} callbackFn Function that is called for every element of
-   * the record set. The callback is called with the following arguments:
-   * - `value`: The value of the current element.
-   * - `id`: The id of the current element.
-   * - `recordSet`: The record set itself.
-   * @returns {Array} An array with all elements that pass the test.
-   */
-  flatFilter(callbackFn) {
-    return [...this.entries()].reduce((arr, [id, value]) => {
-      if (callbackFn(value, id, this)) arr.push(value);
-      return arr;
-    }, []);
   }
 
   /**
@@ -565,40 +546,33 @@ class RecordSet extends Map {
 
   /**
    * Returns an array of the records contained in the record set.
-   * @returns {Array<Record>} An array of the values contained in the record set.
-   */
-  toArray() {
-    return [...this.values()];
-  }
-
-  /**
-   * Returns an array of objects representing the records in the record set.
-   * @returns {Array<Object>} An array of objects representing the records in
+   * @param {Object} options An object with options for the operation.
+   * @param {Boolean} options.flat Whether to convert the records to objects.
+   * @returns {Array<Record>/Array{Object}} An array of the values contained in
    * the record set.
    */
-  toFlatArray() {
-    return [...this.values()].map(value => value.toObject());
+  toArray({ flat = false } = {}) {
+    const values = [...this.values()];
+
+    if (flat) return values.map(value => value.toObject());
+    return values;
   }
 
   /**
    * Returns an object representing the record set.
+   * @param {Object} options An object with options for the operation.
+   * @param {Boolean} options.flat Whether to convert the records to objects.
    * @returns {Object} An object representing the record set.
    */
-  toObject() {
+  toObject({ flat = false } = {}) {
+    if (flat)
+      return [...this.entries()].reduce((obj, [id, value]) => {
+        obj[id] = value.toObject();
+        return obj;
+      }, {});
+
     return [...this.entries()].reduce((obj, [id, value]) => {
       obj[id] = value;
-      return obj;
-    }, {});
-  }
-
-  /**
-   * Returns a flattened object of objects representing the records in the
-   * record set.
-   * @returns {Object} An object representing the records in the record set.
-   */
-  toFlatObject() {
-    return [...this.entries()].reduce((obj, [id, value]) => {
-      obj[id] = value.toObject();
       return obj;
     }, {});
   }

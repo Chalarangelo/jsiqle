@@ -126,9 +126,9 @@ describe('Model', () => {
       };
 
       const model = new Model({ name: 'aModel', scopes });
-      expect(model.records[$scopes].has('aScope')).toEqual(true);
-      expect(model.records[$scopes].has('bScope')).toEqual(true);
-      expect(model.records[$scopes].has('cScope')).toEqual(true);
+      expect(model[$scopes].has('aScope')).toEqual(true);
+      expect(model[$scopes].has('bScope')).toEqual(true);
+      expect(model[$scopes].has('cScope')).toEqual(true);
     });
   });
 

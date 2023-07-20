@@ -11,6 +11,7 @@ const {
   $cachedProperties,
   $methods,
   $relationships,
+  $scopes,
   $recordHandler,
   $addMethod,
   $addScope,
@@ -33,6 +34,7 @@ export class Model {
   #methods;
   #relationships;
   #cachedProperties;
+  #scopes;
 
   static #instances = new Map();
 
@@ -48,8 +50,12 @@ export class Model {
     if (Model.#instances.has(name))
       throw new DuplicationError(`A model named ${name} already exists.`);
 
+    // Instantiate this before the record storage, so it can be
+    // queried if needed.
+    this.#scopes = new Map();
+
     // Create the record storage and handler
-    this.#records = new RecordSet();
+    this.#records = new RecordSet({ model: this });
     this.#recordHandler = new RecordHandler(this);
 
     // Initialize private fields
@@ -158,6 +164,10 @@ export class Model {
     return this.#relationships;
   }
 
+  get [$scopes]() {
+    return this.#scopes;
+  }
+
   [$addMethod](name, method) {
     if (typeof method !== 'function')
       throw new TypeError(`Method ${name} is not a function.`);
@@ -225,8 +235,22 @@ export class Model {
   }
 
   #addScope(name, scope, sortFn) {
+    if (typeof scope !== 'function')
+      throw new TypeError(`Scope ${name} is not a function.`);
+    if (sortFn && typeof sortFn !== 'function')
+      throw new TypeError(
+        `Scope ${name} comparator function is not a function.`
+      );
+
     const scopeName = validateName(name);
-    this.#records[$addScope](scopeName, scope, sortFn);
+    if (
+      this.#records[scopeName] ||
+      Object.getOwnPropertyNames(RecordSet.prototype).includes(scopeName)
+    )
+      throw new NameError(`Scope name ${scopeName} is already in use.`);
+
+    this.#scopes.set(name, [scope, sortFn]);
+    this.#records[$addScope](scopeName);
   }
 
   static #parseScope(scope) {

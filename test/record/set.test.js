@@ -518,4 +518,11 @@ describe('RecordSet', () => {
       );
     });
   });
+
+  describe('#copyScopesFromModel', () => {
+    it('should copy scopes when a new recordSet is created', () => {
+      const newRecordSet = model.records.limit(4);
+      expect(newRecordSet.adults.count).toBe(3);
+    });
+  });
 });

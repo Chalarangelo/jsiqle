@@ -1,5 +1,4 @@
 import { allEqualBy } from 'src/utils';
-import { NameError, DuplicationError } from 'src/errors';
 import symbols from 'src/symbols';
 
 const {
@@ -17,14 +16,17 @@ const {
  * additional methods similar to the Array prototype.
  */
 class RecordSet extends Map {
-  #scopes;
+  #model;
 
-  constructor({ iterable = [], copyScopesFrom = null } = {}) {
+  constructor({ iterable = [], model = null } = {}) {
     super();
+
+    if (!model) throw new TypeError('Model cannot be empty.');
+    this.#model = model;
+
     for (const [id, value] of iterable) this[$set](id, value);
 
-    this.#scopes = new Map();
-    if (copyScopesFrom) this.#copyScopes(copyScopesFrom);
+    this.#copyScopesFromModel();
   }
 
   set() {
@@ -113,7 +115,7 @@ class RecordSet extends Map {
     return [...this.entries()].reduce((newMap, [id, value]) => {
       if (callbackFn(value, id, this)) newMap[$set](id, value);
       return newMap;
-    }, new RecordSet({ copyScopesFrom: this }));
+    }, new RecordSet({ model: this.#model }));
   }
 
   /**
@@ -165,7 +167,7 @@ class RecordSet extends Map {
         if (this.has(id)) itr.push([id, this.get(id)]);
         return itr;
       }, []),
-      copyScopesFrom: this,
+      model: this.#model,
     });
   }
 
@@ -181,7 +183,7 @@ class RecordSet extends Map {
       iterable: [...this.entries()].filter(([id]) => {
         return !ids.includes(id);
       }),
-      copyScopesFrom: this,
+      model: this.#model,
     });
   }
 
@@ -200,7 +202,10 @@ class RecordSet extends Map {
     const sorted = [...this.entries()].sort(([id1, value1], [id2, value2]) =>
       comparatorFn(value1, value2, id1, id2)
     );
-    return new RecordSet({ iterable: sorted, copyScopesFrom: this });
+    return new RecordSet({
+      iterable: sorted,
+      model: this.#model,
+    });
   }
 
   /**
@@ -285,8 +290,8 @@ class RecordSet extends Map {
       }
       if (!res[keyValue]) {
         res[keyValue] = new RecordSet({
-          copyScopesFrom: this,
           iterable: [],
+          model: this.#model,
         });
       }
       res[keyValue][$set](recordKey, value);
@@ -338,14 +343,20 @@ class RecordSet extends Map {
       if (batch.length === batchSize) {
         yield flat
           ? batch
-          : new RecordSet({ copyScopesFrom: this, iterable: batch });
+          : new RecordSet({
+              iterable: batch,
+              model: this.#model,
+            });
         batch = [];
       }
     }
     if (batch.length)
       yield flat
         ? batch
-        : new RecordSet({ copyScopesFrom: this, iterable: batch });
+        : new RecordSet({
+            iterable: batch,
+            model: this.#model,
+          });
   }
 
   /**
@@ -361,7 +372,7 @@ class RecordSet extends Map {
     }
     return new RecordSet({
       iterable: records,
-      copyScopesFrom: this,
+      model: this.#model,
     });
   }
 
@@ -379,7 +390,7 @@ class RecordSet extends Map {
     }
     return new RecordSet({
       iterable: records,
-      copyScopesFrom: this,
+      model: this.#model,
     });
   }
 
@@ -394,7 +405,7 @@ class RecordSet extends Map {
   slice(start, end) {
     return new RecordSet({
       iterable: [...this.entries()].slice(start, end),
-      copyScopesFrom: this,
+      model: this.#model,
     });
   }
 
@@ -508,16 +519,7 @@ class RecordSet extends Map {
     return this;
   }
 
-  [$addScope](name, scope, sortFn) {
-    RecordSet.#validateProperty('Scope', name, scope, this.#scopes);
-    if (sortFn) RecordSet.#validateFunction('Scope comparator', name, sortFn);
-    if (
-      this[name] ||
-      Object.getOwnPropertyNames(RecordSet.prototype).includes(name)
-    )
-      throw new NameError(`Scope name ${name} is already in use.`);
-
-    this.#scopes.set(name, [scope, sortFn]);
+  [$addScope](name) {
     Object.defineProperty(this, name, {
       configurable: false, // Prevents deletion
       get: () => {
@@ -526,21 +528,15 @@ class RecordSet extends Map {
     });
   }
 
-  get [$scopes]() {
-    return this.#scopes;
-  }
-
   [$clearRecordSetForTesting]() {
     super.clear();
   }
 
   // Private
 
-  #copyScopes(otherRecordSet) {
-    otherRecordSet[$scopes].forEach((scope, name) => {
-      // No need to verify that the scope is valid, it must be verified by the
-      // other record set already.
-      this.#scopes.set(name, scope);
+  #copyScopesFromModel() {
+    this.#model[$scopes].forEach((scope, name) => {
+      if (this[name]) return;
       Object.defineProperty(this, name, {
         configurable: false, // Prevents deletion
         get: () => {
@@ -551,7 +547,7 @@ class RecordSet extends Map {
   }
 
   #scopedWhere(scopeName) {
-    const [matcherFn, comparatorFn] = this.#scopes.get(scopeName);
+    const [matcherFn, comparatorFn] = this.#model[$scopes].get(scopeName);
     let matches = [];
     for (const [id, value] of this.entries())
       if (matcherFn(value, id, this)) matches.push([id, value]);
@@ -559,25 +555,10 @@ class RecordSet extends Map {
       matches.sort(([id1, value1], [id2, value2]) =>
         comparatorFn(value1, value2, id1, id2)
       );
-    return new RecordSet({ iterable: matches, copyScopesFrom: this });
-  }
-
-  static #validateProperty(callbackType, callbackName, callback, callbacks) {
-    if (typeof callback !== 'function')
-      throw new TypeError(`${callbackType} ${callbackName} is not a function.`);
-
-    if (callbacks.has(callbackName))
-      throw new DuplicationError(
-        `${callbackType} ${callbackName} already exists.`
-      );
-
-    return callback;
-  }
-
-  static #validateFunction(callbackType, callbackName, callback) {
-    if (typeof callback !== 'function')
-      throw new TypeError(`${callbackType} ${callbackName} is not a function.`);
-    return callback;
+    return new RecordSet({
+      iterable: matches,
+      model: this.#model,
+    });
   }
 }
 

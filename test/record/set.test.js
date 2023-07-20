@@ -2,7 +2,8 @@ import { Model } from 'src/model';
 import symbols from 'src/symbols';
 import Schema from '../../src/schema';
 
-const { $instances, $clearSchemaForTesting } = symbols;
+const { $instances, $clearSchemaForTesting, $clearRecordSetForTesting } =
+  symbols;
 
 // Indirectly check other record-related classes, too.
 describe('RecordSet', () => {
@@ -73,7 +74,7 @@ describe('RecordSet', () => {
     });
 
     it('should return null if no records', () => {
-      model.records.clear();
+      model.records[$clearRecordSetForTesting]();
       expect(model.records.first).toBeUndefined();
     });
   });
@@ -84,7 +85,7 @@ describe('RecordSet', () => {
     });
 
     it('should return null if no records', () => {
-      model.records.clear();
+      model.records[$clearRecordSetForTesting]();
       expect(model.records.last).toBeUndefined();
     });
   });
@@ -95,7 +96,7 @@ describe('RecordSet', () => {
     });
 
     it('should return 0 if no records', () => {
-      model.records.clear();
+      model.records[$clearRecordSetForTesting]();
       expect(model.records.count).toBe(0);
     });
   });
@@ -106,57 +107,25 @@ describe('RecordSet', () => {
     });
 
     it('should return 0 if no records', () => {
-      model.records.clear();
+      model.records[$clearRecordSetForTesting]();
       expect(model.records.length).toBe(0);
     });
   });
 
-  describe('freeze', () => {
-    it('should throw when mutating the record set', () => {
-      model.records.freeze();
-      expect(() => model.records.set(1, null)).toThrow();
-      expect(() => model.records.delete(1)).toThrow();
-      expect(() => model.records.clear()).toThrow();
-    });
-  });
-
   describe('set', () => {
-    // This is experimental, might have to update it later down the line.
-    it('should set a record', () => {
-      model.records.set(1, { name: 'Jane Smith', age: 15 });
-      expect(model.records.last.name).toBe('Jane Smith');
-    });
-
-    it('should throw if record set is frozen', () => {
-      model.records.freeze();
-      expect(() =>
-        model.records.set(1, { name: 'Jane Smith', age: 15 })
-      ).toThrow();
+    it('should throw', () => {
+      expect(() => model.records.set(1, null)).toThrow();
     });
   });
 
   describe('delete', () => {
-    it('should delete a record', () => {
-      expect(model.records.count).toBe(4);
-      model.records.delete('1');
-      expect(model.records.count).toBe(3);
-    });
-
-    it('should throw if record set is frozen', () => {
-      model.records.freeze();
+    it('should throw', () => {
       expect(() => model.records.delete(1)).toThrow();
     });
   });
 
   describe('clear', () => {
-    it('should clear the record set', () => {
-      expect(model.records.count).toBe(4);
-      model.records.clear();
-      expect(model.records.count).toBe(0);
-    });
-
-    it('should throw if record set is frozen', () => {
-      model.records.freeze();
+    it('should throw', () => {
       expect(() => model.records.clear()).toThrow();
     });
   });
@@ -168,7 +137,7 @@ describe('RecordSet', () => {
     });
 
     it('should return an empty object if no records', () => {
-      model.records.clear();
+      model.records[$clearRecordSetForTesting]();
       expect(model.records.map(rec => rec.age)).toEqual({});
     });
 
@@ -179,7 +148,7 @@ describe('RecordSet', () => {
       });
 
       it('should return an empty array if no records', () => {
-        model.records.clear();
+        model.records[$clearRecordSetForTesting]();
         expect(model.records.map(rec => rec.age, { flat: true })).toEqual([]);
       });
     });
@@ -192,7 +161,7 @@ describe('RecordSet', () => {
     });
 
     it('should return the initial value if no records', () => {
-      model.records.clear();
+      model.records[$clearRecordSetForTesting]();
       expect(model.records.reduce((acc, rec) => acc + rec.age, 0)).toBe(0);
     });
   });
@@ -204,7 +173,7 @@ describe('RecordSet', () => {
     });
 
     it('should return an empty record set if no records', () => {
-      model.records.clear();
+      model.records[$clearRecordSetForTesting]();
       expect(model.records.filter(rec => rec.age >= 18).count).toBe(0);
     });
 
@@ -217,7 +186,7 @@ describe('RecordSet', () => {
       });
 
       it('should return an empty array if no records', () => {
-        model.records.clear();
+        model.records[$clearRecordSetForTesting]();
         expect(
           model.records.filter(rec => rec.age >= 18, { flat: true })
         ).toEqual([]);
@@ -261,7 +230,7 @@ describe('RecordSet', () => {
     });
 
     it('should return an empty record set if no records', () => {
-      model.records.clear();
+      model.records[$clearRecordSetForTesting]();
       expect(model.records.except('0', '1').count).toBe(0);
     });
   });
@@ -275,7 +244,7 @@ describe('RecordSet', () => {
     });
 
     it('should return an empty record set if no records', () => {
-      model.records.clear();
+      model.records[$clearRecordSetForTesting]();
       expect(model.records.except('0', '1').count).toBe(0);
     });
   });
@@ -298,7 +267,7 @@ describe('RecordSet', () => {
     });
 
     it('should return true if no records', () => {
-      model.records.clear();
+      model.records[$clearRecordSetForTesting]();
       expect(model.records.every(rec => rec.age >= 18)).toBe(true);
     });
   });
@@ -313,7 +282,7 @@ describe('RecordSet', () => {
     });
 
     it('should return false if no records', () => {
-      model.records.clear();
+      model.records[$clearRecordSetForTesting]();
       expect(model.records.some(rec => rec.age >= 18)).toBe(false);
     });
   });
@@ -406,7 +375,7 @@ describe('RecordSet', () => {
     });
 
     it('should return an empty record set if no records', () => {
-      model.records.clear();
+      model.records[$clearRecordSetForTesting]();
       expect(model.records.where(rec => rec.age >= 18).count).toBe(0);
     });
   });
@@ -418,7 +387,7 @@ describe('RecordSet', () => {
     });
 
     it('should return an empty record set if no records', () => {
-      model.records.clear();
+      model.records[$clearRecordSetForTesting]();
       expect(model.records.whereNot(rec => rec.age >= 18).count).toBe(0);
     });
   });

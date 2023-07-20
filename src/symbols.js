@@ -32,8 +32,11 @@ export default symbolizeAll(
   'instances',
   'isRecord',
   'groupTag',
+  'set',
+  'delete',
   'get',
   'handleExperimentalAPIMessage',
   'clearSchemaForTesting',
+  'clearRecordSetForTesting',
   'schemaObject'
 );

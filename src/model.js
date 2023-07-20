@@ -19,6 +19,8 @@ const {
   $getField,
   $getProperty,
   $instances,
+  $set,
+  $delete,
 } = symbols;
 
 const allStandardTypes = [...Object.keys(standardTypes), 'enum'];
@@ -93,7 +95,7 @@ export class Model {
   // Connect all record events to an event emitter
   createRecord(record) {
     const [newRecordId, newRecord] = this.#recordHandler.createRecord(record);
-    this.#records.set(newRecordId, newRecord);
+    this.#records[$set](newRecordId, newRecord);
     return newRecord;
   }
 
@@ -102,7 +104,7 @@ export class Model {
       console.warn(`Record ${recordId} does not exist.`);
       return false;
     }
-    this.#records.delete(recordId);
+    this.#records[$delete](recordId);
     return true;
   }
 

@@ -455,11 +455,9 @@ const records = MyModel.records;
 Record sets can be filtered, mapped and sorted much like regular arrays. Here's a list of operations:
 
 - `RecordSet.prototype.forEach()`: Executes a provided function once for every element in the calling record set. This method takes a callback function as an argument that expects three arguments (`record`, `id`, `recordSet`), similar to `Array.prototype.forEach()`. The method does not return a result.
-- `RecordSet.prototype.map()`: Creates an object populated with the results of calling a provided mapping function on every element in the calling record set. This method takes a mapping callback function as an argument that expects three arguments (`record`, `id`, `recordSet`), similar to `Array.prototype.map()`. The result is an object with each id mapped to the result of the mapping function.
-- `RecordSet.prototype.flatMap()`: Same as `RecordSet.prototype.map()` except that the resulting value is an array instead of an object.
+- `RecordSet.prototype.map()`: Creates an array or object populated with the results of calling a provided mapping function on every element in the calling record set. This method takes a mapping callback function as an argument that expects three arguments (`record`, `id`, `recordSet`), similar to `Array.prototype.map()`. The result is an array object with each id mapped to the result of the mapping function. Pass the `{ flat: true }` option to return an array instead of an object.
 - `RecordSet.prototype.reduce()`: Executes a user-supplied reducer callback function on each element of the record set, passing in the return value from the calculation on the preceding element. This method takes a reducer callback function as an argument that expects four arguments (`accumulator`, `record`, `id`, `recordSet`) and an initial value, similar to `Array.prototype.reduce()`. The final result of running the reducer across all elements of the record set is a single value.
-- `RecordSet.prototype.filter()`: Creates a new record set with all elements that pass the test implemented by the provided filtering function. This method takes a filtering callback function as an argument that expects three arguments (`record`, `id`, `recordSet`), similar to `Array.prototype.filter()`. The result is a record set containing only the records that pass the test.
-- `RecordSet.prototype.flatFilter()`: Same as `RecordSet.prototype.filter()` except that the resulting value is an array instead of a record set.
+- `RecordSet.prototype.filter()`: Creates a new record set or array with all elements that pass the test implemented by the provided filtering function. This method takes a filtering callback function as an argument that expects three arguments (`record`, `id`, `recordSet`), similar to `Array.prototype.filter()`. The result is a record set or array containing only the records that pass the test. Pass the `{ flat: true }` option to return an array instead of a record set.
 - `RecordSet.prototype.find()`: Retrieves the first record matching the condition implemented by the provided testing function. This method takes a testing callback function as an argument that expects three arguments (`record`, `id`, `recordSet`), similar to `Array.prototype.find()`. The result is a record or `undefined` if none match the condition.
 - `RecordSet.prototype.findId()`: Same as `RecordSet.prototype.find()` except that the resulting value is the record's id instead of the record itself.
 - `RecordSet.prototype.only()`: Returns a new record set containing only objects that match the id/ids provided. Records are returned in order of appearance in the provided ids. Expects any number of ids as arguments.
@@ -560,9 +558,9 @@ Records and record sets can be serialized to regular objects, arrays or JSON. Ca
 Additionally, record sets implement the following serialization properties:
 
 - `RecordSet.prototype.toArray()`: Returns an array of records contained in the record set.
-- `RecordSet.prototype.toFlatArray()`: Returns an array of objects representing the records contained in the record set.
 - `RecordSet.prototype.toObject()`: Returns an object of records representing the key-value pairs of the records in the record set.
-- `RecordSet.prototype.toFlatObject()`: Returns an object of objects representing the key-value pairs of the records in the record set.
+
+Both of these methods can be called with an optional `{ flat: true }` options argument to convert records into objects.
 
 ### Naming conventions
 

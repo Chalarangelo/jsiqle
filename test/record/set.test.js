@@ -171,17 +171,17 @@ describe('RecordSet', () => {
       model.records.clear();
       expect(model.records.map(rec => rec.age)).toEqual({});
     });
-  });
 
-  describe('flatMap', () => {
-    it('should flatMap over the records', () => {
-      const result = model.records.flatMap(rec => rec.age);
-      expect(result).toEqual([42, 34, 34, 15]);
-    });
+    describe('when flat is true', () => {
+      it('should flat map over the records', () => {
+        const result = model.records.map(rec => rec.age, { flat: true });
+        expect(result).toEqual([42, 34, 34, 15]);
+      });
 
-    it('should return an empty array if no records', () => {
-      model.records.clear();
-      expect(model.records.flatMap(rec => rec.age)).toEqual([]);
+      it('should return an empty array if no records', () => {
+        model.records.clear();
+        expect(model.records.map(rec => rec.age, { flat: true })).toEqual([]);
+      });
     });
   });
 
@@ -207,17 +207,21 @@ describe('RecordSet', () => {
       model.records.clear();
       expect(model.records.filter(rec => rec.age >= 18).count).toBe(0);
     });
-  });
 
-  describe('flatFilter', () => {
-    it('should filter over the records', () => {
-      const result = model.records.flatFilter(rec => rec.age >= 18);
-      expect(result.length).toEqual(3);
-    });
+    describe('when flat is true', () => {
+      it('should filter over the records', () => {
+        const result = model.records.filter(rec => rec.age >= 18, {
+          flat: true,
+        });
+        expect(result.length).toEqual(3);
+      });
 
-    it('should return an empty array if no records', () => {
-      model.records.clear();
-      expect(model.records.flatFilter(rec => rec.age >= 18)).toEqual([]);
+      it('should return an empty array if no records', () => {
+        model.records.clear();
+        expect(
+          model.records.filter(rec => rec.age >= 18, { flat: true })
+        ).toEqual([]);
+      });
     });
   });
 
@@ -347,7 +351,7 @@ describe('RecordSet', () => {
     it('should group the records by the given key', () => {
       const result = Object.entries(model.records.groupBy('age')).reduce(
         (acc, [key, value]) => {
-          acc[key] = value.toFlatArray();
+          acc[key] = value.toArray({ flat: true });
           return acc;
         },
         {}
@@ -544,16 +548,16 @@ describe('RecordSet', () => {
     it('should return an array of the records', () => {
       expect(model.records.toArray().map(v => v.age)).toEqual([42, 34, 34, 15]);
     });
-  });
 
-  describe('toFlatArray', () => {
-    it('returns an array of objects', () => {
-      expect(model.records.toFlatArray()).toEqual([
-        { id: '0', name: 'John Doe', age: 42 },
-        { id: '1', name: 'Jane Doe', age: 34 },
-        { id: '2', name: 'John Smith', age: 34 },
-        { id: '3', name: 'Jane Smith', age: 15 },
-      ]);
+    describe('when flat is true', () => {
+      it('returns an array of objects', () => {
+        expect(model.records.toArray({ flat: true })).toEqual([
+          { id: '0', name: 'John Doe', age: 42 },
+          { id: '1', name: 'Jane Doe', age: 34 },
+          { id: '2', name: 'John Smith', age: 34 },
+          { id: '3', name: 'Jane Smith', age: 15 },
+        ]);
+      });
     });
   });
 
@@ -568,15 +572,15 @@ describe('RecordSet', () => {
         })
       );
     });
-  });
 
-  describe('toFlatObject', () => {
-    it('should return an object of objects', () => {
-      expect(model.records.toFlatObject()).toEqual({
-        0: { id: '0', name: 'John Doe', age: 42 },
-        1: { id: '1', name: 'Jane Doe', age: 34 },
-        2: { id: '2', name: 'John Smith', age: 34 },
-        3: { id: '3', name: 'Jane Smith', age: 15 },
+    describe('when flat is true', () => {
+      it('should return an object of objects', () => {
+        expect(model.records.toObject({ flat: true })).toEqual({
+          0: { id: '0', name: 'John Doe', age: 42 },
+          1: { id: '1', name: 'Jane Doe', age: 34 },
+          2: { id: '2', name: 'John Smith', age: 34 },
+          3: { id: '3', name: 'Jane Smith', age: 15 },
+        });
       });
     });
   });

@@ -332,7 +332,9 @@ describe('Model', () => {
         { id: 'c', name: 'c' },
       ].forEach(record => model.createRecord(record));
       expect(
-        model.records.nonExistentRecords.flatMap(record => record.id)
+        model.records.nonExistentRecords.map(record => record.id, {
+          flat: true,
+        })
       ).toEqual([]);
     });
 
@@ -342,10 +344,9 @@ describe('Model', () => {
         { id: 'b', name: 'bName' },
         { id: 'c', name: 'c' },
       ].forEach(record => model.createRecord(record));
-      expect(model.records.namedRecords.flatMap(record => record.id)).toEqual([
-        'a',
-        'b',
-      ]);
+      expect(
+        model.records.namedRecords.map(record => record.id, { flat: true })
+      ).toEqual(['a', 'b']);
     });
 
     it('returns the correct records in the correct order for a given ordered scope', () => {
@@ -355,7 +356,9 @@ describe('Model', () => {
         { id: 'c', name: 'c' },
       ].forEach(record => model.createRecord(record));
       expect(
-        model.records.sortedNamedRecords.flatMap(record => record.id)
+        model.records.sortedNamedRecords.map(record => record.id, {
+          flat: true,
+        })
       ).toEqual(['b', 'a']);
     });
   });

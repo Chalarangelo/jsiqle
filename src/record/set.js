@@ -375,55 +375,28 @@ class RecordSet extends Map {
   }
 
   /**
-   * Iterates over the record set's ids in array batches of the specified size.
-   * @param {Number} batchSize The size of each batch.
-   * @returns {Iterator} An iterator that yields array batches of the specified size.
-   */
-  *flatBatchIdsIterator(batchSize) {
-    let batch = [];
-    for (const id of this.ids()) {
-      batch.push(id);
-      if (batch.length === batchSize) {
-        yield batch;
-        batch = [];
-      }
-    }
-    if (batch.length) yield batch;
-  }
-
-  /**
-   * Iterates over the record set in array batches of the specified size.
-   * @param {Number} batchSize The size of each batch.
-   * @returns {Iterator} An iterator that yields array batches of the specified size.
-   */
-  *flatBatchIterator(batchSize) {
-    let batch = [];
-    for (const [, value] of this) {
-      batch.push(value);
-      if (batch.length === batchSize) {
-        yield batch;
-        batch = [];
-      }
-    }
-    if (batch.length) yield batch;
-  }
-
-  /**
    * Iterates over the record set in batches of the specified size.
    * @param {Number} batchSize The size of each batch.
-   * @returns {Iterator} An iterator that yields batches of the specified size.
+   * @param {Object} options An object with options for the operation.
+   * @param {Boolean} options.flat Whether to yield record set or array batches.
+   * @returns {Iterator} An iterator that yields record set or array batches of
+   * the specified size.
    */
-  *batchIterator(batchSize) {
+  *batchIterator(batchSize, { flat = false } = {}) {
     let batch = [];
     for (const [id, value] of this) {
-      batch.push([id, value]);
+      batch.push(flat ? value : [id, value]);
       if (batch.length === batchSize) {
-        yield new RecordSet({ copyScopesFrom: this, iterable: batch });
+        yield flat
+          ? batch
+          : new RecordSet({ copyScopesFrom: this, iterable: batch });
         batch = [];
       }
     }
     if (batch.length)
-      yield new RecordSet({ copyScopesFrom: this, iterable: batch });
+      yield flat
+        ? batch
+        : new RecordSet({ copyScopesFrom: this, iterable: batch });
   }
 
   /**

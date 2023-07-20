@@ -392,48 +392,6 @@ describe('RecordSet', () => {
     });
   });
 
-  describe('flatBatchIterator', () => {
-    it('should iterate over the records', () => {
-      const result = model.records.flatBatchIterator(2);
-      expect(result.next().value.map(v => v.name)).toEqual([
-        'John Doe',
-        'Jane Doe',
-      ]);
-      expect(result.next().value.map(v => v.name)).toEqual([
-        'John Smith',
-        'Jane Smith',
-      ]);
-      expect(result.next().value).toEqual(undefined);
-    });
-
-    it('should return the last batch with however many elements are left', () => {
-      const result = model.records.flatBatchIterator(3);
-      expect(result.next().value.map(v => v.name)).toEqual([
-        'John Doe',
-        'Jane Doe',
-        'John Smith',
-      ]);
-      expect(result.next().value.map(v => v.name)).toEqual(['Jane Smith']);
-      expect(result.next().value).toEqual(undefined);
-    });
-  });
-
-  describe('flatBatchIdsIterator', () => {
-    it('should iterate over the records', () => {
-      const result = model.records.flatBatchIdsIterator(2);
-      expect(result.next().value).toEqual(['0', '1']);
-      expect(result.next().value).toEqual(['2', '3']);
-      expect(result.next().value).toEqual(undefined);
-    });
-
-    it('should return the last batch with however many elements are left', () => {
-      const result = model.records.flatBatchIdsIterator(3);
-      expect(result.next().value).toEqual(['0', '1', '2']);
-      expect(result.next().value).toEqual(['3']);
-      expect(result.next().value).toEqual(undefined);
-    });
-  });
-
   describe('batchIterator', () => {
     it('should iterate over the records', () => {
       const result = model.records.batchIterator(2);
@@ -457,6 +415,32 @@ describe('RecordSet', () => {
       ]);
       expect(result.next().value.pluck('name')).toEqual(['Jane Smith']);
       expect(result.next().value).toEqual(undefined);
+    });
+
+    describe('when flat is true', () => {
+      it('should iterate over the records', () => {
+        const result = model.records.batchIterator(2, { flat: true });
+        expect(result.next().value.map(v => v.name)).toEqual([
+          'John Doe',
+          'Jane Doe',
+        ]);
+        expect(result.next().value.map(v => v.name)).toEqual([
+          'John Smith',
+          'Jane Smith',
+        ]);
+        expect(result.next().value).toEqual(undefined);
+      });
+
+      it('should return the last batch with however many elements are left', () => {
+        const result = model.records.batchIterator(3, { flat: true });
+        expect(result.next().value.map(v => v.name)).toEqual([
+          'John Doe',
+          'Jane Doe',
+          'John Smith',
+        ]);
+        expect(result.next().value.map(v => v.name)).toEqual(['Jane Smith']);
+        expect(result.next().value).toEqual(undefined);
+      });
     });
   });
 

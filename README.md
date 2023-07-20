@@ -483,7 +483,7 @@ Record sets can be grouped or sorted via the following properties:
 
 #### Iterating over records
 
-Record sets are iterable, meaning you can use `for` loops to iterate over them, similar to a regular ES6 `Map`. Additionally, `RecordSet.prototype.batchOperator()` is available expecting a `batchSize` numeric argument and allowing for the records in a record set to be iterated in batches.
+Record sets are iterable, meaning you can use `for` loops to iterate over them, similar to a regular ES6 `Map`. Additionally, `RecordSet.prototype.batchIterator()` is available expecting a `batchSize` numeric argument and allowing for the records in a record set to be iterated in batches. An additional `{ flat: true }` argument can be passed to return an array of records instead of a record set for each batch.
 
 #### Accessing specific records
 

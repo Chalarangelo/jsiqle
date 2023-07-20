@@ -2,71 +2,47 @@ import { allEqualBy } from 'src/utils';
 import { NameError, DuplicationError } from 'src/errors';
 import symbols from 'src/symbols';
 
-const { $recordModel, $scopes, $addScope, $isRecord } = symbols;
+const {
+  $recordModel,
+  $scopes,
+  $addScope,
+  $isRecord,
+  $set,
+  $delete,
+  $clearRecordSetForTesting,
+} = symbols;
 
 /**
  * An extension of the native Map object. Provides the same API, along with
  * additional methods similar to the Array prototype.
  */
 class RecordSet extends Map {
-  #frozen;
   #scopes;
 
-  // TODO: V2 enhancements
-  // Add some way to pass the handler to the record set to prevent adding new
-  // values to the record set. Generally speaking calling `.set()` on a record
-  // set should probably be disabled.
   constructor({ iterable = [], copyScopesFrom = null } = {}) {
     super();
-    for (const [id, value] of iterable) this.set(id, value);
+    for (const [id, value] of iterable) this[$set](id, value);
 
     this.#scopes = new Map();
     if (copyScopesFrom) this.#copyScopes(copyScopesFrom);
-
-    this.#frozen = false;
   }
 
-  /**
-   * Freezes a record set, preventing further modification.
-   * @returns {RecordSet} The record set itself.
-   */
-  freeze() {
-    this.#frozen = true;
-    return this;
+  set() {
+    throw new TypeError(
+      'You cannot directly modify a RecordSet. Please use `Model.prototype.createRecord()` instead.'
+    );
   }
 
-  /**
-   *
-   * @param {*} id The id of the element to add to the record set.
-   * @param {*} value The value of the element to add to the record set.
-   * @returns {RecordSet} The record set itself.
-   */
-  set(id, value) {
-    // TODO: V2 Enhancements
-    // Ensure this is only ever called internally (maybe symbolize it?)
-    // Schema[$handleExperimentalAPIMessage](
-    //   'Calling RecordSet.prototype.set() is discouraged as it may cause unexpected behavior. This method may be removed in a future version of the library.'
-    // );
-    if (this.#frozen) throw new TypeError('Cannot modify a frozen RecordSet.');
-    super.set(id, value);
-    return this;
+  delete() {
+    throw new TypeError(
+      'You cannot directly modify a RecordSet. Please use `Model.prototype.deleteRecord()` instead.'
+    );
   }
 
-  /**
-   * @param {*} id The id of the element to remove from the record set.
-   * @returns {boolean} True if the element was removed, false otherwise.
-   */
-  delete(id) {
-    if (this.#frozen) throw new TypeError('Cannot modify a frozen RecordSet.');
-    return super.delete(id);
-  }
-
-  /**
-   * Removes all elements from the record set.
-   */
   clear() {
-    if (this.#frozen) throw new TypeError('Cannot modify a frozen RecordSet.');
-    super.clear();
+    throw new TypeError(
+      'You cannot directly modify a RecordSet Please use `Model.prototype.deleteRecord()` instead.'
+    );
   }
 
   /**
@@ -134,12 +110,10 @@ class RecordSet extends Map {
         return arr;
       }, []);
 
-    return [...this.entries()]
-      .reduce((newMap, [id, value]) => {
-        if (callbackFn(value, id, this)) newMap.set(id, value);
-        return newMap;
-      }, new RecordSet({ copyScopesFrom: this }))
-      .freeze();
+    return [...this.entries()].reduce((newMap, [id, value]) => {
+      if (callbackFn(value, id, this)) newMap[$set](id, value);
+      return newMap;
+    }, new RecordSet({ copyScopesFrom: this }));
   }
 
   /**
@@ -192,7 +166,7 @@ class RecordSet extends Map {
         return itr;
       }, []),
       copyScopesFrom: this,
-    }).freeze();
+    });
   }
 
   /**
@@ -208,7 +182,7 @@ class RecordSet extends Map {
         return !ids.includes(id);
       }),
       copyScopesFrom: this,
-    }).freeze();
+    });
   }
 
   /**
@@ -226,7 +200,7 @@ class RecordSet extends Map {
     const sorted = [...this.entries()].sort(([id1, value1], [id2, value2]) =>
       comparatorFn(value1, value2, id1, id2)
     );
-    return new RecordSet({ iterable: sorted, copyScopesFrom: this }).freeze();
+    return new RecordSet({ iterable: sorted, copyScopesFrom: this });
   }
 
   /**
@@ -315,11 +289,7 @@ class RecordSet extends Map {
           iterable: [],
         });
       }
-      res[keyValue].set(recordKey, value);
-    }
-
-    for (const value of Object.values(res)) {
-      value.freeze();
+      res[keyValue][$set](recordKey, value);
     }
 
     return res;
@@ -333,7 +303,7 @@ class RecordSet extends Map {
     return new RecordSet({
       iterable: [...this.entries()],
       copyScopesFrom: this,
-    }).freeze();
+    });
   }
 
   /**
@@ -356,7 +326,7 @@ class RecordSet extends Map {
     return new RecordSet({
       iterable: [...res.entries()],
       copyScopesFrom: this,
-    }).freeze();
+    });
   }
 
   /**
@@ -371,9 +341,9 @@ class RecordSet extends Map {
       copyScopesFrom: this,
     });
     for (const record of records) {
-      res.set(record.id, record);
+      res[$set](record.id, record);
     }
-    return res.freeze();
+    return res;
   }
 
   /**
@@ -448,12 +418,12 @@ class RecordSet extends Map {
     for (const [id, value] of this) {
       batch.push([id, value]);
       if (batch.length === batchSize) {
-        yield new RecordSet({ copyScopesFrom: this, iterable: batch }).freeze();
+        yield new RecordSet({ copyScopesFrom: this, iterable: batch });
         batch = [];
       }
     }
     if (batch.length)
-      yield new RecordSet({ copyScopesFrom: this, iterable: batch }).freeze();
+      yield new RecordSet({ copyScopesFrom: this, iterable: batch });
   }
 
   /**
@@ -470,7 +440,7 @@ class RecordSet extends Map {
     return new RecordSet({
       iterable: records,
       copyScopesFrom: this,
-    }).freeze();
+    });
   }
 
   /**
@@ -488,7 +458,7 @@ class RecordSet extends Map {
     return new RecordSet({
       iterable: records,
       copyScopesFrom: this,
-    }).freeze();
+    });
   }
 
   /**
@@ -503,7 +473,7 @@ class RecordSet extends Map {
     return new RecordSet({
       iterable: [...this.entries()].slice(start, end),
       copyScopesFrom: this,
-    }).freeze();
+    });
   }
 
   /**
@@ -606,6 +576,16 @@ class RecordSet extends Map {
 
   // Protected (package internal-use only)
 
+  [$set](id, value) {
+    super.set(id, value);
+    return this;
+  }
+
+  [$delete](id) {
+    super.delete(id);
+    return this;
+  }
+
   [$addScope](name, scope, sortFn) {
     RecordSet.#validateProperty('Scope', name, scope, this.#scopes);
     if (sortFn) RecordSet.#validateFunction('Scope comparator', name, sortFn);
@@ -626,6 +606,10 @@ class RecordSet extends Map {
 
   get [$scopes]() {
     return this.#scopes;
+  }
+
+  [$clearRecordSetForTesting]() {
+    super.clear();
   }
 
   // Private
@@ -653,7 +637,7 @@ class RecordSet extends Map {
       matches.sort(([id1, value1], [id2, value2]) =>
         comparatorFn(value1, value2, id1, id2)
       );
-    return new RecordSet({ iterable: matches, copyScopesFrom: this }).freeze();
+    return new RecordSet({ iterable: matches, copyScopesFrom: this });
   }
 
   static #validateProperty(callbackType, callbackName, callback, callbacks) {

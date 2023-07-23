@@ -24,6 +24,14 @@ describe('deepClone', () => {
     expect(clone.a.b.d).not.toBe(obj.a.b.d);
     expect(clone.a.f).not.toBe(obj.a.f);
   });
+
+  it('handles primitive values', () => {
+    expect(deepClone(1)).toBe(1);
+    expect(deepClone('test')).toBe('test');
+    expect(deepClone(true)).toBe(true);
+    expect(deepClone(null)).toBe(null);
+    expect(deepClone(undefined)).toBe(undefined);
+  });
 });
 
 describe('validateObjectWithUniqueName', () => {

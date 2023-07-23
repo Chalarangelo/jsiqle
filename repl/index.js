@@ -14,9 +14,7 @@ const schema = jsiqle.create({
     {
       name: 'snippet',
       fields: {
-        description: {
-          type: 'string',
-        },
+        description: 'string',
         code: 'string',
         language: 'string',
         tags: 'stringArray',

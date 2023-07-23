@@ -22,12 +22,8 @@ const Ledger = jsiqle.create({
     {
       name: 'Person',
       fields: {
-        username: {
-          type: 'string'
-        },
-        role: {
-          type: 'string',
-        },
+        username: 'string',
+        role: 'string',
         firstName: 'string',
         lastName: 'string'
       },
@@ -131,13 +127,9 @@ const MySchema = jsiqle.create({
       name: 'MyModel',
       fields: {
         firstName: 'string',
-        age: { type: 'number' },
-        username: {
-          type: 'string',
-        },
-        role: {
-          type: 'string',
-        }
+        age: 'number',
+        username: 'string',
+        role: 'string'
       }
     }
   ]
@@ -149,9 +141,7 @@ Field definition options require an object argument with the following attribute
 - `name`: The name of the field. By convention, field names should be camel-cased (i.e. `myField`). Field names must be unique for each model.
 - `type`: The type of the field. Read below for more information on types and validation.
 
-In the case of defining the field in the model definition, the field `name` should be defined as the key that the object corresponds to. In case of defining the field individually, the field `name` should be defined as part of the field object definition.
-
-Additionally, in the case of simple fields that only need a `type` definition and are defined as part of the model definition, the model object can be replaced with the `type` string.
+In the case of defining the field in the model definition, the field `name` should be defined as the key that the type string corresponds to.
 
 ##### Field types
 

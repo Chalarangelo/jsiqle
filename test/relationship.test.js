@@ -59,7 +59,7 @@ describe('Relationship', () => {
     // eslint-disable-next-line no-unused-vars
     const fromModel = new Model({
       name: 'foo',
-      fields: { aField: { type: 'string' } },
+      fields: { aField: 'string' },
     });
     // eslint-disable-next-line no-unused-vars
     const toModel = new Model({ name: 'bar' });
@@ -94,7 +94,7 @@ describe('Relationship', () => {
     // eslint-disable-next-line no-unused-vars
     const toModel = new Model({
       name: 'bar',
-      fields: { aField: { type: 'string' } },
+      fields: { aField: 'string' },
     });
     expect(
       () =>

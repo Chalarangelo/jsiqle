@@ -169,7 +169,6 @@ describe('Model', () => {
           },
           age: {
             type: 'number',
-            defaultValue: 18,
           },
         },
         scopes: {
@@ -213,7 +212,7 @@ describe('Model', () => {
       let record;
 
       beforeEach(() => {
-        record = model.createRecord({ id: 'a', name: 'aName' });
+        record = model.createRecord({ id: 'a', name: 'aName', age: 18 });
       });
 
       it('creates the record with the correct values', () => {

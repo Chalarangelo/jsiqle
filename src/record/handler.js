@@ -7,7 +7,6 @@ import { deepClone } from 'src/utils';
 
 const {
   $fields,
-  $defaultValue,
   $properties,
   $cachedProperties,
   $methods,
@@ -112,8 +111,7 @@ class RecordHandler {
 
   static #setRecordField(modelName, record, field, value, isRelationship) {
     // Set the default value if the field is null or undefined
-    const recordValue =
-      !isRelationship && isUndefined(value) ? field[$defaultValue] : value;
+    const recordValue = !isRelationship && isUndefined(value) ? null : value;
     if (!isRelationship && !field.typeCheck(recordValue))
       // Throw an error if the field value is invalid
       throw new TypeError(

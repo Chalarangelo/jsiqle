@@ -1,6 +1,6 @@
 import { Field } from 'src/field';
 import { Schema } from 'src/schema';
-import { DefaultValueError, DuplicationError } from 'src/errors';
+import { DuplicationError } from 'src/errors';
 import { Model } from 'src/model';
 import { validateName, reverseCapitalize } from 'src/utils';
 import { recordId, recordIdArray } from 'src/types';
@@ -12,7 +12,6 @@ const {
   $getField,
   $getProperty,
   $get,
-  $defaultValue,
   $instances,
   $handleExperimentalAPIMessage,
 } = symbols;
@@ -171,15 +170,6 @@ export class Relationship {
     const relationshipField = new Field({
       name,
       type,
-      defaultValue: isMultiple ? [] : null,
-    });
-    // Override the default value to throw an error
-    Object.defineProperty(relationshipField, $defaultValue, {
-      get() {
-        throw new DefaultValueError(
-          'Relationship field does not have a default value.'
-        );
-      },
     });
 
     return relationshipField;

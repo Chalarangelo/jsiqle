@@ -14,6 +14,7 @@ const {
   $relationships,
   $scopes,
   $recordHandler,
+  $emptyRecordTemplate,
   $addScope,
   $addRelationshipAsField,
   $addRelationshipAsProperty,
@@ -35,6 +36,7 @@ export class Model {
   #relationships;
   #cachedProperties;
   #scopes;
+  #emptyRecordTemplate;
 
   static #instances = new Map();
 
@@ -69,6 +71,8 @@ export class Model {
     Object.entries(fields).forEach(([fieldName, fieldType]) => {
       this.#addField(fieldType, fieldName);
     });
+
+    this.#emptyRecordTemplate = this.#generateEmptyRecordTemplate();
 
     // Add properties, checking for duplicates and invalids
     Object.entries(properties).forEach(([propertyName, property]) => {
@@ -160,6 +164,10 @@ export class Model {
     return this.#scopes;
   }
 
+  get [$emptyRecordTemplate]() {
+    return this.#emptyRecordTemplate;
+  }
+
   [$addRelationshipAsField](relationship) {
     const { name, fieldName, field } = relationship[$getField]();
     const relationshipName = `${name}.${fieldName}`;
@@ -179,6 +187,7 @@ export class Model {
 
     this.#fields.set(fieldName, field);
     this.#relationships.set(relationshipName, relationship);
+    this.#emptyRecordTemplate[fieldName] = undefined;
   }
 
   [$addRelationshipAsProperty](relationship) {
@@ -246,6 +255,14 @@ export class Model {
 
     this.#scopes.set(name, [scope, sortFn]);
     this.#records[$addScope](scopeName);
+  }
+
+  #generateEmptyRecordTemplate() {
+    const emptyRecordTemplate = {};
+    this.#fields.forEach(field => {
+      emptyRecordTemplate[field.name] = null;
+    });
+    return emptyRecordTemplate;
   }
 
   static #parseScope(scope) {

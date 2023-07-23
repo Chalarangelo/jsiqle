@@ -13,6 +13,7 @@ const {
   $relationships,
   $recordValue,
   $wrappedRecordValue,
+  $emptyRecordTemplate,
   $recordModel,
   $recordTag,
   $isRecord,
@@ -42,12 +43,20 @@ class RecordHandler {
       recordData.id,
       this.#model.records
     );
-    // Clone record data
-    const clonedRecord = deepClone(recordData);
-    const newRecord = new Record({ id: newRecordId }, this);
+
+    // Create a new record from the template with the new id
+    const newRecord = new Record(
+      {
+        id: newRecordId,
+        ...this.#getEmptyRecordTemplate(),
+      },
+      this
+    );
+
     // Set fields and skip validation
     this.#getFieldNames().forEach(field => {
-      this.set(newRecord, field, clonedRecord[field], newRecord);
+      if (recordData[field] === undefined) return;
+      this.set(newRecord, field, deepClone(recordData[field]), newRecord);
     });
 
     return [newRecordId, newRecord];
@@ -159,6 +168,10 @@ class RecordHandler {
 
   #getFieldNames() {
     return [...this.#model[$fields].keys()];
+  }
+
+  #getEmptyRecordTemplate() {
+    return this.#model[$emptyRecordTemplate];
   }
 
   #isRecordId(property) {

@@ -35,6 +35,7 @@ export default symbolizeAll(
   'get',
   'handleExperimentalAPIMessage',
   'clearSchemaForTesting',
+  'clearCachedProperties',
   'clearRecordSetForTesting',
   'schemaObject'
 );

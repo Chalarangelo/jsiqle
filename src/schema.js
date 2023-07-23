@@ -9,6 +9,7 @@ const {
   $addRelationshipAsField,
   $addRelationshipAsProperty,
   $handleExperimentalAPIMessage,
+  $clearCachedProperties,
   $clearSchemaForTesting,
   $schemaObject,
 } = symbols;
@@ -30,7 +31,7 @@ export class Schema {
   /**
    * Creates a new schema with the given name and options.
    * @param {Object} schemaData Data for the schema to be created.
-   * @returns The newly created schema.
+   * @returns The schema singleton.
    */
   static create({
     models = [],
@@ -76,6 +77,19 @@ export class Schema {
     };
 
     Schema.#instantiated = true;
+
+    return Schema;
+  }
+
+  /**
+   * Clears all cached properties of all models.
+   * @returns The schema singleton.
+   */
+  static clearPropertyCache() {
+    Schema[$handleExperimentalAPIMessage](
+      'Clearing the property cache of all models should only be done if something is known to have caused the cache to contain stale data. Please use with caution.'
+    );
+    Schema.#models.forEach(model => model[$clearCachedProperties]());
 
     return Schema;
   }

@@ -2,12 +2,6 @@ import { Field } from 'src/field';
 import { standardTypes } from 'src/types';
 
 describe('Field', () => {
-  it('throws if "type" is invalid', () => {
-    expect(() => new Field({ type: null })).toThrow();
-    expect(() => new Field({ type: undefined })).toThrow();
-    expect(() => new Field({ type: 'a' })).toThrow();
-  });
-
   describe('when arguments are valid', () => {
     let field;
     beforeEach(() => {
@@ -54,15 +48,6 @@ describe('Field', () => {
         expect(field).toBeInstanceOf(Field);
         expect(field.name).toBe('myField');
         expect(field.typeCheck(standardTypesTestValues[typeName])).toBe(true);
-      }
-    );
-
-    test.each(standardTypesEntries)(
-      '%s accepts a valid object and returns a Field of the appropriate type',
-      typeName => {
-        const field = Field[typeName]({ name: 'myField' });
-        expect(field).toBeInstanceOf(Field);
-        expect(field.name).toBe('myField');
       }
     );
   });

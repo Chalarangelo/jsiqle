@@ -45,7 +45,7 @@ describe('Model', () => {
       () => new Model({ ...modelParams, fields: { name: 'aField' } })
     ).toThrow();
     expect(
-      () => new Model({ ...modelParams, fields: { id: { type: 'test' } } })
+      () => new Model({ ...modelParams, fields: { id: 'test' } })
     ).toThrow();
   });
 
@@ -164,12 +164,8 @@ describe('Model', () => {
       model = new Model({
         name: 'aModel',
         fields: {
-          name: {
-            type: 'string',
-          },
-          age: {
-            type: 'number',
-          },
+          name: 'string',
+          age: 'number',
         },
         scopes: {
           adult: ({ age }) => age >= 18,
@@ -245,7 +241,7 @@ describe('Model', () => {
     beforeEach(() => {
       model = new Model({
         name: 'aModel',
-        fields: { name: { type: 'string' } },
+        fields: { name: 'string' },
       });
     });
 
@@ -267,7 +263,7 @@ describe('Model', () => {
     beforeEach(() => {
       model = new Model({
         name: 'aModel',
-        fields: { name: { type: 'string' } },
+        fields: { name: 'string' },
       });
     });
 
@@ -297,7 +293,7 @@ describe('Model', () => {
     beforeEach(() => {
       model = new Model({
         name: 'aModel',
-        fields: { name: { type: 'string' } },
+        fields: { name: 'string' },
         scopes: {
           nonExistentRecords: record => record.name === '',
           namedRecords: record => record.name.length > 2,

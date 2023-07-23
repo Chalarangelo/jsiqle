@@ -66,10 +66,8 @@ export class Model {
     this.#cachedProperties = new Set();
 
     // Add fields, checking for duplicates and invalids
-    Object.entries(fields).forEach(([fieldName, field]) => {
-      if (typeof field === 'object')
-        this.#addField({ name: fieldName, ...field });
-      else this.#addField({ name: fieldName, type: field });
+    Object.entries(fields).forEach(([fieldName, fieldType]) => {
+      this.#addField(fieldType, fieldName);
     });
 
     // Add properties, checking for duplicates and invalids
@@ -218,13 +216,12 @@ export class Model {
 
   // Private
 
-  #addField(fieldOptions) {
-    const { type, name } = fieldOptions;
+  #addField(type, name) {
     const isStandardType = allStandardTypes.includes(type);
 
     if (typeof type !== 'string' || !isStandardType)
       throw new TypeError(`Field ${name} is not a standard type.`);
-    this.#fields.set(name, Field[type](fieldOptions));
+    this.#fields.set(name, Field[type](name));
   }
 
   #addProperty({ name, body, cache = false }) {

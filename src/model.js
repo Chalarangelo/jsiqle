@@ -24,7 +24,7 @@ const {
   $delete,
 } = symbols;
 
-const allStandardTypes = [...Object.keys(standardTypes), 'enum'];
+const allStandardTypes = Object.keys(standardTypes);
 
 export class Model {
   #records;

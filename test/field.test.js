@@ -83,21 +83,4 @@ describe('Field', () => {
       }
     );
   });
-
-  describe('enum type', () => {
-    it('enum is defined', () => {
-      expect(Field.enum).toBeDefined();
-    });
-
-    it('accepts a valid object and returns a Field of the appropriate type', () => {
-      const field = Field.enum({
-        name: 'myField',
-        values: ['a', 'b'],
-      });
-      expect(field).toBeInstanceOf(Field);
-      expect(field.name).toBe('myField');
-      expect(field.typeCheck('a')).toBe(true);
-      expect(field.typeCheck('c')).toBe(false);
-    });
-  });
 });

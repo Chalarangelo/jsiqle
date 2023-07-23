@@ -1,6 +1,6 @@
 import symbols from 'src/symbols';
 import { ValidationError } from 'src/errors';
-import { isUndefined, isOptional, isEnum, standardTypes } from 'src/types';
+import { isUndefined, isOptional, standardTypes } from 'src/types';
 
 const { $defaultValue } = symbols;
 
@@ -54,8 +54,5 @@ Object.entries(standardTypes).forEach(([typeName, standardType]) => {
     return new Field({ ...options, type });
   };
 });
-
-// Enum is special, handle it separately
-Field.enum = ({ name, values }) => new Field({ name, type: isEnum(...values) });
 
 export { Field };

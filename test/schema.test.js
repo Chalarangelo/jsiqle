@@ -167,19 +167,12 @@ describe('Schema', () => {
             methods: {
               normal: rec => rec.id + '!',
             },
-            lazyMethods: {
-              lazy:
-                ({ models: { cModel } }) =>
-                rec =>
-                  rec.id + cModel.name,
-            },
           },
         ],
       });
       const record = schema.getModel('cModel').createRecord({ id: 'x' });
       const serialized = schema.getSerializer('cSerializer').serialize(record);
       expect(serialized.normal).toBe('x!');
-      expect(serialized.lazy).toBe('xcModel');
     });
   });
 

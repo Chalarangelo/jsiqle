@@ -134,6 +134,7 @@ describe('Model', () => {
         fields: {
           name: 'string',
           age: 'number',
+          address: 'string',
         },
         scopes: {
           adult: ({ age }) => age >= 18,
@@ -183,6 +184,7 @@ describe('Model', () => {
         expect(record.id).toEqual('a');
         expect(record.name).toEqual('aName');
         expect(record.age).toEqual(18);
+        expect(record.address).toEqual(null);
       });
 
       it('adds the record to the model', () => {

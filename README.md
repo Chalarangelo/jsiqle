@@ -182,7 +182,7 @@ Properties are specified as key-value pairs. The value can either be a function 
 
 Property functions can expect up to two arguments. If they do not expect any arguments or only expect a single argument, they are called with the current record as their sole argument. If they expect two arguments, they are considered "lazy" properties and their second argument is automatically bound to the current schema object representation (`{ models, serializers }`). These can only be defined as part of the model definition, are added to the model post initialization and are useful if you need access to other models or serializers.
 
-Properties can receive an additional boolean key, `cache`, indicating if the property should be cached. Property caches are persisted as long as there are no field changes for a given record and cannot be specified for relationships. This means that properties that depend on other properties, methods or external values are not good candidates for caching. If a cached property is stale, the only way to force a recalculation is via updating any field on the record manually.
+Properties can receive an additional boolean key, `cache`, indicating if the property should be cached. Property caches are persisted as long as there are no field changes for a given record and cannot be specified for relationships. This means that properties that depend on other properties, methods or external values are not good candidates for caching. If a cached property is stale, yo can force a recalculation is via updating any field on the record manually. Additionally, all cached properties across all models can be cleared via `Schema.prototype.clearPropertyCache()`.
 
 ```js
 import jsiqle from '@jsiqle/core';

@@ -9,6 +9,7 @@ const {
   $fields,
   $properties,
   $cachedProperties,
+  $clearCachedProperties,
   $methods,
   $relationships,
   $scopes,
@@ -94,8 +95,6 @@ export class Model {
     Model.#instances.set(this.name, this);
   }
 
-  // TODO: V2 Enhancements
-  // Connect all record events to an event emitter
   createRecord(record) {
     const [newRecordId, newRecord] = this.#recordHandler.createRecord(record);
     this.#records[$set](newRecordId, newRecord);
@@ -145,10 +144,6 @@ export class Model {
     return this.#properties;
   }
 
-  // TODO: V2 Enhancements
-  // Add a method to the model, so that it's possible to reset caches for all
-  // records. This removes some uncertainty and allows for recalculation without
-  // hacks. Also update the docs to reflect this.
   get [$cachedProperties]() {
     return this.#cachedProperties;
   }
@@ -205,6 +200,10 @@ export class Model {
 
     this.#properties.set(propertyName, property);
     this.#relationships.set(relationshipName, relationship);
+  }
+
+  [$clearCachedProperties]() {
+    this.#cachedProperties.clear();
   }
 
   // Private

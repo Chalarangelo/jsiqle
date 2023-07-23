@@ -138,11 +138,9 @@ describe('Schema', () => {
                 cache: true,
               },
             },
-            lazyMethods: {
-              method:
-                ({ models: { cModel } }) =>
-                (rec, value) =>
-                  value + rec.id + cModel.name,
+            methods: {
+              method: (rec, value, { models: { cModel } }) =>
+                value + rec.id + cModel.name,
             },
           },
         ],

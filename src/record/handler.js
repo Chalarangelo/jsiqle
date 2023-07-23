@@ -208,7 +208,8 @@ class RecordHandler {
 
   #getMethod(record, method) {
     const methodFn = this.#model[$methods].get(method);
-    return (...args) => methodFn(record[$wrappedRecordValue], ...args);
+    return (...args) =>
+      methodFn(record[$wrappedRecordValue], ...args, Schema[$schemaObject]);
   }
 
   #hasRelationshipField(property) {

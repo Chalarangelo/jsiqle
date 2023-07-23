@@ -228,7 +228,8 @@ const MySchema = jsiqle.create({
       },
       methods: {
         prefixedName: (record, prefix) => `${prefix} ${record.lastName}`,
-        suffixedName: (record, suffix) => `${record.firstName} ${suffix}`
+        suffixedName: (record, suffix) => `${record.firstName} ${suffix}`,
+        isModelNameCorrect: (record, { models: { myModel }}, valey) => value === myModel.name
       }
     }
   ]
@@ -237,34 +238,7 @@ const MySchema = jsiqle.create({
 
 Methods definition are specified as key-value pairs.
 
-Methods expect any number of arguments, the current record and any arguments passed to them when called, and may return any type of value.
-
-Additionally, "lazy" methods can be defined as part of the model definition by passing an additional `lazyMethods` key structured as an object. Lazy methods are added to the model post schema initialization and are useful if you need access to other models or serializers. The value of each method must be a function that returns a function. The outer function will receive an object representing the schema (`{ models, serializers }`), allowing data from it to be passed to the method body.
-
-```js
-import jsiqle from '@jsiqle/core';
-const MySchema = jsiqle.create({
-  models: [
-    {
-      name: 'MyModel',
-      fields: {
-        firstName: 'string',
-        lastName: 'string'
-      },
-      methods: {
-        prefixedName: (record, prefix) => `${prefix} ${record.lastName}`
-      }
-    },
-    {
-      name: 'AnotherModel',
-      lazyMethods: {
-        isModelNameCorrect:
-          ({ models: { myModel }}) => (value) => value === myModel.name
-      }
-    }
-  ]
-});
-```
+Methods expect any number of arguments, the current record and any arguments passed to them when called, and may return any type of value. They are called with the current record as their first argument, any other arguments passed to them at call time and the current schema object representation (`{ models, serializers }`) as their last argument. This means that methods can access other models and serializers.
 
 #### Scope definitions
 

@@ -33,9 +33,6 @@ export class Serializer {
   }
 
   serialize(object, options) {
-    // TODO: V2 Enhancements
-    // Add a way to bind the serializer to a specific model. Then add a check
-    // here that validates that the passed object is a record of said model.
     const serialized = {};
     this.#attributes.forEach((attributeValue, attributeName) => {
       const value = this.#methods.has(attributeValue)

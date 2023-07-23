@@ -19,13 +19,6 @@ export class DuplicationError extends Error {
   }
 }
 
-export class DefaultValueError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = 'DefaultValueError';
-  }
-}
-
 export class ExperimentalAPIUsageError extends Error {
   constructor(message) {
     super(message);

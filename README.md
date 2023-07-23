@@ -27,7 +27,6 @@ const Ledger = jsiqle.create({
         },
         role: {
           type: 'string',
-          defaultValue: 'user'
         },
         firstName: 'string',
         lastName: 'string'
@@ -132,14 +131,12 @@ const MySchema = jsiqle.create({
       name: 'MyModel',
       fields: {
         firstName: 'string',
-        age: { type: 'number', defaultValue: 18 },
+        age: { type: 'number' },
         username: {
           type: 'string',
-          defaultValue: ''
         },
         role: {
           type: 'string',
-          defaultValue: 'user'
         }
       }
     }
@@ -151,7 +148,6 @@ Field definition options require an object argument with the following attribute
 
 - `name`: The name of the field. By convention, field names should be camel-cased (i.e. `myField`). Field names must be unique for each model.
 - `type`: The type of the field. Read below for more information on types and validation.
-- `defaultValue`: (Optional) A value that will be used as the default for records with an empty value in this field. The `defaultValue` must be either `null` (default) or a valid value for the given type.
 
 In the case of defining the field in the model definition, the field `name` should be defined as the key that the object corresponds to. In case of defining the field individually, the field `name` should be defined as part of the field object definition.
 
@@ -393,7 +389,7 @@ MyModel.createRecord({ id: 'jsmith', firstName: 'John', lastName: 'Smith' });
 MyModel.createRecord({ id: 'jdoe', firstName: 'John', lastName: 'Doe' });
 ```
 
-Each record definition consists of an object with the appropriate key-value pairs. Fields without a value will be automatically set to the respective field's `defaultValue` (`null` by default). All records must contain an `id` key with a string value that is unique within the model. Key-value pairs that do not match a field definition will be stored in the record. This can be useful for fields that might be added in later operations (e.g. adding relationships to a populated model).
+Each record definition consists of an object with the appropriate key-value pairs. Fields without a value will be automatically set to `null`. All records must contain an `id` key with a string value that is unique within the model. Key-value pairs that do not match a field definition will be stored in the record. This can be useful for fields that might be added in later operations (e.g. adding relationships to a populated model).
 
 #### Updating records
 

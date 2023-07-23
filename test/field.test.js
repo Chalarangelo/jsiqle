@@ -1,25 +1,11 @@
 import { Field } from 'src/field';
 import { standardTypes } from 'src/types';
-import symbols from 'src/symbols';
-
-const { $defaultValue } = symbols;
 
 describe('Field', () => {
   it('throws if "type" is invalid', () => {
     expect(() => new Field({ type: null })).toThrow();
     expect(() => new Field({ type: undefined })).toThrow();
     expect(() => new Field({ type: 'a' })).toThrow();
-  });
-
-  it('throws if "defaultValue" is invalid', () => {
-    expect(
-      () =>
-        new Field({
-          name: 'myField',
-          type: x => x === 'test',
-          defaultValue: 'test2',
-        })
-    ).toThrow();
   });
 
   describe('when arguments are valid', () => {
@@ -74,12 +60,9 @@ describe('Field', () => {
     test.each(standardTypesEntries)(
       '%s accepts a valid object and returns a Field of the appropriate type',
       typeName => {
-        const defaultValue = standardTypesTestValues[typeName];
-        const field = Field[typeName]({ name: 'myField', defaultValue });
+        const field = Field[typeName]({ name: 'myField' });
         expect(field).toBeInstanceOf(Field);
         expect(field.name).toBe('myField');
-        expect(field[$defaultValue]).toBe(defaultValue);
-        expect(field.typeCheck(defaultValue)).toBe(true);
       }
     );
   });

@@ -90,20 +90,6 @@ export class Schema {
         );
     });
 
-    serializers.forEach(serializer => {
-      const serializerRecord = Schema.getSerializer(serializer.name);
-      if (serializer.lazyMethods) {
-        Object.entries(serializer.lazyMethods).forEach(
-          ([methodName, methodInitializer]) => {
-            serializerRecord.addMethod(
-              methodName,
-              methodInitializer(Schema.#schemaObject)
-            );
-          }
-        );
-      }
-    });
-
     Schema.#instantiated = true;
 
     return Schema;

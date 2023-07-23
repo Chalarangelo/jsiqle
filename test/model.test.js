@@ -2,15 +2,8 @@ import { Model } from 'src/model';
 import { Schema } from 'src/schema';
 import symbols from 'src/symbols';
 
-const {
-  $instances,
-  $fields,
-  $properties,
-  $cachedProperties,
-  $methods,
-  $addMethod,
-  $scopes,
-} = symbols;
+const { $instances, $fields, $properties, $cachedProperties, $scopes } =
+  symbols;
 
 describe('Model', () => {
   let consoleWarn = console.warn;
@@ -129,31 +122,6 @@ describe('Model', () => {
       expect(model[$scopes].has('aScope')).toEqual(true);
       expect(model[$scopes].has('bScope')).toEqual(true);
       expect(model[$scopes].has('cScope')).toEqual(true);
-    });
-  });
-
-  describe('$addMethod', () => {
-    let model;
-
-    beforeEach(() => {
-      model = new Model({ name: 'aModel' });
-    });
-
-    it('throws if "name" is invalid', () => {
-      expect(() => model[$addMethod](null)).toThrow();
-      expect(() => model[$addMethod](2)).toThrow();
-      expect(() => model[$addMethod]('2f')).toThrow();
-      expect(() => model[$addMethod]('id')).toThrow();
-    });
-
-    it('throws if "method" is not a function', () => {
-      expect(() => model[$addMethod]('aProperty', null)).toThrow();
-      expect(() => model[$addMethod]('aProperty', 2)).toThrow();
-    });
-
-    it('creates the appropriate property', () => {
-      model[$addMethod]('aMethod', () => null);
-      expect(model[$methods].has('aMethod')).toEqual(true);
     });
   });
 

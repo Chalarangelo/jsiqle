@@ -6,7 +6,6 @@ import { validateObjectWithUniqueName, validateName } from 'src/utils';
 import symbols from 'src/symbols';
 
 const {
-  $addMethod,
   $addRelationshipAsField,
   $addRelationshipAsProperty,
   $handleExperimentalAPIMessage,
@@ -75,20 +74,6 @@ export class Schema {
       models: Object.fromEntries([...Schema.#models.entries()]),
       serializers: Object.fromEntries([...Schema.#serializers.entries()]),
     };
-
-    models.forEach(model => {
-      const modelRecord = Schema.getModel(model.name);
-
-      if (model.lazyMethods)
-        Object.entries(model.lazyMethods).forEach(
-          ([methodName, methodInitializer]) => {
-            modelRecord[$addMethod](
-              methodName,
-              methodInitializer(Schema.#schemaObject)
-            );
-          }
-        );
-    });
 
     Schema.#instantiated = true;
 

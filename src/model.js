@@ -13,7 +13,6 @@ const {
   $relationships,
   $scopes,
   $recordHandler,
-  $addMethod,
   $addScope,
   $addRelationshipAsField,
   $addRelationshipAsProperty,
@@ -83,7 +82,7 @@ export class Model {
 
     // Add methods, checking for duplicates and invalids
     Object.entries(methods).forEach(([methodName, method]) => {
-      this[$addMethod](methodName, method);
+      this.#addMethod(methodName, method);
     });
 
     // Add scopes, checking for duplicates and invalids
@@ -166,12 +165,6 @@ export class Model {
     return this.#scopes;
   }
 
-  [$addMethod](name, method) {
-    if (typeof method !== 'function')
-      throw new TypeError(`Method ${name} is not a function.`);
-    this.#methods.set(name, method);
-  }
-
   [$addRelationshipAsField](relationship) {
     const { name, fieldName, field } = relationship[$getField]();
     const relationshipName = `${name}.${fieldName}`;
@@ -229,6 +222,12 @@ export class Model {
       throw new TypeError(`Property ${name} is not a function.`);
     this.#properties.set(name, body);
     if (cache) this.#cachedProperties.add(name);
+  }
+
+  #addMethod(name, method) {
+    if (typeof method !== 'function')
+      throw new TypeError(`Method ${name} is not a function.`);
+    this.#methods.set(name, method);
   }
 
   #addScope(name, scope, sortFn) {

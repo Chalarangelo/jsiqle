@@ -20,11 +20,6 @@ const isArrayOf = type => val => Array.isArray(val) && val.every(type);
 
 const isObject = val => typeof val === 'object';
 
-export const isEnum =
-  (...values) =>
-  val =>
-    values.includes(val);
-
 const isNull = val => val === null;
 
 const hasUniqueValues = arr => new Set(arr).size === arr.length;

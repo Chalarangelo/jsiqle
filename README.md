@@ -26,8 +26,7 @@ const Ledger = jsiqle.create({
           type: 'string'
         },
         role: {
-          type: 'enum',
-          values: ['user', 'admin'],
+          type: 'string',
           defaultValue: 'user'
         },
         firstName: 'string',
@@ -139,8 +138,7 @@ const MySchema = jsiqle.create({
           defaultValue: ''
         },
         role: {
-          type: 'enum',
-          values: ['user', 'admin'],
+          type: 'string',
           defaultValue: 'user'
         }
       }
@@ -164,11 +162,9 @@ Additionally, in the case of simple fields that only need a `type` definition an
 There are a few standard field types corresponding to primitives and certain common field type values:
 
 ```
-boolean string number date enum object
+boolean string number date object
 booleanArray numberArray stringArray dateArray
 ```
-
-For `enum` types, the `values` key must also be specified as an array of distinct values.
 
 #### Property definitions
 

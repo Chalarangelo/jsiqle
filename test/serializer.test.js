@@ -44,18 +44,6 @@ describe('Serializer', () => {
       expect(serializer.name).toBe('mySerializer');
     });
 
-    describe('addMethod', () => {
-      it('throws if method already exists', () => {
-        expect(() =>
-          serializer.addMethod('specialDescription', () => {})
-        ).toThrow();
-      });
-
-      it('throws if method is not a function', () => {
-        expect(() => serializer.addMethod('otherDescription', null)).toThrow();
-      });
-    });
-
     // Indirectly check that the constructor sets the correct properties.
     describe('serialize', () => {
       it('returns a valid object', () => {

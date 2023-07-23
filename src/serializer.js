@@ -21,15 +21,8 @@ export class Serializer {
       );
     });
     Object.entries(methods).forEach(([methodName, methodBody]) => {
-      this.addMethod(methodName, methodBody);
+      this.#addMethod(methodName, methodBody);
     });
-  }
-
-  addMethod(methodName, methodBody) {
-    const method = Serializer.#validateFunction(methodName, methodBody, [
-      ...this.#methods.keys(),
-    ]);
-    this.#methods.set(methodName, method);
   }
 
   serialize(object, options) {
@@ -45,7 +38,6 @@ export class Serializer {
 
   // ΝΟΤE: This also handles RecordSets (not by design).
   // The result is an object with each key mapped to a serialized object.
-  // Hidden feature I guess?
   serializeArray(objects, options) {
     return objects.map(object => this.serialize(object, options));
   }
@@ -65,6 +57,13 @@ export class Serializer {
   }
 
   // Private
+
+  #addMethod(methodName, methodBody) {
+    const method = Serializer.#validateFunction(methodName, methodBody, [
+      ...this.#methods.keys(),
+    ]);
+    this.#methods.set(methodName, method);
+  }
 
   static #validateAttribute(attributeName, restrictedNames) {
     if (typeof attributeName !== 'string')

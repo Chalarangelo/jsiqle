@@ -1,8 +1,6 @@
-import { allEqualBy } from 'src/utils';
 import symbols from 'src/symbols';
 
 const {
-  $recordModel,
   $scopes,
   $addScope,
   $isRecord,
@@ -491,15 +489,7 @@ class RecordSet extends Map {
 
   /* istanbul ignore next */
   get [Symbol.toStringTag]() {
-    const records = [...this.values()];
-    try {
-      const firstModel = records[0][$recordModel].name;
-      if (allEqualBy(records, value => value[$recordModel].name === firstModel))
-        return firstModel;
-    } catch (e) {
-      return '';
-    }
-    return '';
+    return this.#model.name;
   }
 
   /* istanbul ignore next */

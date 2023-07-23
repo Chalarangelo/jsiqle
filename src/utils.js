@@ -48,6 +48,7 @@ export const reverseCapitalize = ([first, ...rest]) =>
   first.toLowerCase() + rest.join('');
 
 export const deepClone = obj => {
+  if (typeof obj !== 'object') return obj;
   if (obj === null) return null;
   if (obj instanceof Date) return new Date(obj);
   let clone = Object.assign({}, obj);

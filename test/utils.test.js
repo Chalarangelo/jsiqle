@@ -1,6 +1,5 @@
 import {
   deepClone,
-  allEqualBy,
   validateName,
   validateObjectWithUniqueName,
 } from 'src/utils';
@@ -24,18 +23,6 @@ describe('deepClone', () => {
     expect(clone.a.b).not.toBe(obj.a.b);
     expect(clone.a.b.d).not.toBe(obj.a.b.d);
     expect(clone.a.f).not.toBe(obj.a.f);
-  });
-});
-
-describe('allEqualBy', () => {
-  it('returns true if all elements are equal', () => {
-    const arr = [{ a: 1 }, { a: 1 }, { a: 1 }];
-    expect(allEqualBy(arr, val => val.a)).toBe(true);
-  });
-
-  it('returns false if all elements are not equal', () => {
-    const arr = [{ a: 1 }, { a: 2 }, { a: 3 }];
-    expect(allEqualBy(arr, val => val.a)).toBe(false);
   });
 });
 

@@ -44,9 +44,6 @@ export const validateName = name => {
 
 // General-purpose utilities
 
-export const capitalize = ([first, ...rest]) =>
-  first.toUpperCase() + rest.join('');
-
 export const reverseCapitalize = ([first, ...rest]) =>
   first.toLowerCase() + rest.join('');
 
@@ -65,14 +62,7 @@ export const deepClone = obj => {
   return clone;
 };
 
-export const allEqualBy = (arr, fn) => {
-  const eql = fn(arr[0]);
-  return arr.every(val => fn(val) === eql);
-};
-
 export const isObject = obj => obj && typeof obj === 'object';
-
-export const contains = (collection, item) => collection.includes(item);
 
 export const validateObjectWithUniqueName = (
   { objectType, parentType, parentName },
@@ -81,7 +71,7 @@ export const validateObjectWithUniqueName = (
 ) => {
   if (!isObject(obj))
     throw new TypeError(`${objectType} ${obj} is not an object.`);
-  if (contains(collection, obj.name)) {
+  if (collection.includes(obj.name)) {
     const namedType = parentName ? `${parentType} ${parentName}` : parentType;
     throw new DuplicationError(
       `${namedType} already has a ${objectType.toLowerCase()} named ${

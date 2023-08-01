@@ -110,9 +110,9 @@ class RecordSet extends Map {
         return arr;
       }, []);
 
-    return [...this.entries()].reduce((newMap, [id, value]) => {
-      if (callbackFn(value, id, this)) newMap[$set](id, value);
-      return newMap;
+    return [...this.entries()].reduce((newRecordSet, [id, record]) => {
+      if (callbackFn(record, id, this)) newRecordSet[$set](id, record);
+      return newRecordSet;
     }, new RecordSet({ model: this.#model }));
   }
 
@@ -128,8 +128,8 @@ class RecordSet extends Map {
    * satisfies the provided testing function or `undefined`.
    */
   find(callbackFn) {
-    for (const [id, value] of this.entries()) {
-      if (callbackFn(value, id, this)) return value;
+    for (const [id, record] of this) {
+      if (callbackFn(record, id, this)) return record;
     }
     return undefined;
   }
@@ -146,7 +146,7 @@ class RecordSet extends Map {
    * the provided testing function or `undefined`.
    */
   findId(callbackFn) {
-    for (const [id, value] of this.entries()) {
+    for (const [id, value] of this) {
       if (callbackFn(value, id, this)) return id;
     }
     return undefined;
@@ -160,13 +160,10 @@ class RecordSet extends Map {
    * match the provided id/ids.
    */
   only(...ids) {
-    return new RecordSet({
-      iterable: ids.reduce((itr, id) => {
-        if (this.has(id)) itr.push([id, this.get(id)]);
-        return itr;
-      }, []),
-      model: this.#model,
-    });
+    return ids.reduce((newRecordSet, id) => {
+      if (this.has(id)) newRecordSet[$set](id, this.get(id));
+      return newRecordSet;
+    }, new RecordSet({ model: this.#model }));
   }
 
   /**
@@ -177,12 +174,11 @@ class RecordSet extends Map {
    * match the provided id/ids.
    */
   except(...ids) {
-    return new RecordSet({
-      iterable: [...this.entries()].filter(([id]) => {
-        return !ids.includes(id);
-      }),
-      model: this.#model,
-    });
+    const newRecordSet = new RecordSet({ model: this.#model });
+    for (const [id, record] of this) {
+      if (!ids.includes(id)) newRecordSet[$set](id, record);
+    }
+    return newRecordSet;
   }
 
   /**
@@ -197,13 +193,12 @@ class RecordSet extends Map {
    * record set sorted.
    */
   sort(comparatorFn) {
+    const newRecordSet = new RecordSet({ model: this.#model });
     const sorted = [...this.entries()].sort(([id1, value1], [id2, value2]) =>
       comparatorFn(value1, value2, id1, id2)
     );
-    return new RecordSet({
-      iterable: sorted,
-      model: this.#model,
-    });
+    for (const [id, record] of sorted) newRecordSet[$set](id, record);
+    return newRecordSet;
   }
 
   /**
@@ -281,18 +276,15 @@ class RecordSet extends Map {
    */
   groupBy(key) {
     const res = {};
-    for (const [recordKey, value] of this.entries()) {
-      let keyValue = value[key];
+    for (const [id, record] of this) {
+      let keyValue = record[key];
       if (keyValue !== undefined && keyValue !== null && keyValue[$isRecord]) {
-        keyValue = value[key].id;
+        keyValue = record[key].id;
       }
       if (!res[keyValue]) {
-        res[keyValue] = new RecordSet({
-          iterable: [],
-          model: this.#model,
-        });
+        res[keyValue] = new RecordSet({ model: this.#model });
       }
-      res[keyValue][$set](recordKey, value);
+      res[keyValue][$set](id, record);
     }
 
     return res;
@@ -335,26 +327,27 @@ class RecordSet extends Map {
    * the specified size.
    */
   *batchIterator(batchSize, { flat = false } = {}) {
-    let batch = [];
-    for (const [id, value] of this) {
-      batch.push(flat ? value : [id, value]);
-      if (batch.length === batchSize) {
-        yield flat
-          ? batch
-          : new RecordSet({
-              iterable: batch,
-              model: this.#model,
-            });
-        batch = [];
+    if (flat) {
+      let batch = [];
+      for (const [id, record] of this) {
+        batch.push(flat ? record : [id, record]);
+        if (batch.length === batchSize) {
+          yield batch;
+          batch = [];
+        }
       }
+      if (batch.length) yield batch;
+    } else {
+      let newRecordSet = new RecordSet({ model: this.#model });
+      for (const [id, record] of this) {
+        newRecordSet[$set](id, record);
+        if (newRecordSet.size === batchSize) {
+          yield newRecordSet;
+          newRecordSet = new RecordSet({ model: this.#model });
+        }
+      }
+      if (newRecordSet.size) yield newRecordSet;
     }
-    if (batch.length)
-      yield flat
-        ? batch
-        : new RecordSet({
-            iterable: batch,
-            model: this.#model,
-          });
   }
 
   /**
@@ -363,15 +356,12 @@ class RecordSet extends Map {
    * @returns {RecordSet} A new record set with only the first n elements.
    */
   limit(n) {
-    let records = [];
-    for (const [id, value] of this) {
-      records.push([id, value]);
-      if (records.length === n) break;
+    const newRecordSet = new RecordSet({ model: this.#model });
+    for (const [id, record] of this) {
+      newRecordSet[$set](id, record);
+      if (newRecordSet.size === n) break;
     }
-    return new RecordSet({
-      iterable: records,
-      model: this.#model,
-    });
+    return newRecordSet;
   }
 
   /**
@@ -380,16 +370,13 @@ class RecordSet extends Map {
    * @returns {RecordSet} A new record set with the first n elements removed.
    */
   offset(n) {
+    const newRecordSet = new RecordSet({ model: this.#model });
     let counter = 0;
-    let records = [];
-    for (const [id, value] of this) {
+    for (const [id, record] of this) {
       if (counter < n) counter++;
-      else records.push([id, value]);
+      else newRecordSet[$set](id, record);
     }
-    return new RecordSet({
-      iterable: records,
-      model: this.#model,
-    });
+    return newRecordSet;
   }
 
   /**
@@ -401,17 +388,19 @@ class RecordSet extends Map {
    * portion of the record set.
    */
   slice(start, end) {
-    return new RecordSet({
-      iterable: [...this.entries()].slice(start, end),
-      model: this.#model,
-    });
+    return [...this.entries()]
+      .slice(start, end)
+      .reduce((newRecordSet, [id, record]) => {
+        newRecordSet[$set](id, record);
+        return newRecordSet;
+      }, new RecordSet({ model: this.#model }));
   }
 
   /**
    * Returns the first element in the record set.
    */
   get first() {
-    for (const [, value] of this) return value;
+    for (const [, record] of this) return record;
     return undefined;
   }
 
@@ -538,17 +527,23 @@ class RecordSet extends Map {
 
   #scopedWhere(scopeName) {
     const [matcherFn, comparatorFn] = this.#model[$scopes].get(scopeName);
-    let matches = [];
-    for (const [id, value] of this.entries())
-      if (matcherFn(value, id, this)) matches.push([id, value]);
-    if (comparatorFn)
-      matches.sort(([id1, value1], [id2, value2]) =>
-        comparatorFn(value1, value2, id1, id2)
-      );
-    return new RecordSet({
-      iterable: matches,
-      model: this.#model,
-    });
+    const newRecordSet = new RecordSet({ model: this.#model });
+
+    if (comparatorFn) {
+      let matches = [];
+      for (const [id, record] of this)
+        if (matcherFn(record, id, this)) matches.push([id, record]);
+      if (comparatorFn)
+        matches.sort(([id1, value1], [id2, value2]) =>
+          comparatorFn(value1, value2, id1, id2)
+        );
+      for (const [id, record] of matches) newRecordSet[$set](id, record);
+    } else {
+      for (const [id, record] of this)
+        if (matcherFn(record, id, this)) newRecordSet[$set](id, record);
+    }
+
+    return newRecordSet;
   }
 }
 

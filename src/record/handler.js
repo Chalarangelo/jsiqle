@@ -17,6 +17,7 @@ const {
   $recordModel,
   $recordTag,
   $isRecord,
+  $isDateField,
   $get,
   $schemaObject,
 } = symbols;
@@ -120,7 +121,12 @@ class RecordHandler {
 
   static #setRecordField(modelName, record, field, value, isRelationship) {
     // Set the default value if the field is null or undefined
-    const recordValue = !isRelationship && isUndefined(value) ? null : value;
+    const recordValue =
+      !isRelationship && isUndefined(value)
+        ? null
+        : field[$isDateField]
+        ? new Date(value)
+        : value;
     if (!isRelationship && !field.typeCheck(recordValue))
       // Throw an error if the field value is invalid
       throw new TypeError(

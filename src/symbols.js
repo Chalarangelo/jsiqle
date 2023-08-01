@@ -28,6 +28,7 @@ export default symbolizeAll(
   'addRelationshipAsProperty',
   'getField',
   'getProperty',
+  'isDateField',
   'instances',
   'isRecord',
   'groupTag',

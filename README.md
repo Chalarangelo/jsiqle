@@ -327,7 +327,46 @@ The names for the field and property are automatically generated if not specifie
 
 Relationships between records of the same model are allowed. The only caveat is that symemtric (i.e. `oneToOne` and `manyToMany`) relationships in the same model need to be named on both sides.
 
+#### Serializer definitions
 
+Serializers can be defined as part of the schema definition.
+
+```js
+import jsiqle from '@jsiqle/core';
+
+const MySchema = jsiqle.create({
+  models: [
+    {
+      name: 'MyModel',
+      fields: {
+        firstName: 'string',
+        lastName: 'string'
+      }
+    }
+  ],
+  serializers: [
+    {
+      name: 'MySerializer',
+      attributes: [
+        'firstName,
+        ['lastName', 'surname'],
+        ['fullName', 'name']
+        'truncatedName'
+      ],
+      methods: {
+        fullName: (record) => `${record.firstName} ${record.lastName}`,
+        truncatedName: (record) => record.fullName.slice(0, 20)
+      }
+    }
+  ]
+});
+```
+
+Serializer definition options require an object argument with the following attributes:
+
+- `name`: The name of the serializer. Must be unique.
+- `attributes`: An array of strings or arrays of strings. Each string represents the name of a model field or property or a serializer method. Each array represents the name of a model field or property or a serializer method and the name that should be used in the serializer. For example, `['lastName', 'surname']` would create a field named `surname` in the serializer that would be populated with the value of the `lastName` field on the model.
+- `methods`: An object with key-value pairs. Each key represents the name of a serializer method and each value a function that will be called with the current record as its first argument and any arguments passed to the serializer at call time as an object as its second argument. The method can return any value.
 
 ### Record manipulation
 
@@ -523,6 +562,14 @@ Additionally, record sets implement the following serialization properties:
 - `RecordSet.prototype.toObject()`: Returns an object of records representing the key-value pairs of the records in the record set.
 
 Both of these methods can be called with an optional `{ flat: true }` options argument to convert records into objects.
+
+#### Using serializers
+
+Serializers can be used to serialize records and record sets into custom formats. They are defined on the schema level and can be used by calling one of the methods available as part of the individual serializer:
+
+- `Serializer.prototype.serialize()`: Serializes a record in the format defined by the serializer. Expects a record as the first argument and an optional options object as the second argument.
+- `Serializer.prototype.serializeArray()`: Serializes an array of records in the format defined by the serializer. Expects an array of records as the first argument and an optional options object as the second argument.
+- `Serializer.prototype.serializeRecordSet()`: Serializes a record set in the format defined by the serializer. Expects a record set as the first argument and an optional options object as the second argument. A third argument can be passed to specify a function mapping each record to a key in the serialized object.
 
 ### Naming conventions
 

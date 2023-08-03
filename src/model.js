@@ -225,11 +225,24 @@ export class Model {
     this.#fields.set(name, Field[type](name));
   }
 
-  #addProperty({ name, body, cache = false }) {
+  #addProperty({ name, body, cache = false, inverse = null }) {
     if (typeof body !== 'function')
       throw new TypeError(`Property ${name} is not a function.`);
     this.#properties.set(name, body);
-    if (cache) this.#cachedProperties.add(name);
+
+    const hasInverse = typeof inverse === 'string' && inverse.length > 0;
+
+    if (hasInverse) {
+      if (this.#properties.has(inverse))
+        throw new NameError(`Property ${inverse} is already in use.`);
+      const inverseBody = (...args) => !body(...args);
+      this.#properties.set(inverse, inverseBody);
+    }
+
+    if (cache) {
+      this.#cachedProperties.add(name);
+      if (hasInverse) this.#cachedProperties.add(inverse);
+    }
   }
 
   #addMethod(name, method) {

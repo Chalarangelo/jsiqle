@@ -184,6 +184,8 @@ Property functions can expect up to two arguments. If they do not expect any arg
 
 Properties can receive an additional boolean key, `cache`, indicating if the property should be cached. Property caches are persisted as long as there are no field changes for a given record and cannot be specified for relationships. This means that properties that depend on other properties, methods or external values are not good candidates for caching. If a cached property is stale, yo can force a recalculation is via updating any field on the record manually. Additionally, all cached properties across all models can be cleared via `Schema.prototype.clearPropertyCache()`.
 
+Boolean properties can receive an additional string key, `inverse`, defining the name of the inverse boolean property. Inverse boolean properties are automatically updated when the property is updated and vice versa and can be called like regular properties on any records of the model. Caching is also applied to inverse boolean properties, if specified via the `cache` boolean key.
+
 ```js
 import jsiqle from '@jsiqle/core';
 const MySchema = jsiqle.create({
@@ -199,7 +201,11 @@ const MySchema = jsiqle.create({
         formalName: {
           body: record => `${record.lastName} ${record.firstName}`,
           cache: true
-        }
+        },
+        hasLongLastName: {
+          body: record => record.lastName.length > 10,
+          inverse: 'hasShortLastName'
+        },
       }
     },
     {

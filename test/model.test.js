@@ -51,6 +51,20 @@ describe('Model', () => {
     expect(model[$cachedProperties].has('aProperty')).toEqual(true);
   });
 
+  it('creates a property and its inverse if a valid name is provided', () => {
+    const model = new Model({
+      name: 'aModel',
+      properties: { isReady: { body: () => false, inverse: 'isNotReady' } },
+    });
+
+    expect(model[$properties].has('isReady')).toEqual(true);
+    expect(model[$properties].has('isNotReady')).toEqual(true);
+
+    const rec = model.createRecord({ id: '1' });
+    expect(rec.isReady).toEqual(false);
+    expect(rec.isNotReady).toEqual(true);
+  });
+
   it('throws if "properties" contain invalid values', () => {
     const modelParams = { name: 'aModel' };
 

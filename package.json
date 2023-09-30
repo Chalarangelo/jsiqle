@@ -1,6 +1,6 @@
 {
   "name": "@jsiqle/core",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "JavaScript In-memory Query Language with Events.",
   "type": "module",
   "exports": "./src/index.js",

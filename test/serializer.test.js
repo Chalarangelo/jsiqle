@@ -1,5 +1,5 @@
-import { Serializer } from 'src/serializer';
-import { Model } from 'src/model';
+import { Serializer } from '../src/serializer.js';
+import { Model } from '../src/model.js';
 
 describe('Serializer', () => {
   it('throws if "attributes" is invalid', () => {

@@ -1,10 +1,10 @@
-import { Field } from 'src/field';
-import { Schema } from 'src/schema';
-import { DuplicationError } from 'src/errors';
-import { Model } from 'src/model';
-import { validateName, reverseCapitalize } from 'src/utils';
-import { recordId, recordIdArray } from 'src/types';
-import symbols from 'src/symbols';
+import { Field } from './field.js';
+import { Schema } from './schema.js';
+import { DuplicationError } from './errors.js';
+import { Model } from './model.js';
+import { validateName, reverseCapitalize } from './utils.js';
+import { recordId, recordIdArray } from './types.js';
+import symbols from './symbols.js';
 
 const {
   $recordValue,

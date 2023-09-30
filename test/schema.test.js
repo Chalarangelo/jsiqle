@@ -1,6 +1,6 @@
-import { Schema } from 'src/schema';
-import { Model } from 'src/model';
-import symbols from 'src/symbols';
+import { Schema } from '../src/schema.js';
+import { Model } from '../src/model.js';
+import symbols from '../src/symbols.js';
 
 const { $instances, $fields, $properties, $clearSchemaForTesting } = symbols;
 

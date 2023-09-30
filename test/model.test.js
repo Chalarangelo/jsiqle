@@ -1,6 +1,6 @@
-import { Model } from 'src/model';
-import { Schema } from 'src/schema';
-import symbols from 'src/symbols';
+import { Model } from '../src/model.js';
+import { Schema } from '../src/schema.js';
+import symbols from '../src/symbols.js';
 
 const { $instances, $fields, $properties, $cachedProperties, $scopes } =
   symbols;

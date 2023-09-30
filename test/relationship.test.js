@@ -1,7 +1,7 @@
-import { Schema } from 'src/schema';
-import { Model } from 'src/model';
-import { Relationship } from 'src/relationship';
-import symbols from 'src/symbols';
+import { Schema } from '../src/schema.js';
+import { Model } from '../src/model.js';
+import { Relationship } from '../src/relationship.js';
+import symbols from '../src/symbols.js';
 
 const {
   $instances,

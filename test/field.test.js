@@ -1,5 +1,5 @@
-import { Field } from 'src/field';
-import { standardTypes } from 'src/types';
+import { Field } from '../src/field.js';
+import { standardTypes } from '../src/types.js';
 
 describe('Field', () => {
   describe('when arguments are valid', () => {

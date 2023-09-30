@@ -1,4 +1,4 @@
-import { DuplicationError } from 'src/errors';
+import { DuplicationError } from './errors.js';
 
 export class Serializer {
   #name;

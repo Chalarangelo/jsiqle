@@ -2,13 +2,13 @@
   "name": "@jsiqle/core",
   "version": "2.0.0",
   "description": "JavaScript In-memory Query Language with Events.",
-  "main": "./dist/main.js",
+  "type": "module",
+  "exports": "./src/index.js",
   "scripts": {
-    "build": "webpack --mode=production",
-    "repl": "webpack --mode=development && node ./repl/index.js",
+    "repl": "node ./repl/index.js",
     "test": "jest --coverage",
     "lint": "eslint src",
-    "prepare": "npm run lint && npm run test && npm run build"
+    "prepare": "npm run lint && npm run test"
   },
   "repository": {
     "type": "git",

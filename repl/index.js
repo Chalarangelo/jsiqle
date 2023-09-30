@@ -1,5 +1,5 @@
-const jsiqle = require('../dist/main').default;
-const repl = require('repl');
+import jsiqle from '../src/index.js';
+import repl from 'node:repl';
 
 let replServer = repl.start({
   prompt: 'jsiqle > ',

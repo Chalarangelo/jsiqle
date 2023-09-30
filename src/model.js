@@ -1,9 +1,10 @@
-import { Field } from 'src/field';
-import { RecordSet, RecordHandler } from 'src/record';
-import { NameError, DuplicationError } from 'src/errors';
-import symbols from 'src/symbols';
-import { standardTypes } from 'src/types';
-import { validateName } from 'src/utils';
+import { Field } from './field.js';
+import RecordSet from './record_set.js';
+import RecordHandler from './record_handler.js';
+import { NameError, DuplicationError } from './errors.js';
+import symbols from './symbols.js';
+import { standardTypes } from './types.js';
+import { validateName } from './utils.js';
 
 const {
   $fields,

@@ -1,7 +1,7 @@
-import { Model } from 'src/model';
-import { Record } from 'src/record';
-import symbols from 'src/symbols';
-import Schema from '../../src/schema';
+import { Model } from '../src/model.js';
+import Record from '../src/record.js';
+import symbols from '../src/symbols.js';
+import Schema from '../src/schema.js';
 
 const { $instances, $clearSchemaForTesting } = symbols;
 

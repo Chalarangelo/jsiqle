@@ -1,5 +1,5 @@
-import { isOptional, standardTypes } from 'src/types';
-import symbols from 'src/symbols';
+import { isOptional, standardTypes } from './types.js';
+import symbols from './symbols.js';
 
 const { $isDateField } = symbols;
 

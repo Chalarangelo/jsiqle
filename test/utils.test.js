@@ -2,7 +2,7 @@ import {
   deepClone,
   validateName,
   validateObjectWithUniqueName,
-} from 'src/utils';
+} from '../src/utils.js';
 
 describe('deepClone', () => {
   it('deep clones an oject', () => {

@@ -1,9 +1,9 @@
-import Record from './record';
-import Schema from '../schema';
-import { DuplicationError } from 'src/errors';
-import { isUndefined, recordId } from 'src/types';
-import symbols from 'src/symbols';
-import { deepClone } from 'src/utils';
+import Record from './record.js';
+import Schema from './schema.js';
+import { DuplicationError } from './errors.js';
+import { isUndefined, recordId } from './types.js';
+import symbols from './symbols.js';
+import { deepClone } from './utils.js';
 
 const {
   $fields,

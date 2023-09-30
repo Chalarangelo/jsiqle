@@ -1,4 +1,4 @@
-import symbols from 'src/symbols';
+import symbols from './symbols.js';
 
 const {
   $recordValue,

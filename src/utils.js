@@ -1,4 +1,4 @@
-import { DuplicationError, NameError } from 'src/errors';
+import { DuplicationError, NameError } from './errors.js';
 
 // Name validation
 // TODO: 'records' can be a bit of a loose gun here.

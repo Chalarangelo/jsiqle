@@ -1,9 +1,9 @@
-import { Model } from 'src/model';
-import { Relationship } from 'src/relationship';
-import { Serializer } from 'src/serializer';
-import { ExperimentalAPIUsageError } from 'src/errors';
-import { validateObjectWithUniqueName, validateName } from 'src/utils';
-import symbols from 'src/symbols';
+import { Model } from './model.js';
+import { Relationship } from './relationship.js';
+import { Serializer } from './serializer.js';
+import { ExperimentalAPIUsageError } from './errors.js';
+import { validateObjectWithUniqueName, validateName } from './utils.js';
+import symbols from './symbols.js';
 
 const {
   $addRelationshipAsField,

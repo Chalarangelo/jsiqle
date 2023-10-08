@@ -1,3 +1,4 @@
+import { describe, it, beforeEach, expect } from 'vitest';
 import { Serializer } from '../src/serializer.js';
 import { Model } from '../src/model.js';
 

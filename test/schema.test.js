@@ -1,3 +1,4 @@
+import { describe, it, beforeEach, expect, beforeAll, afterAll, afterEach } from 'vitest';
 import { Schema } from '../src/schema.js';
 import { Model } from '../src/model.js';
 import symbols from '../src/symbols.js';
@@ -8,7 +9,7 @@ describe('Schema', () => {
   let consoleWarn = console.warn;
 
   beforeAll(() => {
-    global.console.warn = jest.fn();
+    global.console.warn = () => {};
     Schema.config.experimentalAPIMessages = 'off';
   });
 

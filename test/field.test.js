@@ -1,3 +1,4 @@
+import { describe, it, beforeEach, expect, test } from 'vitest';
 import { Field } from '../src/field.js';
 import { standardTypes } from '../src/types.js';
 
